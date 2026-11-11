@@ -37,7 +37,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
 
   return (
     <Page>
-      <PageHead kicker="Events Directory" title="Events" sub="Seminars, workshops, expos, community events at derbies na may verified permits." />
+      <PageHead kicker="Events Directory" title="Events" sub="Seminars, workshops, expos, community events, and derbies with verified permits." />
       <nav aria-label="Event groups" className="-mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0">
         {groups.map((g) => (
           <a key={g} href={qs(g)} aria-current={g === group ? "page" : undefined}
@@ -61,9 +61,9 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
         <LocationFields province={province} city={city} idPrefix="ef" />
       </FilterPanel>
       {(group === "Derbies & Events" || group === "All Events") && derby && (
-        <Note tone="red">Ang derby listings ay information lang (petsa, venue, organizer). Kailangan ng verified cockpit license at LGU permit bago ma-publish. Walang betting, odds o live streaming sa Sabong Central.</Note>
+        <Note tone="red">Derby listings are information only (date, venue, organizer). Each needs a verified cockpit license and LGU permit before it is published. No betting, odds or live streaming on Sabong Central.</Note>
       )}
-      {shown.length === 0 ? <Empty>Walang event na tugma sa filter.</Empty> : [...byMonth].map(([m, list]) => (
+      {shown.length === 0 ? <Empty>No events match your filters.</Empty> : [...byMonth].map(([m, list]) => (
         <section key={m} className="flex flex-col gap-3">
           <h2 className="m-0 font-serif text-[20px] font-semibold text-gold-dark">{m}</h2>
           <div className="grid gap-3 md:grid-cols-2">{list.map((e) => <EventCard key={e.id} e={e} />)}</div>

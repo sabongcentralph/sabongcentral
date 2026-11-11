@@ -14,8 +14,8 @@ export default async function AdminMessages() {
     <Page>
       <AdminNav email={email} at="/admin/messages" counts={c} />
       <h1 className="m-0 font-serif text-[26px] font-semibold">Contact messages</h1>
-      <p className="m-0 text-[13px] text-muted">Mula sa Contact Us form. Sumagot sa email ng nagpadala. (Ang awtomatikong pag-forward sa gmail ay idadagdag kasama ng email sending.)</p>
-      {list.length === 0 ? <Empty>Wala pang messages.</Empty> : list.map((m) => (
+      <p className="m-0 text-[13px] text-muted">From the Contact Us form. Reply to the sender by email. (Automatic forwarding to Gmail comes with email sending.)</p>
+      {list.length === 0 ? <Empty>No messages yet.</Empty> : list.map((m) => (
         <article key={m.id} className="flex flex-col gap-1.5 rounded-2xl border border-line bg-cream p-4">
           <div className="flex flex-wrap items-center gap-2"><Chip tone={m.status === "new" ? "gold" : "plain"}>{m.status}</Chip><Chip tone="plain">{m.topic}</Chip><span className="text-[12px] text-muted">{m.created_at}</span></div>
           <h2 className="m-0 text-[15px] font-bold">{m.name} · <a href={`mailto:${m.email}`} className="text-wine">{m.email}</a></h2>

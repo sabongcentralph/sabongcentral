@@ -15,7 +15,7 @@ export function PageHead({ kicker, title, sub, children }: { kicker?: string; ti
   );
 }
 
-export function SectionHead({ title, href, more = "Lahat" }: { title: string; href?: string; more?: string }) {
+export function SectionHead({ title, href, more = "See all" }: { title: string; href?: string; more?: string }) {
   return (
     <div className="flex items-center justify-between gap-3">
       <h2 className="m-0 font-serif text-[21px] font-semibold md:text-[24px]">{title}</h2>

@@ -26,12 +26,12 @@ export default async function FarmsPage({ searchParams }: { searchParams: Promis
 
   return (
     <Page>
-      <PageHead kicker="Gamefarm Directory" title="Farms" sub="Lahat ng farms dito ay ni-review ng admin bago lumabas." />
+      <PageHead kicker="Gamefarm Directory" title="Farms" sub="Every farm here is reviewed by an admin before it goes live." />
       <FilterPanel action="/farms" reset="/farms" active={active}>
-        <label className={labelCls}>Search<input name="q" type="search" defaultValue={q} placeholder="Farm name o bloodline" className={input} /></label>
+        <label className={labelCls}>Search<input name="q" type="search" defaultValue={q} placeholder="Farm name or bloodline" className={input} /></label>
         <LocationFields province={province} city={city} idPrefix="ff" />
         <label className="flex min-h-11 items-center gap-2.5 self-end text-[14px] font-semibold text-ink-soft">
-          <input type="checkbox" name="verified" value="1" defaultChecked={ver} className="size-[18px] accent-crimson" /> ✓ Business Verified lang
+          <input type="checkbox" name="verified" value="1" defaultChecked={ver} className="size-[18px] accent-crimson" /> ✓ Business Verified only
         </label>
         <fieldset className="m-0 border-0 p-0 sm:col-span-2 lg:col-span-4">
           <legend className="mb-1.5 text-[13px] font-semibold text-ink-soft">Bloodline</legend>
@@ -44,9 +44,9 @@ export default async function FarmsPage({ searchParams }: { searchParams: Promis
           </div>
         </fieldset>
       </FilterPanel>
-      <Note>Ang <strong>Business Verified</strong> ay ibig sabihing na-review ng admin ang business registration ng farm. Hindi ito garantiya ng bloodlines o transactions.</Note>
+      <Note><strong>Business Verified</strong> means an admin reviewed the farm's business registration. It is not a guarantee of bloodlines or transactions.</Note>
       <p className="m-0 text-[14px] text-ink-soft"><strong>{farms.length}</strong> farms</p>
-      {farms.length === 0 ? <Empty>Walang farm na tugma. Subukan ang ibang filter.</Empty> : (
+      {farms.length === 0 ? <Empty>No farms match. Try different filters.</Empty> : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {farms.map((f) => <FarmCard key={f.id} f={f} />)}
         </div>

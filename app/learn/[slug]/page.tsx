@@ -22,8 +22,8 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         <span className="text-[13px] text-muted">{d.by} · {d.date} · {d.read}</span>
         <Photo className="h-[200px] rounded-2xl md:h-[320px]" label="Article photo" />
         {d.body.map((p, i) => <p key={i} className="m-0 text-[16px] leading-[1.75] text-ink-soft">{p}</p>)}
-        <Note>Pangkalahatang impormasyon lang ito. Kumonsulta sa lisensyadong beterinaryo para sa diagnosis at gamot.</Note>
-        <a href="/learn" className="text-[14px] font-semibold text-wine">← Lahat ng articles</a>
+        <Note>General information only. Consult a licensed veterinarian for diagnosis and medicine.</Note>
+        <a href="/learn" className="text-[14px] font-semibold text-wine">← All articles</a>
       </article>
     </Page>
   );

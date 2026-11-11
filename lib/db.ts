@@ -105,7 +105,7 @@ function samples(): Array<{ kind: Kind; slug: string; status: Status; by: string
   const add = (kind: Kind, slug: string, data: object, status: Status = "approved", by = "Sample") => out.push({ kind, slug, status, by, data });
   for (const { slug, ...f } of FARMS) add("farm", slug, f);
   for (const { slug, ...e } of EVENTS) add("event", slug, e);
-  for (const { slug, ...g } of GOODS) add("good", slug, { ...g, desc: "Detalye mula sa seller: laman, gamit, at pickup o delivery options." });
+  for (const { slug, ...g } of GOODS) add("good", slug, { ...g, desc: "Details from the seller: contents, use, and pickup or delivery options." });
   for (const { slug, ...r } of REELS) add("reel", slug, r);
   for (const { slug, ...a } of ARTICLES) add("article", slug, a);
   for (const n of NOTICES) add("notice", slugify(n.title), n);
@@ -113,15 +113,15 @@ function samples(): Array<{ kind: Kind; slug: string; status: Status; by: string
   // Pending examples for the admin queue.
   add("farm", "sunrise-gamefarm", {
     name: "Sunrise Gamefarm", province: "Batangas", city: "Tanauan City", est: "2017", verified: false, ownerName: "Rico Santos",
-    phone: "0919 404 7781", facebook: "facebook.com/sabongcentral", about: "Bagong submit na farm (sample). Hinihintay ang admin review.",
+    phone: "0919 404 7781", facebook: "facebook.com/sabongcentral", about: "Newly submitted farm (sample), waiting for admin review.",
     bloodlines: [{ name: "Sweater" }, { name: "Roundhead" }],
   }, "pending", "Rico Santos (sample)");
   add("good", "conditioning-mix-5-kg", {
     name: "Conditioning Mix (5 kg)", cat: "Feeds", sub: "Conditioning", price: "₱420", seller: "Farm Deals PH", phone: "0918 777 XXXX",
-    province: "Batangas", city: "Lemery", sold: false, sellerVerified: false, desc: "Bagong listing (sample) na naghihintay ng approval.",
+    province: "Batangas", city: "Lemery", sold: false, sellerVerified: false, desc: "New listing (sample) waiting for approval.",
   }, "pending", "Farm Deals PH (sample)");
-  add("reel", "pagpapaligo-ng-manok-tamang-paraan", {
-    title: "Pagpapaligo ng manok: tamang paraan", topic: "Farm Management", farm: "Tres Lomas Farm", farmSlug: "tres-lomas-farm", platform: "YouTube", url: "",
+  add("reel", "how-to-bathe-chickens-properly", {
+    title: "How to bathe chickens properly", topic: "Farm Management", farm: "Tres Lomas Farm", farmSlug: "tres-lomas-farm", platform: "YouTube", url: "",
   }, "pending", "Tres Lomas Farm (sample)");
   return out;
 }
@@ -145,6 +145,11 @@ export function ensureDb(): Promise<void> {
       const refresh = d.prepare(`update listings set data = ? where kind = ? and slug = ? and is_sample = 1`);
       const rows = samples();
       await d.batch(rows.flatMap((r) => [insert.bind(r.kind, r.slug, r.status, JSON.stringify(r.data), r.by), refresh.bind(JSON.stringify(r.data), r.kind, r.slug)]));
+      // Remove samples that are no longer in this file (e.g. renamed slugs).
+      const keep = rows.map((r) => `${r.kind}:${r.slug}`);
+      const { results } = await d.prepare(`select id, kind, slug from listings where is_sample = 1`).all<{ id: number; kind: string; slug: string }>();
+      const stale = results.filter((r) => !keep.includes(`${r.kind}:${r.slug}`));
+      if (stale.length) await d.batch(stale.map((r) => d.prepare(`delete from listings where id = ? and is_sample = 1`).bind(r.id)));
     })().catch((err) => {
       ready = null;
       throw err;

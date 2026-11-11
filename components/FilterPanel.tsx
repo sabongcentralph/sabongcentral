@@ -7,13 +7,13 @@ export function FilterPanel({ children, active, action, reset }: { children: Rea
       <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-4 text-[15px] font-semibold [&::-webkit-details-marker]:hidden">
         <FilterIcon size={18} className="text-crimson" /> Filter
         {active > 0 && <span className="rounded-full bg-gold px-2 py-0.5 text-[11px] font-bold text-[#3a0a0a]">{active}</span>}
-        <span className="ml-auto text-[13px] text-muted group-open:hidden">Buksan</span>
-        <span className="ml-auto hidden text-[13px] text-muted group-open:inline">Isara</span>
+        <span className="ml-auto text-[13px] text-muted group-open:hidden">Open</span>
+        <span className="ml-auto hidden text-[13px] text-muted group-open:inline">Close</span>
       </summary>
       <form action={action} method="get" className="grid gap-3 border-t border-line p-4 sm:grid-cols-2 lg:grid-cols-4">
         {children}
         <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-4">
-          <button type="submit" className="lift min-h-11 cursor-pointer rounded-full border-0 bg-crimson px-6 text-[15px] font-semibold text-white">I-apply</button>
+          <button type="submit" className="lift min-h-11 cursor-pointer rounded-full border-0 bg-crimson px-6 text-[15px] font-semibold text-white">Apply</button>
           <a href={reset} className="flex min-h-11 items-center px-3 text-sm font-semibold text-wine">Reset</a>
         </div>
       </form>

@@ -14,7 +14,7 @@ const PATH = { farm: "farms", event: "events", good: "goods", reel: "reels", art
 
 function show(v: unknown): string {
   if (Array.isArray(v)) return v.map((x) => (typeof x === "object" && x && "name" in x ? (x as { name: string }).name : String(x))).join(", ");
-  if (typeof v === "boolean") return v ? "Oo" : "Hindi";
+  if (typeof v === "boolean") return v ? "Yes" : "No";
   return String(v ?? "");
 }
 
@@ -38,15 +38,15 @@ export default async function ReviewItem({ params, searchParams }: { params: Pro
     <Page>
       <AdminNav email={email} at="/admin" counts={c} />
       <a href="/admin" className="text-[14px] font-semibold text-wine">← Approvals</a>
-      {done && <Note tone="green">Done: <strong>{done.replace("_", " + ")}</strong>. Naka-log sa activity log.</Note>}
-      {err === "reason" && <Note tone="red">Kailangan ng dahilan para mag-reject.</Note>}
+      {done && <Note tone="green">Done: <strong>{done.replace("_", " + ")}</strong>. Recorded in the activity log.</Note>}
+      {err === "reason" && <Note tone="red">A reason is required to reject.</Note>}
       <div className="flex flex-wrap items-center gap-2">
         <Chip tone="plain">{l.kind}</Chip><Chip tone={statusTone(l.status)}>{l.status}</Chip>{l.isSample && <Chip tone="plain">sample</Chip>}
       </div>
       <h1 className="m-0 font-serif text-[28px] font-semibold leading-tight">{titleOf(l)}</h1>
       <p className="m-0 text-[13px] text-muted">Submitted by {l.submittedBy ?? "—"} · {l.createdAt}{l.reason ? ` · Last note: “${l.reason}”` : ""}</p>
-      {isDerby && <Note tone="red">Derby listing: i-verify muna ang cockpit license at LGU event permit bago i-approve. Permits na sinabi: <strong>{show(data.permits) || "wala"}</strong></Note>}
-      {l.kind === "farm" && <Note>Business registration na sinabi ng submitter: <strong>{data.docs ? "Mayroon (hihingin ang copy)" : "Wala pa"}</strong>. Ang “Business Verified” badge ay ibigay lang kapag na-review ang papers.</Note>}
+      {isDerby && <Note tone="red">Derby listing: verify the cockpit license and LGU event permit before approving. Permits stated: <strong>{show(data.permits) || "none"}</strong></Note>}
+      {l.kind === "farm" && <Note>Business registration stated by submitter: <strong>{data.docs ? "Yes (request a copy)" : "Not yet"}</strong>. Only give the “Business Verified” badge after reviewing the papers.</Note>}
 
       <div className="grid gap-5 md:grid-cols-[3fr_2fr]">
         <dl className="m-0 flex flex-col divide-y divide-line rounded-2xl border border-line bg-cream px-4 text-[14px]">
@@ -62,10 +62,10 @@ export default async function ReviewItem({ params, searchParams }: { params: Pro
               <iframe src={embed.src} title="Preview" className="size-full border-0" loading="lazy" allow="encrypted-media; picture-in-picture" allowFullScreen />
             </div>
           )}
-          {l.kind === "reel" && !embed && <Note>Walang video link (sample). Sa totoong submission, dito makikita ang preview.</Note>}
+          {l.kind === "reel" && !embed && <Note>No video link (sample). Real submissions show a preview here.</Note>}
           <form action="/api/admin/action" method="post" className="flex flex-col gap-3 rounded-2xl border border-line bg-cream p-4">
             <input type="hidden" name="id" value={l.id} />
-            <label className={labelCls}>Reason / note (naka-log; required sa Reject)<textarea name="reason" rows={2} className={`${input} py-2`} /></label>
+            <label className={labelCls}>Reason / note (logged; required to reject)<textarea name="reason" rows={2} className={`${input} py-2`} /></label>
             <div className="flex flex-wrap gap-2">
               {l.status !== "approved" && act("approve", "Approve", btnPrimary)}
               {l.status !== "approved" && canBadge && act("approve_verified", "Approve + Business Verified", btnPrimary)}
@@ -74,9 +74,9 @@ export default async function ReviewItem({ params, searchParams }: { params: Pro
               {l.status === "approved" && act("hide", "Hide from public", `${btnGhost} border-wine text-wine`)}
               {(l.status === "hidden" || l.status === "rejected") && act("restore", "Restore / approve", btnGhost)}
             </div>
-            <p className="m-0 text-[12px] text-muted">Ang pag-approve ng account ay hindi nag-a-approve ng listings. Bawat action ay naka-log kasama ang pangalan mo.</p>
+            <p className="m-0 text-[12px] text-muted">Approving an account does not approve its listings. Every action is logged with your name.</p>
           </form>
-          {l.status === "approved" && <a href={`/${PATH[l.kind]}/${l.slug}`} className="text-[14px] font-semibold text-wine">Tingnan sa public site ↗</a>}
+          {l.status === "approved" && <a href={`/${PATH[l.kind]}/${l.slug}`} className="text-[14px] font-semibold text-wine">View on public site ↗</a>}
         </div>
       </div>
     </Page>

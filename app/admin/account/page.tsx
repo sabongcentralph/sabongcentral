@@ -15,14 +15,14 @@ export default async function AdminAccount({ searchParams }: { searchParams: Pro
     <Page>
       <AdminNav email={email} at="/admin/account" counts={await counts()} />
       <form action="/api/admin/password" method="post" className="flex w-full max-w-[440px] flex-col gap-4 rounded-2xl border border-line bg-cream p-5">
-        <h1 className="m-0 font-serif text-[24px] font-semibold">Palitan ang password</h1>
-        {err === "weak" && <Note tone="red">Dapat 12+ characters at magkapareho ang dalawang bagong password.</Note>}
-        {err === "current" && <Note tone="red">Mali ang kasalukuyang password.</Note>}
-        <label className={labelCls}>Kasalukuyang password<input name="current" type="password" required autoComplete="current-password" className={input} /></label>
-        <label className={labelCls}>Bagong password (12+ characters)<input name="next" type="password" required minLength={12} autoComplete="new-password" className={input} /></label>
-        <label className={labelCls}>Ulitin ang bagong password<input name="confirm" type="password" required minLength={12} autoComplete="new-password" className={input} /></label>
-        <button type="submit" className={btnPrimary}>I-save</button>
-        <p className="m-0 text-[12px] text-muted">Mala-logout ka sa lahat ng device pagkatapos.</p>
+        <h1 className="m-0 font-serif text-[24px] font-semibold">Change password</h1>
+        {err === "weak" && <Note tone="red">Use 12+ characters, and make sure both new passwords match.</Note>}
+        {err === "current" && <Note tone="red">Your current password is incorrect.</Note>}
+        <label className={labelCls}>Current password<input name="current" type="password" required autoComplete="current-password" className={input} /></label>
+        <label className={labelCls}>New password (12+ characters)<input name="next" type="password" required minLength={12} autoComplete="new-password" className={input} /></label>
+        <label className={labelCls}>Repeat new password<input name="confirm" type="password" required minLength={12} autoComplete="new-password" className={input} /></label>
+        <button type="submit" className={btnPrimary}>Save</button>
+        <p className="m-0 text-[12px] text-muted">You will be signed out on all devices afterwards.</p>
       </form>
     </Page>
   );

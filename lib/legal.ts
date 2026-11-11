@@ -7,11 +7,11 @@ export const LEGAL: Record<string, LegalDoc> = {
     "meta": "The Philippine Gamefowl Community",
     "s": [
       [
-        "Sino kami",
+        "Who we are",
         "Sabong Central is a free, independent, community-based information platform created to connect Filipino gamefowl enthusiasts, breeders, farm owners, event organizers, and poultry supply providers."
       ],
       [
-        "Layunin",
+        "Our purpose",
         "Our purpose is to make information about gamefowl farming, breeding, animal care, educational resources, poultry supplies, and legally authorized community events easier to discover."
       ],
       [
@@ -31,15 +31,15 @@ export const LEGAL: Record<string, LegalDoc> = {
         "Listings for permitted poultry supplies, equipment, and related services, with direct contact information for independent sellers."
       ],
       [
-        "Hindi kami gambling platform",
+        "We are not a gambling platform",
         "Sabong Central is not a gambling platform or an e-sabong operator. We do not organize or operate cockfights, accept or facilitate wagers, provide betting odds, collect betting money, livestream cockfights, or offer online gambling services."
       ],
       [
-        "Walang bentahan sa platform",
+        "No sales through the platform",
         "Sabong Central does not process purchases, collect payments, arrange deliveries, or act as a seller in transactions between community members."
       ],
       [
-        "Review at 18+",
+        "Review and 18+",
         "All listings are submitted by independent contributors and are subject to platform review. Approval or publication does not constitute an endorsement, certification, or guarantee. Sabong Central is intended exclusively for adults aged 18 and above."
       ],
       [
@@ -141,27 +141,27 @@ export const LEGAL: Record<string, LegalDoc> = {
   "Rules": {
     "tab": "Portal Rules",
     "title": "Portal Rules",
-    "meta": "Para sa farms, organizers at sellers",
+    "meta": "For farms, organizers and sellers",
     "s": [
       [
         "Content rules",
-        "Totoo at sariling content lang. Bawal ang taya, odds, fight footage, animal cruelty, live-animal sales (habang naka-off), at regulated products na walang rehistro. Lahat ng post ay dadaan sa admin review."
+        "Post only true content that is your own. Not allowed: bets, odds, fight footage, animal cruelty, live-animal sales (while switched off), and regulated products without registration. Every post goes through admin review."
       ],
       [
-        "Verification: lahat",
-        "Walang government ID na kailangan. Email code at mobile number para sa lahat ng account."
+        "Verification: everyone",
+        "No government ID is needed. Every account needs an email code and a mobile number."
       ],
       [
-        "Verification: per role",
-        "Farm: business registration (DTI, SEC o Mayor’s permit). Organizer o venue: proof of legitimacy (business registration o permit) at permits para sa bawat event. Seller: email code (required) at DTI o business permit (optional, para sa Business Verified badge); may Report button sa bawat listing."
+        "Verification: by role",
+        "Farm: business registration (DTI, SEC or Mayor’s permit). Organizer or venue: proof of legitimacy (business registration or permit) plus permits for each event. Seller: email code (required) and a DTI or business permit (optional, for the Business Verified badge); every listing has a Report button."
       ],
       [
         "Reporting procedures",
-        "Pindutin ang ⚑ Report sa farm, event o listing. Ire-review ng admin, pwedeng itago muna ang content habang sinusuri, at aabisuhan ang may-ari kung may aksyon."
+        "Press ⚑ Report on a farm, event or listing. An admin reviews it, may hide the content while investigating, and notifies the owner if action is taken."
       ],
       [
-        "Kapag may violation",
-        "Babala, pagtanggal ng content, o suspension ng account. Ang malubhang paglabag (hal. taya o e-sabong) ay agad na tatanggalin."
+        "If there is a violation",
+        "A warning, removal of content, or account suspension. Serious violations (e.g. betting or e-sabong) are removed immediately."
       ]
     ]
   },
@@ -171,11 +171,11 @@ export const LEGAL: Record<string, LegalDoc> = {
     "meta": "Sabong Central Market · community classified listings",
     "s": [
       [
-        "Ano ang Market",
+        "What the Market is",
         "Sabong Central Market is a free community classified-listing directory for permitted poultry-related products, equipment, and services."
       ],
       [
-        "Hindi kami seller",
+        "We are not the seller",
         "Sabong Central does not own, sell, purchase, broker, or deliver listed products. We do not negotiate transactions, collect payments, receive commissions, or handle buyer funds."
       ],
       [
@@ -187,7 +187,7 @@ export const LEGAL: Record<string, LegalDoc> = {
         "Buyers are strongly encouraged to independently verify the seller, product, price, and transaction details before making any payment. Seller email verification does not guarantee product authenticity, delivery, or seller reliability."
       ],
       [
-        "Hindi kami party sa transaksyon",
+        "We are not a party to transactions",
         "Sabong Central is not a party to transactions between buyers and sellers. Nothing in this notice excludes responsibilities that may apply to Sabong Central under Philippine law."
       ],
       [
@@ -199,66 +199,66 @@ export const LEGAL: Record<string, LegalDoc> = {
   "Contact": {
     "tab": "Contact Us",
     "title": "Contact Us",
-    "meta": "Official contact channel ng Sabong Central",
+    "meta": "Official contact channels of Sabong Central",
     "s": [
       [
-        "Iba pang paraan",
+        "Other ways to reach us",
         "Email: sabongcentralph@gmail.com · Facebook page: Sabong Central · Manila, Philippines"
       ],
       [
         "Privacy contact / Data Protection Officer",
-        "[Pangalan ng DPO] · sabongcentralph@gmail.com. Para sa access, correction, erasure at iba pang privacy requests."
+        "[DPO name] · sabongcentralph@gmail.com. For access, correction, erasure and other privacy requests."
       ],
       [
-        "Mag-report",
-        "Gamitin ang ⚑ Report button sa farm, event, listing, reel o profile. Para sa iba pang reklamo, i-email kami."
+        "Reporting",
+        "Use the ⚑ Report button on a farm, event, listing, reel or profile. For other complaints, email us."
       ],
       [
         "National Privacy Commission",
-        "Pwede ring mag-file ng complaint sa NPC: privacy.gov.ph."
+        "You may also file a complaint with the NPC: privacy.gov.ph."
       ]
     ]
   },
   "FAQ": {
     "tab": "FAQ",
-    "title": "FAQ · Paano mag-list",
-    "meta": "Mga madalas itanong",
+    "title": "FAQ · How to list",
+    "meta": "Frequently asked questions",
     "s": [
       [
-        "Libre ba?",
-        "Oo. Libre mag-browse at libre mag-list ng farm, event o goods."
+        "Is it free?",
+        "Yes. Browsing is free, and listing a farm, event or goods is free."
       ],
       [
-        "Kailangan ko ba ng account para mag-browse?",
-        "Hindi. Account ay para lang sa farm owners, organizers at sellers."
+        "Do I need an account to browse?",
+        "No. Accounts are only for farm owners, organizers and sellers."
       ],
       [
-        "Paano i-list ang farm ko?",
-        "Portal → Create an Account → piliin ang Gamefarm Owner → ilagay ang details → i-upload ang business registration (DTI, SEC o Mayor’s permit). Ire-review ng admin within 1–3 araw."
+        "How do I list my farm?",
+        "Portal → Create an Account → choose Gamefarm Owner → enter your details → upload your business registration (DTI, SEC or Mayor’s permit). An admin reviews it within 1–3 days."
       ],
       [
-        "Paano mag-post ng event?",
-        "Piliin ang Event Organizer role, at i-upload ang permit o venue letter para sa bawat event. Lalabas lang ito kapag approved."
+        "How do I post an event?",
+        "Choose the Event Organizer role and upload the permit or venue letter for each event. It appears only once approved."
       ],
       [
-        "Paano magbenta sa Market?",
-        "Piliin ang Seller role. Ilagay ang presyo, availability at contact number mo. Direkta kayong mag-uusap ng buyer."
+        "How do I sell in the Market?",
+        "Choose the Seller role. Add your price, availability and contact number. Buyers contact you directly."
       ],
       [
-        "Nagbebenta ba kayo ng manok?",
-        "Hindi. Hindi pa pwede ang live birds, fighting weapons at regulated vet medicines sa V1."
+        "Do you sell birds?",
+        "No. Live birds, fighting weapons and regulated vet medicines are not allowed in V1."
       ],
       [
-        "May taya o e-sabong ba dito?",
-        "Wala. Hindi kami gambling platform o e-sabong operator."
+        "Is there betting or e-sabong here?",
+        "No. We are not a gambling platform or e-sabong operator."
       ],
       [
-        "Kailangan ba ng ID?",
-        "Hindi. Business papers lang para sa farms at organizers. Sellers: email code lang ang required; optional ang DTI o business permit para sa badge."
+        "Do I need an ID?",
+        "No. Farms and organizers submit business papers only. Sellers only need an email code; a DTI or business permit is optional, for the badge."
       ],
       [
-        "Paano mag-report?",
-        "Pindutin ang ⚑ Report. Ire-review ng admin ang bawat report."
+        "How do I report something?",
+        "Press ⚑ Report. An admin reviews every report."
       ]
     ]
   },

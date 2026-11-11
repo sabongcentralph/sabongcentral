@@ -31,7 +31,7 @@ export default async function LegalPage({ params }: { params: Promise<{ doc: str
           <h1 className="m-0 font-serif text-[30px] font-semibold leading-tight md:text-[38px]">{doc.title}</h1>
           <p className="m-0 mt-1 text-[13px] text-muted">{doc.meta}</p>
         </div>
-        {key !== "about" && key !== "faq" && <Note>Draft pa ito habang nire-review ng abogado.</Note>}
+        {key !== "about" && key !== "faq" && <Note>Draft: still being reviewed by our lawyer.</Note>}
         {doc.s.map(([h, p]) => (
           <section key={h} className="flex flex-col gap-1.5">
             <h2 className="m-0 text-[17px] font-bold">{h}</h2>
