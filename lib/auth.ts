@@ -110,3 +110,29 @@ export function sameOrigin(req: Request): boolean {
   const origin = req.headers.get("origin");
   return !origin || origin === new URL(req.url).origin;
 }
+
+// First-time setup / password reset: the Super Admin sets their own password
+// using a setup code they saved themselves as the ADMIN_SETUP_CODE secret in the
+// Cloudflare dashboard. Nobody else ever sees the password. Without the secret,
+// setup is turned off.
+export async function setupWithCode(code: string, email: string, next: string): Promise<"ok" | "off" | "bad"> {
+  const { env } = await import("cloudflare:workers");
+  const secret = (env as unknown as { ADMIN_SETUP_CODE?: string }).ADMIN_SETUP_CODE;
+  if (!secret || secret.length < 12) return "off";
+  await ensureAdmin();
+  const e = email.trim().toLowerCase();
+  const fails = await db().prepare(`select count(*) as n from login_attempts where email = 'setup' and at > datetime('now', '-15 minutes')`).first<{ n: number }>();
+  if ((fails?.n ?? 0) >= 5) return "bad";
+  const a = enc.encode(code), b = enc.encode(secret);
+  let diff = a.length ^ b.length;
+  for (let i = 0; i < Math.min(a.length, b.length); i++) diff |= a[i] ^ b[i];
+  if (diff !== 0 || e !== SUPER_ADMIN) {
+    await db().prepare(`insert into login_attempts (email) values ('setup')`).run();
+    return "bad";
+  }
+  await db().batch([
+    db().prepare(`update admins set pw_hash = ? where email = ?`).bind(await hashPassword(next), e),
+    db().prepare(`delete from sessions where email = ?`).bind(e),
+  ]);
+  return "ok";
+}

@@ -20,7 +20,7 @@ export default async function AdminLogin({ searchParams }: { searchParams: Promi
         <label className={labelCls}>Email<input name="email" type="email" required autoComplete="username" defaultValue={SUPER_ADMIN} className={input} /></label>
         <label className={labelCls}>Password<input name="password" type="password" required autoComplete="current-password" className={input} /></label>
         <button type="submit" className={btnPrimary}>Login</button>
-        <p className="m-0 text-[12px] text-muted">Para sa admins lang. Naka-log ang bawat login at action. 2FA (authenticator app) ay idadagdag bago ang launch.</p>
+        <p className="m-0 text-[12px] text-muted">Para sa admins lang. Naka-log ang bawat login at action. 2FA (authenticator app) ay idadagdag bago ang launch. Unang beses o nakalimutan ang password? <a href="/admin/setup" className="font-semibold text-wine">Admin setup</a></p>
       </form>
     </Page>
   );

@@ -21,6 +21,9 @@ export default defineConfig({
       // Derby listings: ON (Em, 2026-11-11). Each derby still needs verified permits.
       // Set to "false" to hide every derby listing at once.
       DERBY_ENABLED: bindings.text("true"),
+      // ADMIN_SETUP_CODE: a secret Em adds in the Cloudflare dashboard (Settings ->
+      // Variables and Secrets, type Secret). It unlocks /admin/setup to set the
+      // Super Admin password. Not declared here so deploys never require it.
     },
   }),
 });
