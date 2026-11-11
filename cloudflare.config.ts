@@ -16,8 +16,8 @@ export default defineConfig({
       // Database for farms, organizers, derbies, users, reports.
       // Created automatically in the Cloudflare account on first deploy.
       DB: bindings.d1({ name: "sabongcentral-db" }),
-      // Farm photos and derby posters. Photos never go in the database.
-      PHOTOS: bindings.r2({ name: "sabongcentral-photos" }),
+      // Photos (R2 bucket "sabongcentral-photos", binding PHOTOS) are added in
+      // Phase 2 with photo upload. R2 must be enabled in the dashboard first.
       // Derby section stays hidden until the lawyer approves it.
       DERBY_ENABLED: bindings.text("false"),
     },

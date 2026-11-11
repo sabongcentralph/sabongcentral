@@ -11,9 +11,12 @@ export async function checkDatabase(): Promise<Check> {
   }
 }
 
-export async function checkPhotos(): Promise<Check> {
+export async function checkPhotos(): Promise<Check | null> {
+  // R2 is not set up until Phase 2 (photo upload).
+  const photos = (env as unknown as { PHOTOS?: R2Bucket }).PHOTOS;
+  if (!photos) return null;
   try {
-    const list = await env.PHOTOS.list({ limit: 1 });
+    const list = await photos.list({ limit: 1 });
     return { ok: true, detail: `${list.objects.length > 0 ? "has" : "no"} files yet` };
   } catch (err) {
     return { ok: false, detail: String(err) };

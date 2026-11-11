@@ -28,6 +28,7 @@ const dict = {
   photoStorage: { tl: "Imbakan ng larawan (R2)", en: "Photo storage (R2)" },
   ok: { tl: "Gumagana", en: "Working" },
   failed: { tl: "May problema", en: "Not working" },
+  notYet: { tl: "Hindi pa naka-set up", en: "Not set up yet" },
   switchLang: { tl: "English", en: "Tagalog" },
 } as const;
 

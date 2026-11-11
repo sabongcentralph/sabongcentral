@@ -60,7 +60,14 @@ export default async function Home() {
           <h2 className="font-semibold">{t("systemCheck", lang)}</h2>
           <ul className="mt-2 divide-y divide-stone-100 text-sm">
             <Status label={t("database", lang)} check={database} lang={lang} />
-            <Status label={t("photoStorage", lang)} check={photos} lang={lang} />
+            {photos ? (
+              <Status label={t("photoStorage", lang)} check={photos} lang={lang} />
+            ) : (
+              <li className="flex items-center justify-between gap-4 py-2">
+                <span>{t("photoStorage", lang)}</span>
+                <span className="text-stone-500">{t("notYet", lang)}</span>
+              </li>
+            )}
           </ul>
         </section>
       </div>
