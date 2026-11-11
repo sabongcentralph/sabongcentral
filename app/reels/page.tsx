@@ -1,0 +1,32 @@
+import type { Metadata } from "next";
+import { approved } from "@/lib/db";
+import { one, type Search } from "@/lib/content";
+import { ReelCard } from "@/components/cards";
+import { Empty, Note, Page, PageHead } from "@/components/ui";
+
+export const dynamic = "force-dynamic";
+export const metadata: Metadata = { title: "Reels" };
+
+export default async function ReelsPage({ searchParams }: { searchParams: Promise<Search> }) {
+  const topic = one((await searchParams).topic);
+  const all = await approved("reel");
+  const topics = [...new Set(all.map((r) => r.data.topic))];
+  const shown = all.filter((r) => !topic || r.data.topic === topic);
+  return (
+    <Page>
+      <PageHead kicker="Educational Reels" title="Reels" sub="Short videos tungkol sa feeding, health, housing at farm management. Galing sa Facebook, YouTube at TikTok ng mga farm." />
+      <nav aria-label="Topics" className="-mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0">
+        {["", ...topics].map((t) => (
+          <a key={t || "all"} href={t ? `/reels?topic=${encodeURIComponent(t)}` : "/reels"} aria-current={t === topic ? "page" : undefined}
+            className={`flex min-h-10 flex-none items-center rounded-full px-4 text-[13.5px] font-semibold no-underline ${t === topic ? "bg-crimson text-white" : "border border-line bg-cream text-ink-soft"}`}>
+            {t || "Lahat"}
+          </a>
+        ))}
+      </nav>
+      {shown.length === 0 ? <Empty>Wala pang reels dito.</Empty> : (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">{shown.map((r) => <ReelCard key={r.id} r={r} />)}</div>
+      )}
+      <Note>Educational lang: bawal ang fight footage, betting content at animal cruelty. Lahat ng reel ay ni-review ng admin bago lumabas.</Note>
+    </Page>
+  );
+}
