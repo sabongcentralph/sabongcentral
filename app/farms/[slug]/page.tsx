@@ -41,7 +41,7 @@ export default async function FarmPage({ params, searchParams }: { params: Promi
         </div>
         {d.verified && <BizBadge />}
         <p className="m-0 flex items-center gap-1.5 text-[14px] text-muted"><Pin size={15} />{d.city}, {d.province}{d.est ? ` · Est. ${d.est}` : ""}</p>
-        {farm.isSample && <Note tone="red">Sample listing ito para makita ang itsura ng site. Hindi ito totoong farm.</Note>}
+        {farm.isSample && <Note tone="red">This is a sample listing to show how the site looks. It is not a real farm.</Note>}
         <div className="flex flex-wrap gap-2 pt-1">
           {msg && <a href={msg} target="_blank" rel="noopener noreferrer" className={`${btnPrimary} gap-2`}><Chat size={17} /> Message</a>}
           {d.phone && <a href={telHref(d.phone)} className={`${btnGhost} gap-2`}><Phone size={16} /> {d.phone}</a>}
@@ -61,7 +61,7 @@ export default async function FarmPage({ params, searchParams }: { params: Promi
         <div className="grid gap-5 md:grid-cols-[2fr_1fr]">
           <section className="flex flex-col gap-3">
             <h2 className="m-0 font-serif text-[22px] font-semibold">About the farm</h2>
-            <p className="m-0 whitespace-pre-line text-[15px] leading-relaxed text-ink-soft">{d.about || "Wala pang description."}</p>
+            <p className="m-0 whitespace-pre-line text-[15px] leading-relaxed text-ink-soft">{d.about || "No description yet."}</p>
             <div className="flex flex-wrap gap-1.5">{d.bloodlines.map((b) => <Chip key={b.name}>{b.name}</Chip>)}</div>
           </section>
           <aside className="flex flex-col gap-3">
@@ -71,7 +71,7 @@ export default async function FarmPage({ params, searchParams }: { params: Promi
               ))}
             </dl>
             {d.verified && <p className="m-0 text-[11.5px] leading-relaxed text-muted">{BIZ_NOTE}</p>}
-            <Note>Directory lang ang Sabong Central. Direkta kayong mag-usap ng farm. Walang bayad na dumadaan sa amin.</Note>
+            <Note>Sabong Central is a directory only. Talk to the farm directly. No payments go through us.</Note>
           </aside>
         </div>
       )}
@@ -81,7 +81,7 @@ export default async function FarmPage({ params, searchParams }: { params: Promi
           <div className="grid grid-cols-3 gap-1.5 md:grid-cols-4 md:gap-3">
             {Array.from({ length: 8 }, (_, i) => <Photo key={i} className="aspect-square rounded-lg" label={`Farm photo ${i + 1}`} />)}
           </div>
-          <p className="m-0 text-[13px] text-muted">Placeholder ang mga photo. Ang photo upload ay idadagdag kasama ng Portal.</p>
+          <p className="m-0 text-[13px] text-muted">These are placeholder photos. Photo upload comes with farm accounts.</p>
         </section>
       )}
 
@@ -90,7 +90,7 @@ export default async function FarmPage({ params, searchParams }: { params: Promi
           {d.bloodlines.map((b) => (
             <li key={b.name} className="flex flex-col gap-1 rounded-2xl border border-line bg-cream p-4">
               <span className="text-[16px] font-bold">{b.name}</span>
-              <span className="text-[13px] text-muted">{b.note || "Detalye mula sa may-ari ng farm."}</span>
+              <span className="text-[13px] text-muted">{b.note || "Details from the farm owner."}</span>
             </li>
           ))}
         </ul>
@@ -108,7 +108,7 @@ export default async function FarmPage({ params, searchParams }: { params: Promi
           {myReels.length > 0 && (
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">{myReels.map((r) => <ReelCard key={r.id} r={r} />)}</div>
           )}
-          {myNotices.length === 0 && myReels.length === 0 && <Empty>Wala pang updates mula sa farm na ito.</Empty>}
+          {myNotices.length === 0 && myReels.length === 0 && <Empty>No updates from this farm yet.</Empty>}
         </section>
       )}
 
@@ -118,7 +118,7 @@ export default async function FarmPage({ params, searchParams }: { params: Promi
 
       {others.length > 0 && (
         <section className="flex flex-col gap-3">
-          <h2 className="m-0 font-serif text-[21px] font-semibold">Iba pang farms sa {d.province}</h2>
+          <h2 className="m-0 font-serif text-[21px] font-semibold">More farms in {d.province}</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{others.map((f) => <FarmCard key={f.id} f={f} />)}</div>
         </section>
       )}

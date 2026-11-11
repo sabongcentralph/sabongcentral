@@ -29,7 +29,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       <body>
         <div className="flex min-h-screen flex-col">
           <div className="bg-[#2f2a1f] px-4 py-1.5 text-center text-[12px] font-semibold text-gold-light">
-            TEST SITE · sample data lang, hindi pa live
+            TEST SITE · sample data only, not live yet
           </div>
           <AppHeader lang={lang} />
           {children}

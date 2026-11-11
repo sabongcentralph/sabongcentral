@@ -33,7 +33,7 @@ export default async function ReelPage({ params }: { params: Promise<{ slug: str
             <div className="relative overflow-hidden rounded-2xl">
               <Photo className="aspect-[9/16]" label="Video placeholder" />
               <p className="absolute inset-x-4 bottom-4 m-0 rounded-xl bg-black/60 p-3 text-center text-[13px] text-white">
-                Sample reel: walang video link pa. Sa totoong listing, dito lalabas ang naka-embed na {d.platform} video.
+                Sample reel: no video link yet. On a real listing, the embedded {d.platform} video plays here.
               </p>
             </div>
           )}
@@ -42,13 +42,13 @@ export default async function ReelPage({ params }: { params: Promise<{ slug: str
           <div className="flex flex-wrap gap-1.5"><Chip tone="green">{d.topic}</Chip><Chip tone="plain">{embed?.platform ?? d.platform}</Chip>{r.isSample && <SampleTag />}</div>
           <h1 className="m-0 font-serif text-[26px] font-semibold leading-tight">{d.title}</h1>
           {d.farmSlug ? <a href={`/farms/${d.farmSlug}`} className="text-[15px] font-semibold text-wine">{d.farm}</a> : <span className="text-[15px] font-semibold">{d.farm}</span>}
-          {d.url && <a href={d.url} target="_blank" rel="noopener noreferrer" className="text-[13px] font-semibold text-wine">Panoorin sa {embed?.platform ?? d.platform} ↗</a>}
-          <Note>Educational content lang. Naka-embed ang video mula sa {embed?.platform ?? d.platform}; hindi ito naka-host sa Sabong Central.</Note>
+          {d.url && <a href={d.url} target="_blank" rel="noopener noreferrer" className="text-[13px] font-semibold text-wine">Watch on {embed?.platform ?? d.platform} ↗</a>}
+          <Note>Educational content only. This video is embedded from {embed?.platform ?? d.platform} and is not hosted by Sabong Central.</Note>
           <a href={`/report?target=${encodeURIComponent("Reel: " + d.title)}`} className="flex min-h-11 items-center gap-1.5 text-[14px] font-semibold text-wine no-underline"><Flag size={15} /> Report this reel</a>
         </div>
       </div>
       <section className="flex flex-col gap-3">
-        <h2 className="m-0 font-serif text-[21px] font-semibold">Iba pang reels</h2>
+        <h2 className="m-0 font-serif text-[21px] font-semibold">More reels</h2>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">{more.map((x) => <ReelCard key={x.id} r={x} />)}</div>
       </section>
     </Page>

@@ -17,7 +17,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
   if (!ev || (ev.data.derby && !derbyEnabled())) notFound();
   const d = ev.data;
   const facts: [string, string][] = [
-    ["Petsa", d.longDate], ["Oras", d.time], ["Venue", d.venue], ["Lugar", d.online ? "Online" : `${d.city}, ${d.province}`],
+    ["Date", d.longDate], ["Time", d.time], ["Venue", d.venue], ["Location", d.online ? "Online" : `${d.city}, ${d.province}`],
     ["Organizer", d.org], ["Fee", d.fee], ["Registration", d.reg], ["Topics", d.topics], ["Speakers", d.speakers], ["Permits", d.permits],
   ];
   return (
@@ -33,7 +33,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
         <p className="m-0 flex items-center gap-1.5 text-[14px] text-ink-soft"><CalendarIcon size={16} /> {d.longDate} · {d.time}</p>
         <p className="m-0 flex items-center gap-1.5 text-[14px] text-ink-soft"><Pin size={16} /> {d.venue}</p>
       </div>
-      {ev.isSample && <Note tone="red">Sample event ito para makita ang itsura ng site. Hindi ito totoong event.</Note>}
+      {ev.isSample && <Note tone="red">This is a sample event to show how the site looks. It is not a real event.</Note>}
       <div className="grid gap-5 md:grid-cols-[2fr_1fr]">
         <section className="flex flex-col gap-3">
           <h2 className="m-0 font-serif text-[22px] font-semibold">Event Overview</h2>
@@ -49,12 +49,12 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
             <h2 className="m-0 text-[16px] font-bold">About the Organizer</h2>
             <span className="text-[15px] font-semibold">{d.org}</span>
             <BizBadge small />
-            <span className="text-[12px] text-muted">Na-review ng admin ang proof of legitimacy ng organizer.</span>
+            <span className="text-[12px] text-muted">An admin reviewed this organizer's proof of legitimacy.</span>
           </div>
           {d.derby ? (
-            <Note tone="red">Information lang ito. Hindi nag-o-organize, tumatanggap ng taya, o nagla-livestream ng laban ang Sabong Central.</Note>
+            <Note tone="red">Information only. Sabong Central does not organize events, accept bets, or livestream fights.</Note>
           ) : (
-            <Note>Ang fee ay bayad sa organizer para sa seminar/workshop. Hindi dumadaan sa Sabong Central ang bayad.</Note>
+            <Note>The fee is paid to the organizer for the seminar or workshop. No payments go through Sabong Central.</Note>
           )}
           <a href={`/report?target=${encodeURIComponent("Event: " + d.title)}`} className="flex min-h-11 items-center gap-1.5 text-[14px] font-semibold text-wine no-underline"><Flag size={15} /> Report this event</a>
         </aside>

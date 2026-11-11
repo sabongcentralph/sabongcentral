@@ -14,17 +14,17 @@ export default async function SuppliersPage({ searchParams }: { searchParams: Pr
   const shown = (await approved("supplier")).filter((s) => !kind || s.data.kind === kind);
   return (
     <Page>
-      <PageHead kicker="Directory" title="Verified Suppliers" sub="Feed manufacturers, equipment providers at agri supply stores." />
+      <PageHead kicker="Directory" title="Verified Suppliers" sub="Feed manufacturers, equipment providers and agri supply stores." />
       <nav aria-label="Supplier types" className="-mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0">
         {["", ...KINDS].map((k) => (
           <a key={k || "all"} href={k ? `/suppliers?kind=${encodeURIComponent(k)}` : "/suppliers"} aria-current={k === kind ? "page" : undefined}
             className={`flex min-h-10 flex-none items-center rounded-full px-4 text-[13.5px] font-semibold no-underline ${k === kind ? "bg-crimson text-white" : "border border-line bg-cream text-ink-soft"}`}>
-            {k || "Lahat"}
+            {k || "All"}
           </a>
         ))}
       </nav>
-      <Note>{BIZ_NOTE} Direkta kayong mag-usap; walang bayad na dumadaan sa Sabong Central.</Note>
-      {shown.length === 0 ? <Empty>Walang suppliers.</Empty> : <div className="grid gap-3 md:grid-cols-2">{shown.map((s) => <SupplierCard key={s.id} s={s} />)}</div>}
+      <Note>{BIZ_NOTE} Deal with suppliers directly; no payments go through Sabong Central.</Note>
+      {shown.length === 0 ? <Empty>No suppliers.</Empty> : <div className="grid gap-3 md:grid-cols-2">{shown.map((s) => <SupplierCard key={s.id} s={s} />)}</div>}
     </Page>
   );
 }

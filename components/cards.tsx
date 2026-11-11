@@ -40,7 +40,7 @@ export function EventCard({ e, compact = false }: { e: Listing<"event">; compact
         <div className="flex flex-wrap items-center gap-1.5"><Chip tone={groupTone(d.group)}>{d.derby ? d.sub : d.cat}</Chip>{e.isSample && <SampleTag />}</div>
         <h3 className="m-0 text-[15px] font-bold leading-snug">{d.title}</h3>
         <p className="m-0 flex items-center gap-1 text-[12.5px] text-muted"><Pin size={12} />{d.online ? "Online" : `${d.city}, ${d.province}`} · {d.days}</p>
-        <p className="m-0 text-[12.5px] font-semibold text-ink-soft">{d.fee === "Free" ? "Libre" : d.fee}</p>
+        <p className="m-0 text-[12.5px] font-semibold text-ink-soft">{d.fee}</p>
       </div>
     </a>
   );

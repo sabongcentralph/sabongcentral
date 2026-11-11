@@ -26,11 +26,11 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
   return (
     <Page>
-      <PageHead title={q ? `“${q}”` : place ? `Malapit sa ${place}` : "Search"} sub={`${total} resulta${place && q ? ` sa ${place}` : ""}`} />
+      <PageHead title={q ? `“${q}”` : place ? `Near ${place}` : "Search"} sub={`${total} results${place && q ? ` in ${place}` : ""}`} />
       <form action="/search" method="get" className="grid gap-3 rounded-2xl border border-line bg-cream p-4 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
         <label className={labelCls}>Search<input name="q" type="search" defaultValue={q} placeholder="Farms, goods, events, articles…" className={input} /></label>
         <LocationFields province={province} city={city} idPrefix="sf" />
-        <button type="submit" className="lift min-h-11 cursor-pointer rounded-full border-0 bg-crimson px-6 text-[15px] font-semibold text-white">Hanapin</button>
+        <button type="submit" className="lift min-h-11 cursor-pointer rounded-full border-0 bg-crimson px-6 text-[15px] font-semibold text-white">Search</button>
       </form>
       {place && (
         <div className="grid grid-cols-4 gap-2 text-center">
@@ -40,7 +40,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         </div>
       )}
       {total === 0 && (
-        <Empty>Walang nahanap. Subukan ang ibang salita, gaya ng “Kelso”, “feeds” o “seminar”, o tingnan ang <a href="/farms" className="text-wine">lahat ng farms</a>.</Empty>
+        <Empty>Nothing found. Try another word, like “Kelso”, “feeds” or “seminar”, or browse <a href="/farms" className="text-wine">all farms</a>.</Empty>
       )}
       {f.length > 0 && <section className="flex flex-col gap-3"><SectionHead title={`Farms (${f.length})`} href="/farms" /><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{f.slice(0, 6).map((x) => <FarmCard key={x.id} f={x} />)}</div></section>}
       {e.length > 0 && <section className="flex flex-col gap-3"><SectionHead title={`Events (${e.length})`} href="/events" /><div className="grid gap-3 md:grid-cols-2">{e.slice(0, 6).map((x) => <EventCard key={x.id} e={x} />)}</div></section>}

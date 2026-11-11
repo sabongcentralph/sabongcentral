@@ -11,7 +11,7 @@ import {
 export const dynamic = "force-dynamic";
 
 const TX = {
-  tl: { kicker: "MABUHAY, KA-SABONG!", title: "Ang hub mo para sa Gamefarms, Events, Supplies at Poultry Education", ph: "Hanapin ang farms, goods, events, articles…" },
+  tl: { kicker: "WELCOME!", title: "Your Hub for Gamefarms, Events, Supplies, and Poultry Education", ph: "Search farms, goods, events, articles…" },
   en: { kicker: "WELCOME!", title: "Your Hub for Gamefarms, Events, Supplies, and Poultry Education", ph: "Search farms, goods, events, articles…" },
 };
 
@@ -77,11 +77,11 @@ export default async function Home() {
         </section>
 
         <section className="flex flex-col gap-3 rounded-2xl border border-line bg-cream p-4">
-          <h2 className="m-0 flex items-center gap-2 font-serif text-[21px] font-semibold"><Pin size={18} className="text-crimson" /> Malapit sa&apos;yo</h2>
-          <p className="m-0 text-[13px] text-muted">Pumili ng probinsya at lungsod para makita ang farms, events, goods at suppliers sa lugar mo.</p>
+          <h2 className="m-0 flex items-center gap-2 font-serif text-[21px] font-semibold"><Pin size={18} className="text-crimson" /> Near you</h2>
+          <p className="m-0 text-[13px] text-muted">Pick a province and city to see farms, events, goods and suppliers in your area.</p>
           <form action="/search" method="get" className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
             <LocationFields idPrefix="nb" />
-            <button type="submit" className={btnPrimary}>Hanapin</button>
+            <button type="submit" className={btnPrimary}>Search</button>
           </form>
         </section>
 
@@ -104,7 +104,7 @@ export default async function Home() {
                 <span className="text-[13px] text-ink-soft">📍 {spot.data.city}, {spot.data.province}{spot.data.est ? ` · Est. ${spot.data.est}` : ""}</span>
                 <p className="m-0 text-[14px] leading-relaxed text-ink-soft">{spot.data.about}</p>
                 <div className="flex flex-wrap gap-1">{spot.data.bloodlines.map((b) => <Chip key={b.name}>{b.name}</Chip>)}</div>
-                <span className="text-[11px] text-muted">Featured nang libre. Lalagyan ng &quot;Sponsored&quot; kung bayad ito.</span>
+                <span className="text-[11px] text-muted">Featured for free. Paid features will be labeled &quot;Sponsored&quot;.</span>
               </div>
             </a>
           </section>
@@ -133,7 +133,7 @@ export default async function Home() {
                 <a href={`/${kindPath[l.kind]}/${l.slug}`} className="flex min-h-12 items-center gap-3 px-4 py-2.5 text-ink no-underline">
                   <Chip tone="plain">{kindLabel[l.kind]}</Chip>
                   <span className="flex-1 text-[14px] font-semibold">{titleOf(l)}</span>
-                  <span className="text-[12px] text-muted">{l.isSample ? "Sample" : "Bago"}</span>
+                  <span className="text-[12px] text-muted">{l.isSample ? "Sample" : "New"}</span>
                 </a>
               </li>
             ))}
@@ -152,10 +152,10 @@ export default async function Home() {
 
         <section className="flex flex-col items-start gap-3 rounded-2xl bg-crimson p-5 text-white md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="m-0 font-serif text-[22px] font-semibold">May farm, event o produkto ka?</h2>
-            <p className="m-0 mt-1 text-[14px] text-rose">Libre mag-list. Ire-review muna ng admin bago lumabas sa public.</p>
+            <h2 className="m-0 font-serif text-[22px] font-semibold">Have a farm, event or product?</h2>
+            <p className="m-0 mt-1 text-[14px] text-rose">Listing is free. An admin reviews everything before it goes public.</p>
           </div>
-          <a href="/portal" className="lift rounded-full bg-gold px-5 py-3 text-[15px] font-semibold text-[#3a0a0a] no-underline">Pumunta sa Portal</a>
+          <a href="/portal" className="lift rounded-full bg-gold px-5 py-3 text-[15px] font-semibold text-[#3a0a0a] no-underline">Go to the Portal</a>
         </section>
       </div>
     </main>

@@ -17,7 +17,7 @@ const dict = {
   listFarm: { tl: "I-list ang Farm", en: "List your farm" },
   mainMenu: { tl: "Main menu", en: "Main menu" },
   footerAbout: {
-    tl: "Libreng community information platform. Hindi gambling platform o e-sabong: walang taya, walang bayad na dumadaan dito.",
+    tl: "A free community information platform. Not a gambling or e-sabong platform: no bets, and no payments pass through us.",
     en: "A free community information platform. Not a gambling or e-sabong platform: no bets, and no payments pass through us.",
   },
   aboutUs: { tl: "About us", en: "About us" },
@@ -72,7 +72,7 @@ const dict = {
   bloodline: { tl: "Bloodline", en: "Bloodline" },
   applyFilters: { tl: "I-apply", en: "Apply" },
   farmsFound: { tl: "farms found", en: "farms found" },
-  noFarms: { tl: "Walang farm na tugma. Subukan ang ibang filter.", en: "No farms match. Try different filters." },
+  noFarms: { tl: "No farms match. Try different filters.", en: "No farms match. Try different filters." },
 
   // farm profile
   adminVerified: { tl: "Admin verified", en: "Admin verified" },
@@ -89,9 +89,9 @@ const dict = {
   locationMap: { tl: "Location map", en: "Location map" },
   memberSince: { tl: "Member since", en: "Member since" },
   reportThis: { tl: "I-report ang listing", en: "Report this listing" },
-  otherFarms: { tl: "Iba pang farms sa Batangas", en: "Other farms in Batangas" },
+  otherFarms: { tl: "More farms in Batangas", en: "Other farms in Batangas" },
   sampleNotice: {
-    tl: "Sample listing ito para makita ang itsura ng site. Hindi ito totoong farm.",
+    tl: "This is a sample listing to show how the site looks. It is not a real farm.",
     en: "This is a sample listing to show how the site looks. It is not a real farm.",
   },
 
@@ -112,9 +112,11 @@ const dict = {
 
 export type LabelKey = keyof typeof dict;
 
+// English first (Em, 2026-11-11). The Taglish labels stay in this file for a
+// later TL/EN switch; until then every visitor gets English.
 export async function getLang(): Promise<Lang> {
-  const store = await cookies();
-  return store.get(LANG_COOKIE)?.value === "en" ? "en" : "tl";
+  await cookies();
+  return "en";
 }
 
 export function t(key: LabelKey, lang: Lang): string {

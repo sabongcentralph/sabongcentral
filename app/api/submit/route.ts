@@ -30,7 +30,7 @@ export async function POST(req: Request) {
 
   if (kind === "farm") {
     const name = field(f, "name", 120);
-    if (!name || !validPlace(province, city) || !field(f, "phone", 40)) return fail("Kailangan ang farm name, location at contact number.");
+    if (!name || !validPlace(province, city) || !field(f, "phone", 40)) return fail("Farm name, location and contact number are required.");
     data = {
       name, province, city, est: field(f, "est", 4), ownerName: field(f, "ownerName", 120), phone: field(f, "phone", 40),
       facebook: field(f, "facebook", 200), about: field(f, "about", 2000), verified: false,
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
   } else if (kind === "event") {
     const title = field(f, "title", 160), sub = field(f, "sub", 60), date = field(f, "date", 10), online = field(f, "online", 5) === "1";
     const cat = EVENT_CATS.find((c) => c[3].includes(sub));
-    if (!title || !cat || !/^\d{4}-\d\d-\d\d$/.test(date) || (!online && !validPlace(province, city))) return fail("Kailangan ang title, type, petsa at location.");
+    if (!title || !cat || !/^\d{4}-\d\d-\d\d$/.test(date) || (!online && !validPlace(province, city))) return fail("Title, event type, date and location are required.");
     const end = field(f, "endDate", 10);
     const [, , d1] = date.split("-");
     const mon = new Date(date + "T00:00:00Z").toLocaleString("en", { month: "short", timeZone: "UTC" });
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
   } else if (kind === "good") {
     const name = field(f, "name", 120), sub = field(f, "sub", 60);
     const cat = Object.entries(GOODS_CATS).find(([, subs]) => subs.includes(sub))?.[0];
-    if (!name || !cat || !validPlace(province, city) || !field(f, "seller", 120) || !field(f, "phone", 40)) return fail("Kailangan ang product name, subcategory, seller name, contact number at location.");
+    if (!name || !cat || !validPlace(province, city) || !field(f, "seller", 120) || !field(f, "phone", 40)) return fail("Product name, subcategory, seller name, contact number and location are required.");
     data = {
       name, cat, sub, price: pesos(field(f, "price", 20)), seller: field(f, "seller", 120), phone: field(f, "phone", 40),
       province, city, sold: false, sellerVerified: false, desc: field(f, "desc", 2000),
@@ -64,14 +64,14 @@ export async function POST(req: Request) {
   } else if (kind === "reel") {
     const title = field(f, "title", 160), url = field(f, "url", 500);
     const embed = toEmbed(url);
-    if (!title || !embed) return fail("Kailangan ang title at link mula sa Facebook, YouTube o TikTok.");
+    if (!title || !embed) return fail("A title and a Facebook, YouTube or TikTok link are required.");
     data = { title, topic: field(f, "topic", 60) || "Farm Management", farm: field(f, "farm", 120) || by, platform: embed.platform, url };
   } else if (kind === "notice") {
     const title = field(f, "title", 160), text = field(f, "text", 1500), farm = field(f, "farm", 120);
-    if (!title || !text) return fail("Kailangan ang title at detalye.");
+    if (!title || !text) return fail("Title and details are required.");
     data = { kind: "Farm Announcements", title: farm ? `${farm}: ${title}` : title, meta: "Approved · " + new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }), text, source: "" };
   } else {
-    return fail("Hindi kilalang uri ng listing.");
+    return fail("Unknown listing type.");
   }
 
   await submit(kind, data, by);

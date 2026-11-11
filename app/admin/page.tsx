@@ -41,10 +41,10 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
         <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 md:mx-0 md:px-0">
           {[undefined, ...KINDS].map((k) => (
             <a key={k ?? "all"} href={link(status, k)} aria-current={k === kind ? "page" : undefined}
-              className={`flex min-h-9 flex-none items-center rounded-full px-3 text-[12.5px] font-semibold no-underline ${k === kind ? "bg-ink-soft text-white" : "border border-line bg-cream text-muted"}`}>{k ? LABEL[k] : "Lahat ng uri"}</a>
+              className={`flex min-h-9 flex-none items-center rounded-full px-3 text-[12.5px] font-semibold no-underline ${k === kind ? "bg-ink-soft text-white" : "border border-line bg-cream text-muted"}`}>{k ? LABEL[k] : "All types"}</a>
           ))}
         </div>
-        {list.length === 0 ? <Empty>{status === "pending" ? "Walang naghihintay ng review. 🎉" : "Wala dito."}</Empty> : (
+        {list.length === 0 ? <Empty>{status === "pending" ? "Nothing waiting for review. 🎉" : "Nothing here."}</Empty> : (
           <ul className="m-0 flex list-none flex-col divide-y divide-line rounded-2xl border border-line bg-cream p-0">
             {list.map((l) => (
               <li key={l.id}>
@@ -63,7 +63,7 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
       <section className="flex flex-col gap-2">
         <h2 className="m-0 font-serif text-[20px] font-semibold">Activity log</h2>
         <ul className="m-0 flex list-none flex-col gap-1 p-0 text-[13px] text-ink-soft">
-          {log.length === 0 && <li className="text-muted">Wala pang activity.</li>}
+          {log.length === 0 && <li className="text-muted">No activity yet.</li>}
           {log.map((a) => (
             <li key={a.id}><span className="text-muted">{a.created_at.slice(0, 16)}</span> · <strong>{a.action}</strong> · {a.target}{a.reason ? ` · “${a.reason}”` : ""} · {a.admin}</li>
           ))}

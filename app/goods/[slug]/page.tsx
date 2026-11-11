@@ -54,13 +54,13 @@ export default async function GoodPage({ params }: { params: Promise<{ slug: str
               <Flag size={15} /> Report Seller
             </a>
           </section>
-          <Note tone="red"><strong>Beware of scams.</strong> Kahit Business Verified ang seller, hindi ito garantiya ng item o delivery. Huwag magbayad bago ma-confirm ang item.</Note>
-          <Note><strong>Independent seller.</strong> Hindi seller ang Sabong Central at hindi dumadaan dito ang bayad.</Note>
+          <Note tone="red"><strong>Beware of scams.</strong> Even a Business Verified seller is not a guarantee of the item or delivery. Don't pay before you confirm the item.</Note>
+          <Note><strong>Independent seller.</strong> Sabong Central is not the seller, and no payments go through us.</Note>
         </div>
       </div>
       {more.length > 0 && (
         <section className="flex flex-col gap-3">
-          <h2 className="m-0 font-serif text-[21px] font-semibold">Iba pang listings ng seller</h2>
+          <h2 className="m-0 font-serif text-[21px] font-semibold">More from this seller</h2>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">{more.map((x) => <GoodCard key={x.id} g={x} />)}</div>
         </section>
       )}
