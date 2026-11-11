@@ -1,0 +1,290 @@
+import { env } from "cloudflare:workers";
+import { ARTICLES, EVENTS, FARMS, GOODS, NOTICES, REELS, SUPPLIERS, type Bloodline } from "./sample";
+
+// Everything people can see on the site is a "listing": farms, events, goods,
+// reels, articles, community notices and suppliers. Nothing is public until an
+// admin approves it (status = 'approved').
+export const KINDS = ["farm", "event", "good", "reel", "article", "notice", "supplier"] as const;
+export type Kind = (typeof KINDS)[number];
+export type Status = "pending" | "approved" | "rejected" | "hidden";
+
+export type FarmData = {
+  name: string; province: string; city: string; about: string; ownerName: string; phone: string;
+  facebook: string; bloodlines: Bloodline[]; verified: boolean; est: string;
+};
+export type EventData = {
+  title: string; cat: string; sub: string; group: string; derby: boolean; date: string; days: string; longDate: string;
+  time: string; province: string; city: string; online: boolean; venue: string; desc: string; topics: string;
+  speakers: string; fee: string; reg: string; permits: string; org: string;
+};
+export type GoodData = {
+  name: string; cat: string; sub: string; price: string; seller: string; phone: string; province: string; city: string;
+  sold: boolean; sellerVerified: boolean; desc?: string;
+};
+export type ReelData = { title: string; topic: string; farm: string; farmSlug?: string; platform: string; url?: string; dur?: string };
+export type ArticleData = { title: string; topic: string; date: string; read: string; by: string; body: string[] };
+export type NoticeData = { kind: string; title: string; meta: string; text: string; source: string };
+export type SupplierData = { kind: string; name: string; place: string; about: string; phone: string };
+
+type DataOf = {
+  farm: FarmData; event: EventData; good: GoodData; reel: ReelData; article: ArticleData; notice: NoticeData; supplier: SupplierData;
+};
+
+export type Listing<K extends Kind = Kind> = {
+  id: number; kind: K; slug: string; status: Status; isSample: boolean; data: DataOf[K];
+  submittedBy: string | null; reason: string | null; createdAt: string; updatedAt: string;
+};
+
+type Row = {
+  id: number; kind: Kind; slug: string; status: Status; is_sample: number; data: string;
+  submitted_by: string | null; reason: string | null; created_at: string; updated_at: string;
+};
+
+const SCHEMA = [
+  `create table if not exists listings (
+    id integer primary key autoincrement,
+    kind text not null,
+    slug text not null,
+    status text not null default 'pending' check (status in ('pending','approved','rejected','hidden')),
+    is_sample integer not null default 0,
+    data text not null,
+    submitted_by text,
+    reason text,
+    created_at text not null default (datetime('now')),
+    updated_at text not null default (datetime('now')),
+    unique (kind, slug)
+  )`,
+  `create index if not exists listings_kind_status on listings (kind, status)`,
+  `create table if not exists reports (
+    id integer primary key autoincrement,
+    target text not null,
+    reason text not null,
+    details text,
+    contact text,
+    status text not null default 'open',
+    created_at text not null default (datetime('now'))
+  )`,
+  `create table if not exists messages (
+    id integer primary key autoincrement,
+    name text not null,
+    email text not null,
+    topic text not null,
+    body text not null,
+    status text not null default 'new',
+    created_at text not null default (datetime('now'))
+  )`,
+  `create table if not exists audit_log (
+    id integer primary key autoincrement,
+    admin text not null,
+    action text not null,
+    target text not null,
+    reason text,
+    created_at text not null default (datetime('now'))
+  )`,
+  `create table if not exists admins (
+    email text primary key,
+    pw_hash text not null,
+    role text not null default 'super',
+    created_at text not null default (datetime('now'))
+  )`,
+  `create table if not exists sessions (
+    token_hash text primary key,
+    email text not null,
+    expires_at text not null
+  )`,
+];
+
+export const slugify = (t: string) =>
+  t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80) || "item";
+
+// Approved samples so every page has examples, plus a few pending ones so the
+// admin queue has something to review. All are marked is_sample = 1 and can be
+// removed with: delete from listings where is_sample = 1;
+function samples(): Array<{ kind: Kind; slug: string; status: Status; by: string; data: object }> {
+  const out: Array<{ kind: Kind; slug: string; status: Status; by: string; data: object }> = [];
+  const add = (kind: Kind, slug: string, data: object, status: Status = "approved", by = "Sample") => out.push({ kind, slug, status, by, data });
+  for (const { slug, ...f } of FARMS) add("farm", slug, f);
+  for (const { slug, ...e } of EVENTS) add("event", slug, e);
+  for (const { slug, ...g } of GOODS) add("good", slug, { ...g, desc: "Detalye mula sa seller: laman, gamit, at pickup o delivery options." });
+  for (const { slug, ...r } of REELS) add("reel", slug, r);
+  for (const { slug, ...a } of ARTICLES) add("article", slug, a);
+  for (const n of NOTICES) add("notice", slugify(n.title), n);
+  for (const s of SUPPLIERS) add("supplier", slugify(s.name), s);
+  // Pending examples for the admin queue.
+  add("farm", "sunrise-gamefarm", {
+    name: "Sunrise Gamefarm", province: "Batangas", city: "Tanauan City", est: "2017", verified: false, ownerName: "Rico Santos",
+    phone: "0919 404 7781", facebook: "facebook.com/sabongcentral", about: "Bagong submit na farm (sample). Hinihintay ang admin review.",
+    bloodlines: [{ name: "Sweater" }, { name: "Roundhead" }],
+  }, "pending", "Rico Santos (sample)");
+  add("good", "conditioning-mix-5-kg", {
+    name: "Conditioning Mix (5 kg)", cat: "Feeds", sub: "Conditioning", price: "₱420", seller: "Farm Deals PH", phone: "0918 777 XXXX",
+    province: "Batangas", city: "Lemery", sold: false, sellerVerified: false, desc: "Bagong listing (sample) na naghihintay ng approval.",
+  }, "pending", "Farm Deals PH (sample)");
+  add("reel", "pagpapaligo-ng-manok-tamang-paraan", {
+    title: "Pagpapaligo ng manok: tamang paraan", topic: "Farm Management", farm: "Tres Lomas Farm", farmSlug: "tres-lomas-farm", platform: "YouTube", url: "",
+  }, "pending", "Tres Lomas Farm (sample)");
+  return out;
+}
+
+let ready: Promise<void> | null = null;
+
+export function db(): D1Database {
+  return env.DB;
+}
+
+// Creates tables and seeds samples once per Worker instance. Safe to repeat.
+export function ensureDb(): Promise<void> {
+  if (!ready) {
+    ready = (async () => {
+      const d = db();
+      await d.batch(SCHEMA.map((sql) => d.prepare(sql)));
+      const insert = d.prepare(
+        `insert or ignore into listings (kind, slug, status, is_sample, data, submitted_by) values (?, ?, ?, 1, ?, ?)`,
+      );
+      // Approved samples follow this file; admin decisions on pending samples are kept.
+      const refresh = d.prepare(`update listings set data = ? where kind = ? and slug = ? and is_sample = 1`);
+      const rows = samples();
+      await d.batch(rows.flatMap((r) => [insert.bind(r.kind, r.slug, r.status, JSON.stringify(r.data), r.by), refresh.bind(JSON.stringify(r.data), r.kind, r.slug)]));
+    })().catch((err) => {
+      ready = null;
+      throw err;
+    });
+  }
+  return ready;
+}
+
+function toListing<K extends Kind>(r: Row): Listing<K> {
+  let data: DataOf[K];
+  try {
+    data = JSON.parse(r.data);
+  } catch {
+    data = {} as DataOf[K];
+  }
+  return {
+    id: r.id, kind: r.kind as K, slug: r.slug, status: r.status, isSample: r.is_sample === 1, data,
+    submittedBy: r.submitted_by, reason: r.reason, createdAt: r.created_at, updatedAt: r.updated_at,
+  };
+}
+
+// Public pages: approved listings only.
+export async function approved<K extends Kind>(kind: K): Promise<Listing<K>[]> {
+  await ensureDb();
+  const { results } = await db()
+    .prepare(`select * from listings where kind = ? and status = 'approved' order by is_sample asc, case when is_sample = 1 then id end asc, created_at desc, id desc limit 1000`)
+    .bind(kind)
+    .all<Row>();
+  return results.map((r) => toListing<K>(r));
+}
+
+export async function approvedOne<K extends Kind>(kind: K, slug: string): Promise<Listing<K> | null> {
+  await ensureDb();
+  const r = await db().prepare(`select * from listings where kind = ? and slug = ? and status = 'approved'`).bind(kind, slug).first<Row>();
+  return r ? toListing<K>(r) : null;
+}
+
+export async function recent(limit = 6): Promise<Listing[]> {
+  await ensureDb();
+  const { results } = await db()
+    .prepare(`select * from listings where status = 'approved' and kind in ('farm','event','good','reel','article') order by updated_at desc, id desc limit ?`)
+    .bind(limit)
+    .all<Row>();
+  return results.map((r) => toListing(r));
+}
+
+// Admin
+export async function byStatus(status: Status | "all", kind?: Kind): Promise<Listing[]> {
+  await ensureDb();
+  const where: string[] = [];
+  const args: unknown[] = [];
+  if (status !== "all") { where.push("status = ?"); args.push(status); }
+  if (kind) { where.push("kind = ?"); args.push(kind); }
+  const { results } = await db()
+    .prepare(`select * from listings ${where.length ? "where " + where.join(" and ") : ""} order by created_at desc, id desc limit 500`)
+    .bind(...args)
+    .all<Row>();
+  return results.map((r) => toListing(r));
+}
+
+export async function byId(id: number): Promise<Listing | null> {
+  await ensureDb();
+  const r = await db().prepare(`select * from listings where id = ?`).bind(id).first<Row>();
+  return r ? toListing(r) : null;
+}
+
+export async function counts(): Promise<Record<string, number>> {
+  await ensureDb();
+  const { results } = await db().prepare(`select status, count(*) as n from listings group by status`).all<{ status: string; n: number }>();
+  const out: Record<string, number> = { pending: 0, approved: 0, rejected: 0, hidden: 0 };
+  for (const r of results) out[r.status] = r.n;
+  const rep = await db().prepare(`select count(*) as n from reports where status = 'open'`).first<{ n: number }>();
+  const msg = await db().prepare(`select count(*) as n from messages where status = 'new'`).first<{ n: number }>();
+  out.reports = rep?.n ?? 0;
+  out.messages = msg?.n ?? 0;
+  return out;
+}
+
+export async function setStatus(id: number, status: Status, admin: string, reason: string) {
+  await ensureDb();
+  const l = await byId(id);
+  if (!l) return;
+  await db().batch([
+    db().prepare(`update listings set status = ?, reason = ?, updated_at = datetime('now') where id = ?`).bind(status, reason || null, id),
+    db().prepare(`insert into audit_log (admin, action, target, reason) values (?, ?, ?, ?)`).bind(admin, status, `${l.kind}: ${titleOf(l)}`, reason || null),
+  ]);
+}
+
+export async function submit(kind: Kind, data: object, by: string): Promise<number> {
+  await ensureDb();
+  const base = slugify(titleOf({ kind, data } as Listing));
+  let slug = base;
+  for (let i = 2; i < 50; i++) {
+    const hit = await db().prepare(`select 1 from listings where kind = ? and slug = ?`).bind(kind, slug).first();
+    if (!hit) break;
+    slug = `${base}-${i}`;
+  }
+  const r = await db()
+    .prepare(`insert into listings (kind, slug, status, data, submitted_by) values (?, ?, 'pending', ?, ?) returning id`)
+    .bind(kind, slug, JSON.stringify(data), by)
+    .first<{ id: number }>();
+  return r?.id ?? 0;
+}
+
+export function titleOf(l: Pick<Listing, "kind" | "data">): string {
+  const d = l.data as unknown as Record<string, string>;
+  return d.name || d.title || "Untitled";
+}
+
+export async function audit(limit = 50) {
+  await ensureDb();
+  const { results } = await db().prepare(`select * from audit_log order by id desc limit ?`).bind(limit).all<{ id: number; admin: string; action: string; target: string; reason: string | null; created_at: string }>();
+  return results;
+}
+
+export async function logAction(admin: string, action: string, target: string, reason?: string) {
+  await db().prepare(`insert into audit_log (admin, action, target, reason) values (?, ?, ?, ?)`).bind(admin, action, target, reason || null).run();
+}
+
+// Admin marks a farm or seller as Business Verified after reviewing their papers.
+export async function setVerified(id: number, on: boolean, admin: string) {
+  const l = await byId(id);
+  if (!l) return;
+  const key = l.kind === "good" ? "sellerVerified" : l.kind === "farm" ? "verified" : null;
+  if (!key) return;
+  const data = { ...(l.data as object), [key]: on };
+  await db().batch([
+    db().prepare(`update listings set data = ?, updated_at = datetime('now') where id = ?`).bind(JSON.stringify(data), id),
+    db().prepare(`insert into audit_log (admin, action, target) values (?, ?, ?)`).bind(admin, on ? "business verified" : "badge removed", `${l.kind}: ${titleOf(l)}`),
+  ]);
+}
+
+export type Report = { id: number; target: string; reason: string; details: string | null; contact: string | null; status: string; created_at: string };
+export type Message = { id: number; name: string; email: string; topic: string; body: string; status: string; created_at: string };
+
+export async function reports(): Promise<Report[]> {
+  await ensureDb();
+  return (await db().prepare(`select * from reports order by (status = 'open') desc, id desc limit 200`).all<Report>()).results;
+}
+export async function messages(): Promise<Message[]> {
+  await ensureDb();
+  return (await db().prepare(`select * from messages order by (status = 'new') desc, id desc limit 200`).all<Message>()).results;
+}

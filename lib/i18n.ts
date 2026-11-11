@@ -7,6 +7,8 @@ export const LANG_COOKIE = "lang";
 // Every label on the site lives here, in Taglish and English.
 const dict = {
   // header and footer
+  tagline: { tl: "Philippine Gamefowl & Poultry Community", en: "Philippine Gamefowl & Poultry Community" },
+  portal: { tl: "Portal", en: "Portal" },
   navFarms: { tl: "Farms", en: "Farms" },
   navDerbies: { tl: "Derby Schedule", en: "Derby Schedule" },
   navVideos: { tl: "Videos", en: "Videos" },
@@ -15,8 +17,8 @@ const dict = {
   listFarm: { tl: "I-list ang Farm", en: "List your farm" },
   mainMenu: { tl: "Main menu", en: "Main menu" },
   footerAbout: {
-    tl: "Info directory lang ito. Walang taya, walang bayad, at hindi kami nagbebenta ng manok.",
-    en: "An information directory only. No bets, no payments, and we don't sell birds.",
+    tl: "Libreng community information platform. Hindi gambling platform o e-sabong: walang taya, walang bayad na dumadaan dito.",
+    en: "A free community information platform. Not a gambling or e-sabong platform: no bets, and no payments pass through us.",
   },
   aboutUs: { tl: "About us", en: "About us" },
   reportListing: { tl: "Report a listing", en: "Report a listing" },

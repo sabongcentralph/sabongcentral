@@ -1,11 +1,20 @@
-// Starting region: Batangas. Full PSGC dropdowns come when we go nationwide.
-export const START_REGION = "CALABARZON (Region IV-A)";
-export const START_PROVINCE = "Batangas";
+import data from "./psgc.json";
 
-export const BATANGAS_CITIES = [
-  "Agoncillo", "Alitagtag", "Balayan", "Balete", "Batangas City", "Bauan", "Calaca",
-  "Calatagan", "Cuenca", "Ibaan", "Laurel", "Lemery", "Lian", "Lipa City", "Lobo", "Mabini",
-  "Malvar", "Mataasnakahoy", "Nasugbu", "Padre Garcia", "Rosario", "San Jose", "San Juan",
-  "San Luis", "San Nicolas", "San Pascual", "Santa Teresita", "Santo Tomas", "Taal",
-  "Talisay", "Tanauan City", "Taysan", "Tingloy", "Tuy",
-] as const;
+// Official PSA PSGC list (2025-2Q release): 82 provinces plus Metro Manila,
+// with every city and municipality. Highly urbanized cities are placed under
+// the province they sit in, so people find them where they expect.
+export type Area = { p: string; r: string; c: string[] };
+export const AREAS = data as Area[];
+
+export const PROVINCES = AREAS.map((a) => a.p);
+
+export function citiesOf(province: string | undefined): string[] {
+  return AREAS.find((a) => a.p === province)?.c ?? [];
+}
+
+export function regionOf(province: string): string {
+  return AREAS.find((a) => a.p === province)?.r ?? "";
+}
+
+// Launch focus. Filters start empty (all provinces); this is where the sample listings live.
+export const START_PROVINCE = "Batangas";

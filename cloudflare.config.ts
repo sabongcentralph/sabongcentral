@@ -18,8 +18,9 @@ export default defineConfig({
       DB: bindings.d1({ name: "sabongcentral-db" }),
       // Photos (R2 bucket "sabongcentral-photos", binding PHOTOS) are added in
       // Phase 2 with photo upload. R2 must be enabled in the dashboard first.
-      // Derby section stays hidden until the lawyer approves it.
-      DERBY_ENABLED: bindings.text("false"),
+      // Derby listings: ON (Em, 2026-11-11). Each derby still needs verified permits.
+      // Set to "false" to hide every derby listing at once.
+      DERBY_ENABLED: bindings.text("true"),
     },
   }),
 });

@@ -1,161 +1,127 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getLang, t } from "@/lib/i18n";
-import { getFarm, listFarms } from "@/lib/farms";
-import { Camera, Chat, Flag, Info, Phone, Pin, ShieldCheck } from "@/components/icons";
+import { approved, approvedOne } from "@/lib/db";
+import { messengerHref, telHref } from "@/lib/links";
+import { FarmCard, ReelCard } from "@/components/cards";
+import { BIZ_NOTE, BizBadge, Chip, Empty, Note, Page, Photo, SampleTag, btnGhost, btnPrimary } from "@/components/ui";
+import { Chat, Flag, Phone, Pin } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
 
-function telHref(phone: string) {
-  return "tel:" + phone.replace(/[^\d+]/g, "");
+const TABS = ["Overview", "Gallery", "Bloodlines", "Updates"] as const;
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const f = await approvedOne("farm", (await params).slug);
+  return { title: f?.data.name ?? "Farm" };
 }
 
-function safeFacebook(url: string): string | null {
-  try {
-    const u = new URL(url.startsWith("http") ? url : `https://${url}`);
-    return /(^|\.)(facebook\.com|fb\.com|m\.me)$/.test(u.hostname) ? u.toString() : null;
-  } catch {
-    return null;
-  }
-}
-
-export default async function FarmPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function FarmPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ tab?: string }> }) {
   const { slug } = await params;
-  const lang = await getLang();
-  const farm = await getFarm(slug);
+  const wanted = (await searchParams).tab;
+  const tab = TABS.find((t) => t === wanted) ?? "Overview";
+  const farm = await approvedOne("farm", slug);
   if (!farm) notFound();
-  const others = (await listFarms({ limit: 4 })).filter((f) => f.id !== farm.id).slice(0, 3);
-  const fb = farm.facebook ? safeFacebook(farm.facebook) : null;
-  const since = new Date(farm.createdAt.replace(" ", "T") + "Z").toLocaleDateString("en-PH", {
-    month: "short",
-    year: "numeric",
-  });
+  const d = farm.data;
+  const [farms, reels, notices] = await Promise.all([approved("farm"), approved("reel"), approved("notice")]);
+  const others = farms.filter((f) => f.id !== farm.id && f.data.province === d.province).slice(0, 3);
+  const myReels = reels.filter((r) => r.data.farmSlug === slug || r.data.farm === d.name);
+  const myNotices = notices.filter((n) => n.data.title.startsWith(d.name));
+  const msg = d.facebook ? messengerHref(d.facebook) : null;
 
   return (
-    <main className="px-6 pb-18 pt-7">
-      <div className="mx-auto flex max-w-[1200px] flex-col gap-6">
-        <nav aria-label="Breadcrumb" className="flex flex-wrap gap-2 text-sm text-muted">
-          <a href="/" className="text-wine">Home</a>
-          <span aria-hidden="true">/</span>
-          <a href="/farms" className="text-wine">{t("navFarms", lang)}</a>
-          <span aria-hidden="true">/</span>
-          <span>{farm.name}</span>
-        </nav>
-
-        {farm.isSample && (
-          <p role="note" className="m-0 flex items-start gap-2.5 rounded-xl bg-blush px-4 py-3.5 text-sm text-crimson-dark">
-            <Info className="mt-0.5 flex-none" />
-            {t("sampleNotice", lang)}
-          </p>
-        )}
-
-        <div className="rise flex flex-col gap-2.5">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="m-0 font-serif text-[44px] font-medium leading-[1.1]">{farm.name}</h1>
-            <span className="flex items-center gap-1.5 rounded-full border border-gold/70 bg-blush px-3 py-1.5 text-[13px] font-semibold text-crimson">
-              <ShieldCheck size={16} />
-              {t("adminVerified", lang)}
-            </span>
-          </div>
-          <p className="m-0 flex items-center gap-1.5 text-base text-muted">
-            <Pin size={17} />
-            {[farm.barangay, farm.city, farm.province].filter(Boolean).join(", ")}
-          </p>
+    <Page>
+      <div className="-mx-4 -mt-5 md:mx-0 md:mt-0">
+        <Photo className="h-[170px] md:h-[300px] md:rounded-2xl" label="Cover photo" />
+      </div>
+      <div className="-mt-14 flex flex-col gap-2 md:-mt-16 md:px-6">
+        <span className="ph block size-[88px] rounded-full border-[3px] border-gold shadow-[0_0_0_3px_#f6eedf]" role="img" aria-label="Profile photo" />
+        <div className="flex flex-wrap items-center gap-2">
+          <h1 className="m-0 font-serif text-[28px] font-semibold leading-tight md:text-[38px]">{d.name}</h1>
+          {farm.isSample && <SampleTag />}
         </div>
+        {d.verified && <BizBadge />}
+        <p className="m-0 flex items-center gap-1.5 text-[14px] text-muted"><Pin size={15} />{d.city}, {d.province}{d.est ? ` · Est. ${d.est}` : ""}</p>
+        {farm.isSample && <Note tone="red">Sample listing ito para makita ang itsura ng site. Hindi ito totoong farm.</Note>}
+        <div className="flex flex-wrap gap-2 pt-1">
+          {msg && <a href={msg} target="_blank" rel="noopener noreferrer" className={`${btnPrimary} gap-2`}><Chat size={17} /> Message</a>}
+          {d.phone && <a href={telHref(d.phone)} className={`${btnGhost} gap-2`}><Phone size={16} /> {d.phone}</a>}
+        </div>
+      </div>
 
-        <div className="flex flex-wrap items-start gap-8">
-          <div className="rise rise-1 flex min-w-0 flex-[999_1_600px] flex-col gap-8">
-            <div className="ph flex h-[440px] max-h-[60vw] flex-col items-center justify-center gap-2 rounded-2xl text-[15px] text-muted">
-              <Camera size={36} />
-              {t("farmPhoto", lang)}
-            </div>
+      <nav aria-label="Farm sections" className="sticky top-[62px] z-10 -mx-4 flex gap-1 overflow-x-auto border-b border-line bg-ivory px-4 md:mx-0 md:px-0">
+        {TABS.map((t) => (
+          <a key={t} href={`/farms/${slug}${t === "Overview" ? "" : `?tab=${t}`}`} aria-current={t === tab ? "page" : undefined}
+            className={`flex min-h-12 flex-none items-center border-b-[3px] px-3 text-[14px] font-semibold no-underline ${t === tab ? "border-crimson text-crimson" : "border-transparent text-muted"}`}>
+            {t}
+          </a>
+        ))}
+      </nav>
 
-            {farm.about && (
-              <section className="flex flex-col gap-3">
-                <h2 className="m-0 font-serif text-[28px] font-medium">{t("aboutFarm", lang)}</h2>
-                <p className="m-0 whitespace-pre-line text-base leading-[1.7] text-ink-soft">{farm.about}</p>
-              </section>
-            )}
-
-            {farm.bloodlines.length > 0 && (
-              <section className="flex flex-col gap-4">
-                <h2 className="m-0 font-serif text-[28px] font-medium">{t("bloodlines", lang)}</h2>
-                <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3">
-                  {farm.bloodlines.map((b) => (
-                    <div key={b.name} className="flex flex-col gap-1 rounded-[14px] border border-line bg-cream p-[18px]">
-                      <span className="text-[17px] font-semibold">{b.name}</span>
-                      {b.note && <span className="text-sm text-muted">{b.note}</span>}
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-          </div>
-
-          <aside aria-label={t("contactFarm", lang)} className="rise rise-2 flex flex-[1_1_300px] flex-col gap-4">
-            <div className="flex flex-col gap-4 rounded-2xl border border-line bg-cream p-6">
-              <h2 className="m-0 text-lg font-semibold">{t("contactFarm", lang)}</h2>
-              {farm.ownerName && (
-                <div className="flex flex-col gap-1">
-                  <span className="text-[13px] text-muted">{t("owner", lang)}</span>
-                  <span className="text-base font-medium">{farm.ownerName}</span>
-                </div>
-              )}
-              {farm.phone && (
-                <a href={telHref(farm.phone)} className="lift flex min-h-12 items-center justify-center gap-2 rounded-[10px] bg-crimson text-base font-semibold text-white no-underline">
-                  <Phone />
-                  {t("call", lang)}
-                </a>
-              )}
-              {fb && (
-                <a href={fb} target="_blank" rel="noopener noreferrer nofollow" className="flex min-h-12 items-center justify-center gap-2 rounded-[10px] border border-crimson text-base font-semibold text-crimson no-underline transition-colors hover:bg-blush">
-                  <Chat />
-                  {t("messageFb", lang)}
-                </a>
-              )}
-              <p className="m-0 text-[13px] leading-normal text-muted">{t("directoryOnly", lang)}</p>
-            </div>
-
-            <div className="overflow-hidden rounded-2xl border border-line bg-cream">
-              <div className="ph flex h-[180px] items-center justify-center text-sm text-muted">{t("locationMap", lang)}</div>
-              <dl className="m-0 flex flex-col gap-2.5 px-6 py-[18px] text-sm">
-                {[
-                  [t("region", lang), farm.region],
-                  [t("province", lang), farm.province],
-                  [t("city", lang), farm.city],
-                  [t("memberSince", lang), since],
-                ].map(([k, v]) => (
-                  <div key={k} className="flex justify-between gap-3">
-                    <dt className="text-muted">{k}</dt>
-                    <dd className="m-0 text-right font-medium">{v}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-
-            <a href="#" className="flex items-center gap-2 px-1 py-2 text-sm font-medium text-muted">
-              <Flag />
-              {t("reportThis", lang)}
-            </a>
+      {tab === "Overview" && (
+        <div className="grid gap-5 md:grid-cols-[2fr_1fr]">
+          <section className="flex flex-col gap-3">
+            <h2 className="m-0 font-serif text-[22px] font-semibold">About the farm</h2>
+            <p className="m-0 whitespace-pre-line text-[15px] leading-relaxed text-ink-soft">{d.about || "Wala pang description."}</p>
+            <div className="flex flex-wrap gap-1.5">{d.bloodlines.map((b) => <Chip key={b.name}>{b.name}</Chip>)}</div>
+          </section>
+          <aside className="flex flex-col gap-3">
+            <dl className="m-0 flex flex-col divide-y divide-line rounded-2xl border border-line bg-cream px-4 text-[14px]">
+              {[["Owner", d.ownerName], ["Location", `${d.city}, ${d.province}`], ["Contact", d.phone], ["Established", d.est]].filter(([, v]) => v).map(([k, v]) => (
+                <div key={k} className="flex justify-between gap-3 py-2.5"><dt className="text-muted">{k}</dt><dd className="m-0 text-right font-semibold">{v}</dd></div>
+              ))}
+            </dl>
+            {d.verified && <p className="m-0 text-[11.5px] leading-relaxed text-muted">{BIZ_NOTE}</p>}
+            <Note>Directory lang ang Sabong Central. Direkta kayong mag-usap ng farm. Walang bayad na dumadaan sa amin.</Note>
           </aside>
         </div>
+      )}
 
-        {others.length > 0 && (
-          <section className="flex flex-col gap-4 pt-6">
-            <h2 className="m-0 font-serif text-[28px] font-medium">{t("otherFarms", lang)}</h2>
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-5">
-              {others.map((o) => (
-                <a key={o.id} href={`/farms/${o.slug}`} className="card flex items-center gap-3.5 rounded-[14px] border border-line bg-cream p-3.5 text-ink no-underline">
-                  <div className="overflow-hidden rounded-[10px]"><div className="ph size-[72px]" /></div>
-                  <div className="flex flex-col gap-1">
-                    <span className="font-semibold">{o.name}</span>
-                    <span className="text-sm text-muted">{o.city}</span>
-                  </div>
-                </a>
-              ))}
-            </div>
-          </section>
-        )}
-      </div>
-    </main>
+      {tab === "Gallery" && (
+        <section className="flex flex-col gap-3">
+          <div className="grid grid-cols-3 gap-1.5 md:grid-cols-4 md:gap-3">
+            {Array.from({ length: 8 }, (_, i) => <Photo key={i} className="aspect-square rounded-lg" label={`Farm photo ${i + 1}`} />)}
+          </div>
+          <p className="m-0 text-[13px] text-muted">Placeholder ang mga photo. Ang photo upload ay idadagdag kasama ng Portal.</p>
+        </section>
+      )}
+
+      {tab === "Bloodlines" && (
+        <ul className="m-0 grid list-none gap-3 p-0 md:grid-cols-2">
+          {d.bloodlines.map((b) => (
+            <li key={b.name} className="flex flex-col gap-1 rounded-2xl border border-line bg-cream p-4">
+              <span className="text-[16px] font-bold">{b.name}</span>
+              <span className="text-[13px] text-muted">{b.note || "Detalye mula sa may-ari ng farm."}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {tab === "Updates" && (
+        <section className="flex flex-col gap-4">
+          {myNotices.map((n) => (
+            <article key={n.id} className="rounded-2xl border border-line bg-cream p-4">
+              <span className="text-[12px] text-muted">{n.data.meta}</span>
+              <h3 className="m-0 mt-1 text-[16px] font-bold">{n.data.title}</h3>
+              <p className="m-0 mt-1 text-[14px] text-ink-soft">{n.data.text}</p>
+            </article>
+          ))}
+          {myReels.length > 0 && (
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">{myReels.map((r) => <ReelCard key={r.id} r={r} />)}</div>
+          )}
+          {myNotices.length === 0 && myReels.length === 0 && <Empty>Wala pang updates mula sa farm na ito.</Empty>}
+        </section>
+      )}
+
+      <a href={`/report?target=${encodeURIComponent("Farm: " + d.name)}`} className="flex min-h-11 items-center gap-1.5 self-start text-[14px] font-semibold text-wine no-underline">
+        <Flag size={15} /> Report this farm
+      </a>
+
+      {others.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <h2 className="m-0 font-serif text-[21px] font-semibold">Iba pang farms sa {d.province}</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{others.map((f) => <FarmCard key={f.id} f={f} />)}</div>
+        </section>
+      )}
+    </Page>
   );
 }
