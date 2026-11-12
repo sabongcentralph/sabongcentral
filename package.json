@@ -29,6 +29,7 @@
     "build": "vite build",
     "start": "vite preview",
     "deploy": "vinext-cloudflare deploy",
-    "typecheck": "cf workers types && tsc --noEmit"
+    "typecheck": "cf workers types && tsc --noEmit",
+    "test:e2e": "node tests/e2e/run.mjs"
   }
 }
