@@ -402,10 +402,10 @@ await step("admin makes the farm the Farm Spotlight and Featured", async () => {
   await admin.click("button:has-text('Feature on home page')");
   await admin.waitForURL(/done=feature/);
   await go(phone, "/");
-  const spot = await phone.locator("section:has(h2:has-text('Farm Spotlight'))").innerText();
-  if (!spot.includes(aFarm)) fail("farm is not the spotlight");
-  const feat = await phone.locator("section:has(h2:has-text('Featured Gamefarms'))").innerText();
-  if (!feat.includes(aFarm)) fail("farm is not featured");
+  // Home is one mixed feed: placed farms lead it with a Featured label.
+  const top = await phone.locator("#feed article").first().innerText();
+  if (!top.includes(aFarm)) fail("featured farm is not first in the home feed");
+  if (!top.toUpperCase().includes("FEATURED")) fail("no Featured label on the home feed post");
 });
 await step("admin marks the slot Sponsored on Placements; label shows, then ends", async () => {
   await go(admin, "/admin/placements");
@@ -414,7 +414,7 @@ await step("admin marks the slot Sponsored on Placements; label shows, then ends
   await admin.click("button:has-text('Save placements')");
   await admin.waitForURL(/saved=1/);
   await go(phone, "/");
-  if (!(await phone.locator("section:has(h2:has-text('Featured Gamefarms'))").innerText()).toUpperCase().includes("SPONSORED")) fail("no Sponsored label");
+  if (!(await phone.locator("#feed article").first().innerText()).toUpperCase().includes("SPONSORED")) fail("no Sponsored label on the first home feed post");
   await go(phone, "/farms");
   if (!(await phone.locator("main").innerText()).toUpperCase().includes("SPONSORED")) fail("farms page has no Sponsored label at top");
   await go(admin, "/admin/placements");
