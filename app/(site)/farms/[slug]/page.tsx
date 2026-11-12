@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ListedBy } from "@/components/ListedBy";
 import { approved, approvedOne } from "@/lib/db";
-import { messengerHref, telHref } from "@/lib/links";
+import { messengerHref, smsHref, telHref } from "@/lib/links";
 import { FarmCard, ReelCard } from "@/components/cards";
 import { BIZ_NOTE, BizBadge, Chip, Empty, Note, Page, Photo, SampleTag, btnGhost, btnPrimary } from "@/components/ui";
 import { Chat, Flag, Phone, Pin } from "@/components/icons";
@@ -49,6 +49,8 @@ export default async function FarmPage({ params, searchParams }: { params: Promi
         <div className="flex flex-wrap gap-2 pt-1">
           {msg && <a href={msg} target="_blank" rel="noopener noreferrer" className={`${btnPrimary} gap-2`}><Chat size={17} /> Message</a>}
           {d.phone && <a href={telHref(d.phone)} className={`${btnGhost} gap-2`}><Phone size={16} /> {d.phone}</a>}
+          {d.phone && <a href={smsHref(d.phone)} className={`${btnGhost} gap-2`}><Chat size={16} /> Text</a>}
+          {!msg && d.facebook && /facebook\.com|fb\.com/.test(d.facebook) && <a href={d.facebook.startsWith("http") ? d.facebook : `https://${d.facebook}`} target="_blank" rel="noopener noreferrer" className={`${btnGhost} gap-2`}>Facebook page ↗</a>}
         </div>
       </div>
 
