@@ -316,6 +316,33 @@ await step("admin adds a farm without a phone number, and a reel", async () => {
   await go(phone, "/reels");
   await see(phone, aReel);
 });
+await step("admin publishes an article, an official advisory and a supplier", async () => {
+  await go(admin, "/admin/add?tab=article");
+  await admin.fill("input[name=title]", `E2E Admin Article ${RUN}`);
+  await admin.fill("textarea[name=body]", "Vaccinate chicks on schedule.\n\nKeep records of every dose.");
+  await admin.click("button:has-text('Publish now')");
+  await admin.waitForURL(/done=published/);
+  await go(admin, "/admin/add?tab=notice");
+  await admin.fill("input[name=title]", `E2E Advisory ${RUN}`);
+  await admin.fill("textarea[name=text]", "Bird flu watch in the area. Report sick birds.");
+  await admin.click("button:has-text('Publish now')");
+  await admin.waitForURL(/error=/); // official advisory without issuer and source is refused
+  await admin.fill("input[name=title]", `E2E Advisory ${RUN}`);
+  await admin.fill("textarea[name=text]", "Bird flu watch in the area. Report sick birds.");
+  await admin.fill("input[name=issuer]", "Bureau of Animal Industry");
+  await admin.fill("input[name=url]", "https://www.bai.gov.ph/");
+  await admin.click("button:has-text('Publish now')");
+  await admin.waitForURL(/done=published/);
+  await go(admin, "/admin/add?tab=supplier");
+  await admin.fill("input[name=name]", `E2E Supplier ${RUN}`);
+  await admin.selectOption("select[name=skind]", "Feed Manufacturers");
+  await admin.fill("input[name=place]", "Lipa City, Batangas");
+  await admin.click("button:has-text('Publish now')");
+  await admin.waitForURL(/done=published/);
+  await go(phone, "/learn"); await see(phone, `E2E Admin Article ${RUN}`);
+  await go(phone, "/notices"); await see(phone, `E2E Advisory ${RUN}`); await see(phone, "Bureau of Animal Industry");
+  await go(phone, "/suppliers"); await see(phone, `E2E Supplier ${RUN}`); await see(phone, "Listed by Sabong Central");
+});
 await step("the farm page says Listed by Sabong Central, and Claim opens Contact Us filled in", async () => {
   await go(phone, "/farms");
   await phone.click(`a:has-text("${aFarm}")`);

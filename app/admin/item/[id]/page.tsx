@@ -105,9 +105,9 @@ export default async function ReviewItem({ params, searchParams }: { params: Pro
           </form>
         </section>
       )}
-      {(data.listedBy === "admin" || ["farm", "event", "good", "reel"].includes(l.kind)) && (
+      {(
         <div className="flex flex-wrap items-start gap-3 rounded-2xl border border-line bg-cream p-4">
-          {["farm", "event", "good", "reel"].includes(l.kind) && <a href={`/admin/add?edit=${l.id}`} className={btnGhost}>Edit listing</a>}
+          {<a href={`/admin/add?edit=${l.id}`} className={btnGhost}>Edit listing</a>}
           {data.listedBy === "admin" && (
             <form action="/api/admin/action" method="post" className="flex min-w-[260px] flex-1 flex-wrap items-end gap-2">
               <input type="hidden" name="id" value={l.id} />
