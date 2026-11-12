@@ -6,6 +6,7 @@ import { FilterPanel } from "@/components/FilterPanel";
 import { LocationFields } from "@/components/LocationFields";
 import { Empty, Note, Page, PageHead, input, labelCls } from "@/components/ui";
 import { LearnSwitch } from "@/components/LearnSwitch";
+import { EventsSwitch } from "@/components/EventsSwitch";
 
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -52,6 +53,7 @@ export async function EventDirectory({ sp, mode }: { sp: Search; mode: DirMode }
         ? <PageHead kicker="Derby Schedule" title="Events" sub="Derby schedules with verified permits: date, venue and organizer." />
         : <PageHead kicker="Learn & Grow" title="Learn" sub="Seminars, workshops, training, webinars and expos, plus articles and guides from breeders and veterinarians." />}
       {mode === "education" && <LearnSwitch at="events" />}
+      {mode === "derby" && <EventsSwitch at="derbies" />}
       {groups.length > 0 && <nav aria-label="Event groups" className="-mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0">
         {groups.map((g) => (
           <a key={g} href={qs(g)} aria-current={g === group ? "page" : undefined}

@@ -12,7 +12,7 @@ import { Chip, Note, Page, btnGhost, btnPrimary, input, labelCls, statusTone } f
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Review" };
 
-const PATH = { farm: "farms", event: "events", good: "market", reel: "reels", article: "learn", notice: "notices", supplier: "suppliers" } as const;
+const PATH = { farm: "farms", event: "events", good: "market", reel: "reels", article: "learn", notice: "notices", supplier: "suppliers", venue: "venues" } as const;
 
 function safeHref(v: string): string | null {
   const t = v.trim();
@@ -58,8 +58,8 @@ export default async function ReviewItem({ params, searchParams }: { params: Pro
   const changes = edit ? [...new Set([...Object.keys(data), ...Object.keys(edit.data)])]
     .filter((k) => !SKIP.has(k) && show(data[k]) !== show(edit.data[k])).map((k) => [k, show(data[k]), show(edit.data[k])] as const) : [];
   const embed = l.kind === "reel" ? toEmbed(String(data.url ?? "")) : null;
-  const canBadge = l.kind === "farm" || l.kind === "good";
-  const badgeOn = l.kind === "farm" ? !!data.verified : !!data.sellerVerified;
+  const canBadge = l.kind === "farm" || l.kind === "good" || l.kind === "venue";
+  const badgeOn = l.kind === "good" ? !!data.sellerVerified : !!data.verified;
   const isDerby = l.kind === "event" && !!data.derby;
   const act = (action: string, label: string, cls: string) => (
     <button type="submit" name="action" value={action} className={cls}>{label}</button>

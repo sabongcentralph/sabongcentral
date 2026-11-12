@@ -106,7 +106,7 @@ export async function reviewDoc(id: number, approve: boolean, admin: string, not
   await logAction(admin, approve ? "document approved" : "document rejected", `member #${doc.member_id}: ${doc.type}`, note);
   if (approve && badge) {
     for (const { l } of await listingsOf(doc.member_id)) {
-      if ((l.kind === "farm" || l.kind === "good") && l.status === "approved") await setVerified(l.id, true, admin);
+      if ((l.kind === "farm" || l.kind === "good" || l.kind === "venue") && l.status === "approved") await setVerified(l.id, true, admin);
     }
   }
 }

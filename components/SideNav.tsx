@@ -1,3 +1,4 @@
+import { Pin as PinIcon } from "./icons";
 import { AlertIcon, BookIcon, DownloadIcon, GearIcon, InfoIcon, MegaphoneIcon, ShieldIcon, TruckIcon, UserIcon } from "./icons";
 
 type Item = { href: string; label: string; Icon?: (p: { size?: number; className?: string }) => React.ReactElement; warn?: boolean };
@@ -8,6 +9,7 @@ export const SIDE_SECTIONS: { title: string; items: Item[] }[] = [
     items: [
       { href: "/learn", label: "Articles & Guides", Icon: BookIcon },
       { href: "/learn?topic=Downloads", label: "Breeder Resources", Icon: DownloadIcon },
+      { href: "/venues", label: "Venues & Organizers", Icon: PinIcon },
       { href: "/suppliers", label: "Verified Suppliers", Icon: TruckIcon },
       { href: "/notices", label: "Community Notices", Icon: MegaphoneIcon },
       { href: "/report?target=Scam+report", label: "Report Scam", Icon: AlertIcon, warn: true },

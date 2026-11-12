@@ -2,7 +2,7 @@ import { ARTICLE_TOPICS, BLOODLINES, EVENT_CATS, GOODS_CATS, NOTICE_KINDS, REEL_
 import { LocationFields } from "@/components/LocationFields";
 import { PhotoPicker } from "@/components/PhotoPicker";
 import { btnGhost, btnPrimary, input, labelCls } from "@/components/ui";
-import { DRAFT, type Listing } from "@/lib/db";
+import { DRAFT, VENUE_ROLES, type Listing } from "@/lib/db";
 
 type Who = { name: string; phone: string; facebook: string };
 const Honeypot = () => <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px]" />;
@@ -22,7 +22,7 @@ function CurrentPhotos({ d, keys }: { d: Record<string, unknown>; keys: string[]
 
 // Farm, event, Market item (and, for admins, reel) form. Members submit for review;
 // admins (admin) post directly and their listings go live at once.
-export function ListingForm({ tab, up, who, l, admin = false }: { tab: "farm" | "event" | "good" | "reel" | "article" | "notice" | "supplier"; up: boolean; who: Who; l?: Listing; admin?: boolean }) {
+export function ListingForm({ tab, up, who, l, admin = false, venues = [] }: { tab: "farm" | "event" | "good" | "reel" | "article" | "notice" | "supplier" | "venue"; up: boolean; who: Who; l?: Listing; admin?: boolean; venues?: { name: string; roles: string[] }[] }) {
   const m = who;
   // When editing, every field starts with the listing's current value.
   const d = (l?.data ?? {}) as unknown as Record<string, unknown>;
@@ -78,7 +78,9 @@ export function ListingForm({ tab, up, who, l, admin = false }: { tab: "farm" | 
             {EVENT_CATS.map(([cat, , , subs]) => <optgroup key={cat} label={cat}>{subs.map((s) => <option key={s}>{s}</option>)}</optgroup>)}
           </select>
         </label>
-        <label className={labelCls}>Organizer name<input name="org" defaultValue={v("org", m.name)} className={input} /></label>
+        <label className={labelCls}>Organizer name<input name="org" list="sc-organizers" defaultValue={v("org", m.name)} className={input} /></label>
+        <datalist id="sc-organizers">{venues.filter((x) => x.roles.includes("Organizer")).map((x) => <option key={x.name} value={x.name} />)}</datalist>
+        <datalist id="sc-venues">{venues.filter((x) => x.roles.includes("Venue")).map((x) => <option key={x.name} value={x.name} />)}</datalist>
         <label className={labelCls}>Start date *<input name="date" type="date" required defaultValue={v("date")} className={input} /></label>
         <label className={labelCls}>End date (if multi-day)<input name="endDate" type="date" defaultValue={v("endDate")} className={input} /></label>
         <label className={labelCls}>Start time<input name="start" type="time" defaultValue={v("startTime")} className={input} /></label>
@@ -86,7 +88,7 @@ export function ListingForm({ tab, up, who, l, admin = false }: { tab: "farm" | 
         <label className={`${full} flex min-h-9 items-center gap-2 text-[14px] font-semibold text-ink-soft`}><input type="checkbox" name="online" value="1" defaultChecked={!!d.online} className="size-[17px] accent-crimson" /> Online event (webinar)</label>
         <label className={`${labelCls} ${full}`}>Online link (webinars only)<input name="link" type="url" defaultValue={v("link")} placeholder="Zoom, Facebook Live or Google Meet link" className={input} /></label>
         <LocationFields idPrefix="pe" province={d.online ? "" : v("province")} city={d.online ? "" : v("city")} />
-        <label className={`${labelCls} ${full}`}>Venue<input name="venue" defaultValue={v("venue")} placeholder="Hall, farm, cockpit or arena" className={input} /></label>
+        <label className={`${labelCls} ${full}`}>Venue<input name="venue" list="sc-venues" defaultValue={v("venue")} placeholder="Hall, farm, cockpit or arena (pick from the list to link its page)" className={input} /></label>
         <label className={`${labelCls} ${full}`}>Description<textarea name="desc" rows={4} defaultValue={v("desc")} className={`${input} py-2.5`} /></label>
         <label className={labelCls}>Topics<input name="topics" defaultValue={v("topics")} className={input} /></label>
         <label className={labelCls}>Speakers<input name="speakers" defaultValue={v("speakers")} className={input} /></label>
@@ -95,6 +97,28 @@ export function ListingForm({ tab, up, who, l, admin = false }: { tab: "farm" | 
         {up && <div className={full}><PhotoPicker name="poster" label="Event poster" hint="One poster image. No betting odds or fight photos." /></div>}
         <label className={`${labelCls} ${full}`}>Permits<input name="permits" defaultValue={v("permits")} placeholder="e.g. LGU event permit no., cockpit license (required for derbies)" className={input} /></label>
         <p className={`m-0 text-[12.5px] text-muted ${full}`}>Derby listings need a verified cockpit license and LGU permit before they are published.</p>
+      </>
+    )}
+    {tab === "venue" && (
+      <>
+        <label className={`${labelCls} ${full}`}>Name *<input name="name" required maxLength={120} defaultValue={v("name")} placeholder="e.g. Coliseo de Calauan" className={input} /></label>
+        <fieldset className={`m-0 border-0 p-0 ${full}`}>
+          <legend className="mb-1.5 text-[13px] font-semibold text-ink-soft">This is a… * (tick both if the arena also organizes derbies)</legend>
+          <div className="flex flex-wrap gap-x-5">
+            {VENUE_ROLES.map((r) => <label key={r} className="flex min-h-9 items-center gap-2 text-[14px]"><input type="checkbox" name="role" value={r} defaultChecked={l ? ((d.roles as string[] | undefined) ?? []).includes(r) : r === "Venue"} className="size-[17px] accent-crimson" /> {r === "Venue" ? "Venue (cockpit arena)" : "Organizer"}</label>)}
+          </div>
+        </fieldset>
+        <LocationFields required idPrefix="pv" province={v("province")} city={v("city")} />
+        <label className={`${labelCls} ${full}`}>Street / barangay<input name="place" maxLength={200} defaultValue={v("place")} placeholder="e.g. Barangay Dayap" className={input} /></label>
+        <label className={`${labelCls} ${full}`}>About<textarea name="about" rows={4} maxLength={2000} defaultValue={v("about")} className={`${input} py-2.5`} /></label>
+        <label className={labelCls}>Public contact number{admin ? "" : " *"}<input name="phone" required={!admin} inputMode="tel" defaultValue={v("phone", m.phone)} className={input} /></label>
+        <label className={labelCls}>Facebook page{admin ? "" : " *"}<input name="facebook" required={!admin} maxLength={300} defaultValue={v("facebook", m.facebook)} placeholder="https://www.facebook.com/…" className={input} /></label>
+        <label className={`${labelCls} ${full}`}>Messenger link (for the Message button)<input name="messenger" maxLength={300} defaultValue={v("messenger")} placeholder="https://m.me/…" className={input} /></label>
+        {up && <PhotoPicker name="profile" label="Logo or profile photo" />}
+        {up && <PhotoPicker name="cover" label="Cover photo (the arena or venue)" />}
+        <label className={`${labelCls} ${full}`}>Permits / franchise{admin ? " (private)" : " (private, admins check it)"}<input name="permits" maxLength={300} defaultValue={v("permits")} placeholder="e.g. LGU franchise ordinance no., Mayor’s permit 2026" className={input} /></label>
+        {admin && <label className={`${labelCls} ${full}`}>Operator (private, admin only)<input name="operator" maxLength={200} defaultValue={v("operator")} className={input} /></label>}
+        <p className={`m-0 text-[12.5px] text-muted ${full}`}>Venues are shown as “Permit not yet verified” until an admin checks the permit or franchise. Upload a photo of it under Documents for the Business Verified badge.</p>
       </>
     )}
     {tab === "reel" && (
@@ -160,8 +184,8 @@ export function ListingForm({ tab, up, who, l, admin = false }: { tab: "farm" | 
       </>
     )}
     {admin && (
-      <label className={`${labelCls} ${full}`}>Source link (their Facebook page or post; admin only){["farm", "article", "notice", "supplier"].includes(tab) ? "" : " *"}
-        <input name="vfb" required={!["farm", "article", "notice", "supplier"].includes(tab)} maxLength={300} defaultValue={v("verifyFacebook")} placeholder="https://www.facebook.com/…" className={input} />
+      <label className={`${labelCls} ${full}`}>Source link (their Facebook page or post; admin only){["farm", "article", "notice", "supplier", "venue"].includes(tab) ? "" : " *"}
+        <input name="vfb" required={!["farm", "article", "notice", "supplier", "venue"].includes(tab)} maxLength={300} defaultValue={v("verifyFacebook")} placeholder="https://www.facebook.com/…" className={input} />
       </label>
     )}
     {admin ? <input type="hidden" name="confirm" value="1" /> : (
