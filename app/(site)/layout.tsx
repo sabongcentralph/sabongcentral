@@ -10,7 +10,7 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
   return (
     <div className="flex min-h-screen flex-col">
       <div className="bg-[#2f2a1f] px-4 py-1.5 text-center text-[12px] font-semibold text-gold-light">
-        TEST SITE · sample data only, not live yet
+        BETA · Sabong Central is new. Listings are being added every day.
       </div>
       <AppHeader lang={lang} />
       <div className="mx-auto flex w-full max-w-[1400px] flex-1">

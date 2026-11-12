@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { db, ensureDb } from "./db";
+import { disable } from "./totp";
 
 export const SUPER_ADMIN = "sabongcentralph@gmail.com";
 // Hash of the first Super Admin password (PBKDF2-SHA256). The password itself is
@@ -44,8 +45,8 @@ async function ensureAdmin() {
   await db().prepare(`create table if not exists login_attempts (email text not null, at text not null default (datetime('now')))`).run();
 }
 
-// Returns a session token on success. Locks out after 5 failed tries in 15 minutes.
-export async function login(email: string, password: string): Promise<string | "locked" | null> {
+// Password check. Locks out after 5 failed tries in 15 minutes.
+export async function checkAdminPassword(email: string, password: string): Promise<"ok" | "locked" | "bad"> {
   await ensureAdmin();
   const e = email.trim().toLowerCase();
   const fails = await db().prepare(`select count(*) as n from login_attempts where email = ? and at > datetime('now', '-15 minutes')`).bind(e).first<{ n: number }>();
@@ -53,12 +54,21 @@ export async function login(email: string, password: string): Promise<string | "
   const row = await db().prepare(`select pw_hash from admins where email = ?`).bind(e).first<{ pw_hash: string }>();
   if (!row || !(await verifyPassword(password, row.pw_hash))) {
     await db().prepare(`insert into login_attempts (email) values (?)`).bind(e).run();
-    return null;
+    return "bad";
   }
   await db().prepare(`delete from login_attempts where email = ?`).bind(e).run();
+  return "ok";
+}
+
+export async function startAdminSession(email: string): Promise<string> {
   const token = b64(crypto.getRandomValues(new Uint8Array(32)));
-  await db().prepare(`insert into sessions (token_hash, email, expires_at) values (?, ?, datetime('now', '+${SESSION_DAYS} days'))`).bind(await sha256(token), e).run();
+  await db().prepare(`insert into sessions (token_hash, email, expires_at) values (?, ?, datetime('now', '+${SESSION_DAYS} days'))`).bind(await sha256(token), email.trim().toLowerCase()).run();
   return token;
+}
+
+// Counts a failed second step against the same 15-minute lockout.
+export async function failedAttempt(email: string) {
+  await db().prepare(`insert into login_attempts (email) values (?)`).bind(email).run();
 }
 
 export function sessionCookie(token: string) {
@@ -134,5 +144,7 @@ export async function setupWithCode(code: string, email: string, next: string): 
     db().prepare(`update admins set pw_hash = ? where email = ?`).bind(await hashPassword(next), e),
     db().prepare(`delete from sessions where email = ?`).bind(e),
   ]);
+  // Lost phone: the setup code also turns two-step login off, so it can be set up again.
+  await disable(e);
   return "ok";
 }

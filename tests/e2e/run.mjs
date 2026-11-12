@@ -81,6 +81,20 @@ async function pbkdf2Hash(pw) {
   const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt, iterations: 100000 }, key, 256);
   return `pbkdf2$100000$${b64(salt)}$${b64(new Uint8Array(bits))}`;
 }
+// Same 6-digit codes an authenticator app makes (RFC 6238).
+async function totp(secret, offset = 0) {
+  const B32 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  let bits = "";
+  for (const c of secret.replace(/\s/g, "")) bits += B32.indexOf(c).toString(2).padStart(5, "0");
+  const key = Uint8Array.from(bits.match(/.{8}/g), (b) => parseInt(b, 2));
+  const counter = Math.floor(Date.now() / 30000) + offset;
+  const msg = new ArrayBuffer(8);
+  new DataView(msg).setUint32(4, counter);
+  const k = await crypto.subtle.importKey("raw", key, { name: "HMAC", hash: "SHA-1" }, false, ["sign"]);
+  const h = new Uint8Array(await crypto.subtle.sign("HMAC", k, msg));
+  const o = h[19] & 15;
+  return String((((h[o] & 127) << 24) | (h[o + 1] << 16) | (h[o + 2] << 8) | h[o + 3]) % 1e6).padStart(6, "0");
+}
 async function setLocalAdminPassword() {
   await fetch(B + "/admin/login"); // creates the admins table
   await fetch(B + "/api/admin/login", { method: "POST", body: new URLSearchParams({ email: "x@example.com", password: "x" }) }).catch(() => {});
@@ -95,6 +109,7 @@ async function setLocalAdminPassword() {
       if (has) {
         db.prepare(`update admins set pw_hash = ? where email = ?`).run(hash, ADMIN);
         db.prepare(`delete from login_attempts`).run();
+        try { db.prepare(`delete from admin_2fa`).run(); } catch { /* table not created yet */ }
         done++;
       }
     } finally { db.close(); }
@@ -132,16 +147,6 @@ await step("every link in the menu, header and footer works", async () => {
   }
   if (bad.length) fail(`broken links: ${bad.join(", ")}`);
 });
-for (const [list, label] of [["/farms", "farm"], ["/events", "event"], ["/market", "Market item"], ["/reels", "reel"], ["/learn", "article"]]) {
-  await step(`opens a ${label} detail page from ${list}`, async () => {
-    await go(desk, list);
-    const prefix = list === "/learn" ? "/learn/" : list === "/events" ? "/events/" : `${list}/`;
-    const href = await desk.$$eval(`main a[href^='${prefix}']`, (as) => as.map((a) => a.getAttribute("href")).find((h) => h.split("/").length === 3));
-    if (!href) fail(`no ${label} cards on ${list}`);
-    await go(desk, href);
-  });
-}
-await step("search finds a sample farm", async () => { await go(desk, "/search?q=farm"); await notSee(desk, "No results"); });
 await step("admin pages are locked for visitors", async () => {
   for (const u of ["/admin", "/admin/queue", "/admin/members", "/admin/documents", "/admin/reports"]) {
     await desk.goto(B + u);
@@ -226,7 +231,7 @@ await step("wrong admin password is refused", async () => {
   await admin.waitForLoadState();
   if (!admin.url().includes("/admin/login")) fail("wrong password got in");
 });
-await step("admin signs in and sees the dashboard", async () => {
+await step("admin signs in and sees the dashboard (with the two-step login reminder)", async () => {
   await go(admin, "/admin/login");
   await admin.fill("input[name=email]", ADMIN);
   await admin.fill("input[name=password]", ADMIN_PW);
@@ -545,6 +550,57 @@ await step("a suspended member can't sign in", async () => {
   await memberLogin(temp);
   await see(member, "can’t sign in");
 });
+let backupCodes = [];
+await step("admin turns on two-step login with an authenticator app", async () => {
+  await go(admin, "/admin/account");
+  await see(admin, "Off.");
+  await admin.click("button:has-text('Set up two-step login')");
+  await admin.waitForURL(/setup=1/);
+  if ((await admin.locator("#twostep svg").count()) === 0) fail("no QR code");
+  const secret = (await admin.locator("#twostep strong.font-mono").innerText()).replace(/\s/g, "");
+  await admin.fill("input[name=code]", "000000");
+  await admin.click("button:has-text('Turn on two-step login')");
+  await admin.waitForURL(/error=code/);
+  await admin.fill("input[name=code]", await totp(secret));
+  await admin.click("button:has-text('Turn on two-step login')");
+  await admin.waitForURL(/done=2fa/);
+  await see(admin, "backup codes");
+  backupCodes = (await admin.locator("#twostep pre span").allInnerTexts()).map((x) => x.trim());
+  if (backupCodes.length !== 8) fail(`expected 8 backup codes, got ${backupCodes.length}`);
+  globalThis.__secret = secret;
+});
+async function adminPassword() {
+  await admin.context().clearCookies();
+  await go(admin, "/admin/login");
+  await admin.fill("input[name=email]", ADMIN);
+  await admin.fill("input[name=password]", ADMIN_PW);
+  await admin.click("form button[type=submit]");
+  await admin.waitForURL(/step=code/);
+}
+await step("signing in now needs the code: a wrong code is refused, a backup code works once", async () => {
+  await adminPassword();
+  await go(admin, "/admin/queue");
+  await notSee(admin, "Waiting for review");
+  await go(admin, "/admin/login?step=code");
+  await admin.fill("input[name=code]", "123456");
+  await admin.click("form button[type=submit]");
+  await admin.waitForURL(/error=code/);
+  await admin.fill("input[name=code]", backupCodes[0]);
+  await admin.click("form button[type=submit]");
+  await admin.waitForURL((u) => u.pathname === "/admin");
+  await adminPassword();
+  await admin.fill("input[name=code]", backupCodes[0]);
+  await admin.click("form button[type=submit]");
+  await admin.waitForURL(/error=code/);
+});
+await step("signs in with a fresh authenticator code", async () => {
+  await admin.waitForTimeout(31000 - (Date.now() % 30000)); // next 30-second code
+  await adminPassword();
+  await admin.fill("input[name=code]", await totp(globalThis.__secret));
+  await admin.click("form button[type=submit]");
+  await admin.waitForURL((u) => u.pathname === "/admin");
+  await notSee(admin, "Two-step login is off");
+});
 await step("admin signs out", async () => {
   await go(admin, "/admin/account");
   await admin.locator("form[action='/api/admin/logout'] button").first().click();
@@ -554,7 +610,19 @@ await step("admin signs out", async () => {
   await notSee(admin, "Waiting for review");
 });
 
-section("10. Layout on phone");
+section("10. Detail pages and search with real listings");
+for (const [list, label] of [["/farms", "farm"], ["/education", "seminar"], ["/market", "Market item"], ["/learn", "article"]]) {
+await step(`opens a ${label} detail page from ${list}`, async () => {
+    await go(desk, list);
+    const prefix = `${list}/`;
+    const href = await desk.$$eval(`main a[href^='${prefix}']`, (as) => as.map((a) => a.getAttribute("href")).find((h) => h.split("/").length === 3));
+    if (!href) fail(`no ${label} cards on ${list}`);
+    await go(desk, href);
+  });
+}
+await step("search finds the new farm", async () => { await go(desk, `/search?q=${encodeURIComponent(farm)}`); await see(desk, farm); });
+
+section("11. Layout on phone");
 for (const url of ["/portal", "/farms", "/market", "/events"]) {
   await step(`no sideways scrolling on ${url} (after the test data)`, async () => {
     await go(phone, url);

@@ -192,8 +192,10 @@ export function ensureDb(): Promise<void> {
       );
       // Approved samples follow this file; admin decisions on pending samples are kept.
       const refresh = d.prepare(`update listings set data = ? where kind = ? and slug = ? and is_sample = 1`);
-      const rows = samples();
-      await d.batch(rows.flatMap((r) => [insert.bind(r.kind, r.slug, r.status, JSON.stringify(r.data), r.by), refresh.bind(JSON.stringify(r.data), r.kind, r.slug)]));
+      // Sample listings only when SAMPLE_DATA is "true" (off since the soft launch, 2026-11-12).
+      // When off, the cleanup below removes every sample row.
+      const rows = (env as unknown as { SAMPLE_DATA?: string }).SAMPLE_DATA === "true" ? samples() : [];
+      if (rows.length) await d.batch(rows.flatMap((r) => [insert.bind(r.kind, r.slug, r.status, JSON.stringify(r.data), r.by), refresh.bind(JSON.stringify(r.data), r.kind, r.slug)]));
       // Remove samples that are no longer in this file (e.g. renamed slugs).
       const keep = rows.map((r) => `${r.kind}:${r.slug}`);
       const { results } = await d.prepare(`select id, kind, slug from listings where is_sample = 1`).all<{ id: number; kind: string; slug: string }>();
