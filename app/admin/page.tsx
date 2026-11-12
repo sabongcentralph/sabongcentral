@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/adminGuard";
 import { adminSummary, type Row } from "@/lib/adminData";
 import { titleOf, type QueueStatus } from "@/lib/db";
-import { AlertIcon, CalendarIcon, ChevronRight, FarmIcon, MailIcon, Pin, ShieldIcon } from "@/components/icons";
+import { AlertIcon, CalendarIcon, ChevronRight, UserIcon, MailIcon, Pin, ShieldIcon } from "@/components/icons";
 import { Chip, Page } from "@/components/ui";
 import { PosterThumb } from "@/components/admin/PosterThumb";
 
@@ -71,9 +71,10 @@ export default async function AdminDashboard() {
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Tile hot href="/admin/queue" icon={<ShieldIcon size={24} />} label="Waiting for review" n={s.waiting.length} sub={s.needsChanges ? `${s.needsChanges} waiting on submitter changes` : "New and in-review submissions"} />
+        <Tile hot href="/admin/members" icon={<UserIcon size={24} />} label="Member applications" n={s.applications} sub="New Portal accounts to check" />
         <Tile hot href="/admin/queue?q=All&risk=Permit+needed" icon={<CalendarIcon size={24} />} label="Derby permits to check" n={s.permits.length} sub="Cockpit license and LGU permit" />
         <Tile hot href="/admin/reports" icon={<AlertIcon size={24} />} label="Open reports" n={s.reports} sub="Scams, wrong info, prohibited items" />
-        <Tile href="/admin/queue?q=Approved" icon={<FarmIcon size={24} />} label="Live on the site" n={s.live.length} sub={`${s.provinces} ${s.provinces === 1 ? "province" : "provinces"} · ${s.cities} ${s.cities === 1 ? "city" : "cities"}`} />
+
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">

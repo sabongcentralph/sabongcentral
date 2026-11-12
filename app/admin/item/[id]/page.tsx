@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/adminGuard";
 import { AVAILABILITY, EVENT_STATUSES, availOf, byId, counts, flagsOf, historyFor, notesFor, openReportTargets, queueStatus, reportsAbout, stages, titleOf, type GoodData } from "@/lib/db";
 import { one, type Search } from "@/lib/content";
 import { toEmbed } from "@/lib/embed";
+import { STATUS_LABEL, memberByListing } from "@/lib/members";
 import { PosterThumb } from "@/components/admin/PosterThumb";
 import { Chip, Note, Page, btnGhost, btnPrimary, input, labelCls, statusTone } from "@/components/ui";
 
@@ -50,6 +51,7 @@ export default async function ReviewItem({ params, searchParams }: { params: Pro
   const qs = queueStatus(l.status, st.get(l.id));
   const flags = flagsOf(l, targets);
   const data = l.data as unknown as Record<string, unknown>;
+  const member = await memberByListing(l.id);
   const embed = l.kind === "reel" ? toEmbed(String(data.url ?? "")) : null;
   const canBadge = l.kind === "farm" || l.kind === "good";
   const badgeOn = l.kind === "farm" ? !!data.verified : !!data.sellerVerified;
@@ -67,6 +69,7 @@ export default async function ReviewItem({ params, searchParams }: { params: Pro
         <Chip tone="plain">{l.kind}</Chip><Chip tone={statusTone(l.status)}>{qs}</Chip>{flags.map((f) => <Chip key={f} tone="red">{f}</Chip>)}{l.isSample && <Chip tone="plain">sample</Chip>}
       </div>
       <h1 className="m-0 font-serif text-[28px] font-semibold leading-tight">{titleOf(l)}</h1>
+      {member && <a href={`/admin/members/${member.id}`} className="w-fit rounded-full border border-line bg-cream px-3 py-1.5 text-[13px] font-semibold text-ink no-underline">Member: {member.name || member.email} · {STATUS_LABEL[member.status]} ›</a>}
       <p className="m-0 text-[13px] text-muted">Submitted by {l.submittedBy ?? "—"} · {l.createdAt}{l.reason ? ` · Last note: “${l.reason}”` : ""}</p>
       <VerifyLinks fb={String(data.verifyFacebook ?? (l.kind === "farm" ? data.facebook ?? "" : ""))} link={String(data.verifyLink ?? "")} />
       {isDerby && <Note tone="red">Derby listing: verify the cockpit license and LGU event permit before approving. Permits stated: <strong>{show(data.permits) || "none"}</strong></Note>}

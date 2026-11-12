@@ -2,6 +2,8 @@ import { submit, type Kind } from "@/lib/db";
 import { sameOrigin } from "@/lib/auth";
 import { back, field, isBot } from "@/lib/forms";
 import { toEmbed } from "@/lib/embed";
+import { isFacebook, toUrl } from "@/lib/links";
+import { canSubmit, linkListing, memberFromRequest } from "@/lib/members";
 import { badPhoto, photoFiles, savePhotos } from "@/lib/media";
 import { ARTICLE_TOPICS, EVENT_CATS, GOODS_CATS, REEL_TOPICS } from "@/lib/sample";
 import { AVAILABILITY } from "@/lib/db";
@@ -9,16 +11,6 @@ import { AREAS } from "@/lib/locations";
 
 const validPlace = (p: string, c: string) => !!AREAS.find((a) => a.p === p)?.c.includes(c);
 const pesos = (v: string) => (v ? (/^\d[\d,]*(\.\d+)?$/.test(v) ? `₱${v}` : v) : "₱ quote");
-
-function toUrl(v: string): string {
-  const t = v.trim();
-  if (!t) return "";
-  try {
-    const u = new URL(/^https?:\/\//i.test(t) ? t : `https://${t}`);
-    return u.hostname.includes(".") ? u.toString() : "";
-  } catch { return ""; }
-}
-const isFacebook = (u: string) => { try { return /(^|\.)(facebook\.com|fb\.com|fb\.me)$/i.test(new URL(u).hostname); } catch { return false; } };
 
 function longDate(iso: string) {
   const d = new Date(iso + "T00:00:00Z");
@@ -41,19 +33,25 @@ export async function POST(req: Request) {
   if (isBot(f)) return back(req, `${page}?tab=${kind}&sent=1`);
   const fail = (msg: string) => back(req, `${page}?tab=${kind}&error=${encodeURIComponent(msg)}`);
   const name = field(f, "contactName", 120), email = field(f, "email", 200);
+  // Farms, events and Market items need a signed-in Portal member.
+  const member = isPublic ? null : await memberFromRequest(req);
   if (isPublic) {
     if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail("Please enter your name and a valid email.");
     if (field(f, "confirm", 2) !== "1") return fail("Please tick the confirmation box.");
+  } else if (!member) {
+    return back(req, "/portal");
+  } else if (!canSubmit(member)) {
+    return fail("Your account can’t submit listings right now. Please contact us.");
   } else if (field(f, "confirm", 2) !== "1") {
     return fail("Please confirm that the information is accurate.");
   }
   // Verification links (Em, 2026-11-12): a Facebook page is required from every
   // submitter; farms give their farm page. Admin-only, except the farm page.
-  const vfb = toUrl(field(f, kind === "farm" ? "facebook" : "vfb", 300));
-  const vlink = toUrl(field(f, "vlink", 300));
+  const vfb = member && kind !== "farm" ? member.facebook : toUrl(field(f, kind === "farm" ? "facebook" : "vfb", 300));
+  const vlink = member && !field(f, "vlink", 300) ? member.org_link : toUrl(field(f, "vlink", 300));
   if (!isFacebook(vfb)) return fail("Please add a Facebook page or profile link (facebook.com/…) so admins can verify you.");
   if (field(f, "vlink", 300) && !vlink) return fail("The organization link doesn’t look like a web address.");
-  const by = isPublic ? `${name} <${email}> (public form)` : name || "Portal (test)";
+  const by = isPublic ? `${name} <${email}> (public form)` : `${member!.name || member!.email} <${member!.email}> (member #${member!.id})`;
   const province = field(f, "province", 80), city = field(f, "city", 80);
   let data: object;
 
@@ -80,7 +78,7 @@ export async function POST(req: Request) {
       time: [time12(field(f, "start", 5)), time12(field(f, "end", 5))].filter(Boolean).join(" – "),
       province: online ? "Online" : province, city: online ? "Online" : city, online, venue: field(f, "venue", 200) || (online ? "Online" : ""),
       desc: field(f, "desc", 2000), topics: field(f, "topics", 300), speakers: field(f, "speakers", 300),
-      fee: field(f, "fee", 80) || "Free", reg: field(f, "reg", 200), permits: field(f, "permits", 300), org: field(f, "org", 120) || by,
+      fee: field(f, "fee", 80) || "Free", reg: field(f, "reg", 200), permits: field(f, "permits", 300), org: field(f, "org", 120) || member?.name || name || "Organizer",
       link: online ? field(f, "link", 300) : "", status: "Upcoming",
     };
   } else if (kind === "good") {
@@ -129,6 +127,7 @@ export async function POST(req: Request) {
     if (paths.length) pics[k] = k === "gallery" || k === "photos" ? paths : paths[0];
   }
   data = { ...data, ...pics, verifyFacebook: vfb, verifyLink: vlink };
-  await submit(kind, data, by);
+  const id = await submit(kind, data, by);
+  if (member && id) await linkListing(id, member.id);
   return back(req, `${page}?tab=${kind}&sent=1`);
 }

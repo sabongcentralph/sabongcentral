@@ -14,3 +14,13 @@ export function messengerHref(fb: string): string | null {
     return null;
   }
 }
+export function toUrl(v: string): string {
+  const t = v.trim();
+  if (!t) return "";
+  try {
+    const u = new URL(/^https?:\/\//i.test(t) ? t : `https://${t}`);
+    return u.hostname.includes(".") ? u.toString() : "";
+  } catch { return ""; }
+}
+export const isFacebook = (u: string) => { try { return /(^|\.)(facebook\.com|fb\.com|fb\.me)$/i.test(new URL(u).hostname); } catch { return false; } };
+

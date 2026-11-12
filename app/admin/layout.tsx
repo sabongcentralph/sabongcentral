@@ -29,7 +29,7 @@ export default async function AdminLayout({ children }: Readonly<{ children: Rea
     );
   }
   const s = await adminSummary();
-  const counts = { waiting: s.waiting.length, reports: s.reports, messages: s.messages, permits: s.permits.length };
+  const counts = { waiting: s.waiting.length, reports: s.reports, messages: s.messages, permits: s.permits.length, members: s.applications };
   return (
     <div className="admin-dark min-h-screen lg:flex">
       <aside className="sticky top-0 hidden h-dvh w-[264px] flex-none flex-col gap-6 overflow-y-auto border-r border-line bg-[#0c0909] px-3 py-5 lg:flex">
