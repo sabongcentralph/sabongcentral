@@ -4,7 +4,6 @@ import { requireAdmin } from "@/lib/adminGuard";
 import { AVAILABILITY, EVENT_STATUSES, availOf, byId, counts, flagsOf, historyFor, notesFor, openReportTargets, queueStatus, reportsAbout, stages, titleOf, type GoodData } from "@/lib/db";
 import { one, type Search } from "@/lib/content";
 import { toEmbed } from "@/lib/embed";
-import { AdminNav } from "@/components/AdminNav";
 import { Chip, Note, Page, btnGhost, btnPrimary, input, labelCls, statusTone } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
@@ -60,8 +59,7 @@ export default async function ReviewItem({ params, searchParams }: { params: Pro
 
   return (
     <Page>
-      <AdminNav email={email} at="/admin" counts={c} />
-      <a href="/admin" className="text-[14px] font-semibold text-wine">← Approvals</a>
+      <a href="/admin/queue" className="text-[14px] font-semibold text-wine">← Review queue</a>
       {done && <Note tone="green">Done: <strong>{done.replace("_", " + ")}</strong>. Recorded in the activity log.</Note>}
       {err === "reason" && <Note tone="red">A reason is required to reject or request changes. The submitter will see it.</Note>}
       <div className="flex flex-wrap items-center gap-2">

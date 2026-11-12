@@ -1,18 +1,16 @@
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/adminGuard";
-import { counts, reports } from "@/lib/db";
-import { AdminNav } from "@/components/AdminNav";
+import { reports } from "@/lib/db";
 import { Chip, Empty, Page, btnGhost, input } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Reports" };
 
 export default async function AdminReports() {
-  const email = await requireAdmin();
-  const [list, c] = await Promise.all([reports(), counts()]);
+  await requireAdmin();
+  const list = await reports();
   return (
     <Page>
-      <AdminNav email={email} at="/admin/reports" counts={c} />
       <h1 className="m-0 font-serif text-[26px] font-semibold">Reports</h1>
       {list.length === 0 ? <Empty>No reports yet.</Empty> : list.map((r) => (
         <article key={r.id} className="flex flex-col gap-2 rounded-2xl border border-line bg-cream p-4">

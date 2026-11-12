@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/adminGuard";
-import { counts } from "@/lib/db";
 import { one, type Search } from "@/lib/content";
-import { AdminNav } from "@/components/AdminNav";
-import { Note, Page, btnPrimary, input, labelCls } from "@/components/ui";
+import { Note, Page, btnGhost, btnPrimary, input, labelCls } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Admin account" };
@@ -13,7 +11,10 @@ export default async function AdminAccount({ searchParams }: { searchParams: Pro
   const err = one((await searchParams).error);
   return (
     <Page>
-      <AdminNav email={email} at="/admin/account" counts={await counts()} />
+      <div className="flex w-full max-w-[440px] flex-wrap items-center gap-3 rounded-2xl border border-line bg-cream p-5">
+        <div className="flex-1"><div className="text-[15px] font-bold">Signed in</div><div className="text-[13px] text-muted">{email} · Super Admin</div></div>
+        <form action="/api/admin/logout" method="post"><button type="submit" className={btnGhost}>Sign out</button></form>
+      </div>
       <form action="/api/admin/password" method="post" className="flex w-full max-w-[440px] flex-col gap-4 rounded-2xl border border-line bg-cream p-5">
         <h1 className="m-0 font-serif text-[24px] font-semibold">Change password</h1>
         {err === "weak" && <Note tone="red">Use 12+ characters, and make sure both new passwords match.</Note>}

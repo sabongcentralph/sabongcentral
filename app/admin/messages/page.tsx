@@ -1,18 +1,16 @@
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/adminGuard";
-import { counts, messages } from "@/lib/db";
-import { AdminNav } from "@/components/AdminNav";
+import { messages } from "@/lib/db";
 import { Chip, Empty, Page, btnGhost } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Messages" };
 
 export default async function AdminMessages() {
-  const email = await requireAdmin();
-  const [list, c] = await Promise.all([messages(), counts()]);
+  await requireAdmin();
+  const list = await messages();
   return (
     <Page>
-      <AdminNav email={email} at="/admin/messages" counts={c} />
       <h1 className="m-0 font-serif text-[26px] font-semibold">Contact messages</h1>
       <p className="m-0 text-[13px] text-muted">From the Contact Us form. Reply to the sender by email. (Automatic forwarding to Gmail comes with email sending.)</p>
       {list.length === 0 ? <Empty>No messages yet.</Empty> : list.map((m) => (

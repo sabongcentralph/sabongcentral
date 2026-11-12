@@ -1,110 +1,154 @@
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/adminGuard";
-import { QUEUE, audit, byStatus, counts, flagsOf, openReportTargets, queueStatus, stages, titleOf, type Listing, type QueueStatus } from "@/lib/db";
-import { one, type Search } from "@/lib/content";
-import { AdminNav } from "@/components/AdminNav";
-import { Chip, Empty, Page, btnGhost, input, labelCls } from "@/components/ui";
+import { adminSummary, type Row } from "@/lib/adminData";
+import { titleOf, type QueueStatus } from "@/lib/db";
+import { AlertIcon, CalendarIcon, ChevronRight, FarmIcon, MailIcon, Pin, ShieldIcon } from "@/components/icons";
+import { Chip, Page } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Admin" };
+export const metadata: Metadata = { title: "Admin dashboard" };
 
-// Queue types: events are split into derbies and seminars/training.
-const TYPES = ["Farm", "Event", "Seminar/Training", "Market", "Supplier", "Reel", "Article", "Announcement"] as const;
-type QType = (typeof TYPES)[number];
-const KIND_TYPE = { farm: "Farm", good: "Market", supplier: "Supplier", reel: "Reel", article: "Article", notice: "Announcement", event: "Event" } as const;
-function typeOf(l: Listing): QType {
-  if (l.kind === "event") return (l.data as { derby?: boolean }).derby ? "Event" : "Seminar/Training";
-  return KIND_TYPE[l.kind];
-}
-const RISKS = ["Permit needed", "Report received", "Possible prohibited content"] as const;
 const tone = (q: QueueStatus) => (q === "Approved" ? "green" : q === "Rejected" || q === "Hidden" ? "red" : q === "Needs Changes" || q === "In Review" ? "gold" : "plain") as "green" | "red" | "gold" | "plain";
+const label = (q: QueueStatus) => (q === "New" ? "For review" : q);
+const short = (iso: string) => {
+  const d = new Date(iso.replace(" ", "T") + "Z");
+  return isNaN(+d) ? iso.slice(0, 10) : d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Manila" });
+};
 
-export default async function AdminHome({ searchParams }: { searchParams: Promise<Search> }) {
-  const email = await requireAdmin();
-  const sp = await searchParams;
-  const q = (QUEUE as readonly string[]).includes(one(sp.q)) ? (one(sp.q) as QueueStatus) : one(sp.q) === "All" ? "All" : "New";
-  const type = TYPES.find((t) => t === one(sp.type));
-  const risk = RISKS.find((r) => r === one(sp.risk));
-  const who = one(sp.who).toLowerCase(), where = one(sp.where).toLowerCase();
-  const [all, st, c, log, targets] = await Promise.all([byStatus("all"), stages(), counts(), audit(15), openReportTargets()]);
-  const rows = all.map((l) => ({ l, qs: queueStatus(l.status, st.get(l.id)), type: typeOf(l), flags: flagsOf(l, targets) }));
-  const tally = (s: QueueStatus) => rows.filter((r) => r.qs === s).length;
-  const placeOf = (l: Listing) => { const d = l.data as { province?: string; city?: string }; return `${d.city ?? ""} ${d.province ?? ""}`.toLowerCase(); };
-  const list = rows.filter((r) => (q === "All" || r.qs === q) && (!type || r.type === type) && (!risk || r.flags.includes(risk)) &&
-    (!who || (r.l.submittedBy ?? "").toLowerCase().includes(who)) && (!where || placeOf(r.l).includes(where)));
-  const link = (o: Record<string, string | undefined>) => {
-    const p = new URLSearchParams();
-    for (const [k, v] of Object.entries({ q, type, risk, who: one(sp.who), where: one(sp.where), ...o })) if (v && !(k === "q" && v === "New")) p.set(k, v);
-    const s = p.toString();
-    return s ? `/admin?${s}` : "/admin";
-  };
+function Tile({ href, icon, label, n, sub, hot = false }: { href: string; icon: React.ReactNode; label: string; n: number; sub: string; hot?: boolean }) {
+  return (
+    <a href={href} className={`lift flex items-center gap-3.5 rounded-2xl border p-4 text-ink no-underline ${hot && n > 0 ? "border-crimson/60 bg-gradient-to-br from-[#3a1216] to-cream" : "border-line bg-cream"}`}>
+      <span className={`flex size-12 flex-none items-center justify-center rounded-xl ${hot && n > 0 ? "bg-crimson text-white" : "bg-[#2a1c1c] text-wine"}`}>{icon}</span>
+      <span className="flex min-w-0 flex-col">
+        <span className="text-[13px] font-semibold text-ink-soft">{label}</span>
+        <span className="text-[30px] font-bold leading-tight">{n}</span>
+        <span className="truncate text-[12px] text-muted">{sub}</span>
+      </span>
+    </a>
+  );
+}
 
+function DateBox({ iso }: { iso?: string }) {
+  const d = iso ? new Date(iso + "T00:00:00Z") : null;
+  const ok = d && !isNaN(+d);
+  return (
+    <span className="flex size-14 flex-none flex-col items-center justify-center rounded-xl bg-gradient-to-br from-crimson to-[#4a0d14] text-white">
+      <span className="text-[10.5px] font-bold uppercase tracking-wider text-gold-light">{ok ? d.toLocaleString("en", { month: "short", timeZone: "UTC" }) : "—"}</span>
+      <span className="text-[20px] font-bold leading-none">{ok ? d.getUTCDate() : ""}</span>
+    </span>
+  );
+}
+
+function ReviewRow({ r }: { r: Row }) {
+  const d = r.l.data as { province?: string; city?: string };
+  return (
+    <li className="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-3">
+      <div className="flex min-w-0 flex-1 basis-[220px] flex-col">
+        <a href={`/admin/item/${r.l.id}`} className="truncate text-[14.5px] font-semibold text-ink no-underline">{titleOf(r.l)}</a>
+        <span className="truncate text-[12px] text-muted">{[[d.city, d.province].filter(Boolean).join(", "), r.l.submittedBy?.replace(/<.*>/, "").trim()].filter(Boolean).join(" · ") || "—"}</span>
+      </div>
+      <Chip tone="plain">{r.type}</Chip>
+      {r.flags.slice(0, 1).map((f) => <Chip key={f} tone="red">{f}</Chip>)}
+      <span className="w-[92px] text-[12.5px] text-muted">{short(r.l.createdAt)}</span>
+      <a href={`/admin/item/${r.l.id}`} className="inline-flex min-h-9 items-center rounded-lg bg-crimson px-3.5 text-[13px] font-semibold text-white no-underline">Review</a>
+    </li>
+  );
+}
+
+function Card({ title, href, more, children }: { title: string; href?: string; more?: string; children: React.ReactNode }) {
+  return (
+    <section className="flex flex-col overflow-hidden rounded-2xl border border-line bg-cream">
+      <div className="flex items-center gap-3 border-b border-line px-4 py-3">
+        <h2 className="m-0 flex-1 text-[16.5px] font-bold">{title}</h2>
+        {href && <a href={href} className="inline-flex items-center gap-1 text-[13px] font-semibold text-wine no-underline">{more ?? "View all"}<ChevronRight size={15} /></a>}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+export default async function AdminDashboard() {
+  await requireAdmin();
+  const s = await adminSummary();
+  const review = s.waiting.slice(0, 6);
   return (
     <Page>
-      <AdminNav email={email} at="/admin" counts={c} />
-      <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
-        {([
-          ["New submissions", tally("New"), link({ q: "New", type: undefined, risk: undefined })],
-          ["Needs changes", tally("Needs Changes"), link({ q: "Needs Changes", type: undefined, risk: undefined })],
-          ["Permit needed", rows.filter((r) => r.flags.includes("Permit needed") && r.l.status === "pending").length, link({ q: "All", risk: "Permit needed" })],
-          ["Open reports", c.reports, "/admin/reports"],
-          ["New messages", c.messages, "/admin/messages"],
-        ] as const).map(([l, n, href]) => (
-          <a key={l} href={href} className="rounded-2xl border border-line bg-cream p-3 text-ink no-underline">
-            <div className="font-serif text-[28px] font-semibold text-crimson">{n}</div>
-            <div className="text-[13px] text-muted">{l}</div>
-          </a>
-        ))}
-      </div>
-      <div className="flex flex-wrap gap-2 text-[13px]">
-        <a href="/admin/reports" className="rounded-full border border-line bg-cream px-3.5 py-2 font-semibold text-ink no-underline">Review reports</a>
-        <span className="rounded-full border border-dashed border-line px-3.5 py-2 text-muted">Member applications and the advisory editor: coming next</span>
+      <div className="flex flex-col gap-1">
+        <h1 className="m-0 font-serif text-[28px] font-semibold md:text-[32px]">Admin Dashboard</h1>
+        <p className="m-0 text-[14px] text-muted">Review listings, permits, reports and community content before they go public.</p>
       </div>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="m-0 font-serif text-[20px] font-semibold">Review queue</h2>
-        <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 md:mx-0 md:px-0">
-          {[...QUEUE, "All"].map((s) => (
-            <a key={s} href={link({ q: s })} aria-current={s === q ? "page" : undefined}
-              className={`flex min-h-9 flex-none items-center gap-1.5 rounded-full px-3.5 text-[13px] font-semibold no-underline ${s === q ? "bg-crimson text-white" : "border border-line bg-cream text-ink-soft"}`}>
-              {s}{s !== "All" && <span className="opacity-70">{tally(s as QueueStatus)}</span>}
-            </a>
-          ))}
-        </div>
-        <form method="get" action="/admin" className="grid gap-2 rounded-2xl border border-line bg-cream p-3 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
-          {q !== "New" && <input type="hidden" name="q" value={q} />}
-          <label className={labelCls}>Type<select name="type" defaultValue={type ?? ""} className={input}><option value="">All types</option>{TYPES.map((t) => <option key={t}>{t}</option>)}</select></label>
-          <label className={labelCls}>Risk<select name="risk" defaultValue={risk ?? ""} className={input}><option value="">Any</option>{RISKS.map((t) => <option key={t}>{t}</option>)}</select></label>
-          <label className={labelCls}>Submitter<input name="who" defaultValue={one(sp.who)} className={input} /></label>
-          <label className={labelCls}>Province / city<input name="where" defaultValue={one(sp.where)} className={input} /></label>
-          <button type="submit" className={btnGhost}>Filter</button>
-        </form>
-        {list.length === 0 ? <Empty>{q === "New" ? "Nothing waiting for review. 🎉" : "Nothing here."}</Empty> : (
-          <ul className="m-0 flex list-none flex-col divide-y divide-line rounded-2xl border border-line bg-cream p-0">
-            {list.map(({ l, qs, type: t, flags }) => (
-              <li key={l.id}>
-                <a href={`/admin/item/${l.id}`} className="flex min-h-14 flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 text-ink no-underline">
-                  <Chip tone="plain">{t}</Chip>
-                  <span className="min-w-0 flex-1 text-[14.5px] font-semibold">{titleOf(l)}</span>
-                  {flags.map((f) => <Chip key={f} tone="red">{f}</Chip>)}
-                  <Chip tone={tone(qs)}>{qs}</Chip>
-                  <span className="w-full text-[12px] text-muted md:w-auto">{l.submittedBy ?? "—"} · {l.createdAt.slice(0, 16)}{l.isSample ? " · sample" : ""}</span>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <Tile hot href="/admin/queue" icon={<ShieldIcon size={24} />} label="Waiting for review" n={s.waiting.length} sub={s.needsChanges ? `${s.needsChanges} waiting on submitter changes` : "New and in-review submissions"} />
+        <Tile hot href="/admin/queue?q=All&risk=Permit+needed" icon={<CalendarIcon size={24} />} label="Derby permits to check" n={s.permits.length} sub="Cockpit license and LGU permit" />
+        <Tile hot href="/admin/reports" icon={<AlertIcon size={24} />} label="Open reports" n={s.reports} sub="Scams, wrong info, prohibited items" />
+        <Tile href="/admin/queue?q=Approved" icon={<FarmIcon size={24} />} label="Live on the site" n={s.live.length} sub={`${s.provinces} ${s.provinces === 1 ? "province" : "provinces"} · ${s.cities} ${s.cities === 1 ? "city" : "cities"}`} />
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <Card title={`Needs your review${s.waiting.length ? ` (${s.waiting.length})` : ""}`} href="/admin/queue">
+          {review.length === 0 ? <p className="m-0 px-4 py-8 text-center text-[14px] text-muted">All caught up. Nothing waiting. 🎉</p> : (
+            <ul className="m-0 flex list-none flex-col divide-y divide-line p-0">{review.map((r) => <ReviewRow key={r.l.id} r={r} />)}</ul>
+          )}
+        </Card>
+
+        <div className="flex flex-col gap-5">
+          <Card title="Quick actions">
+            <div className="grid grid-cols-2 gap-2.5 p-3">
+              {([
+                ["/admin/queue", "Review queue", <ShieldIcon key="a" size={22} />],
+                ["/admin/queue?type=Event&q=All", "Derbies & events", <CalendarIcon key="b" size={22} />],
+                ["/admin/messages", `Messages${s.messages ? ` (${s.messages})` : ""}`, <MailIcon key="c" size={22} />],
+                ["/", "View public site", <Pin key="d" size={22} />],
+              ] as const).map(([href, l, icon]) => (
+                <a key={href} href={href} className="lift flex min-h-[84px] flex-col items-center justify-center gap-1.5 rounded-xl border border-line bg-[#140f0f] px-2 text-center text-[13px] font-semibold text-ink no-underline">
+                  <span className="text-wine">{icon}</span>{l}
                 </a>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+              ))}
+            </div>
+          </Card>
+          <Card title="Philippines coverage">
+            <div className="grid grid-cols-3 divide-x divide-line py-4 text-center">
+              {([[s.live.length, "Live listings"], [s.provinces, "Provinces"], [s.cities, "Cities / Mun."]] as const).map(([n, l]) => (
+                <div key={l} className="flex flex-col"><span className="text-[24px] font-bold">{n}</span><span className="text-[12px] text-muted">{l}</span></div>
+              ))}
+            </div>
+          </Card>
+        </div>
+      </div>
 
-      <section className="flex flex-col gap-2">
-        <h2 className="m-0 font-serif text-[20px] font-semibold">Activity log</h2>
-        <ul className="m-0 flex list-none flex-col gap-1 p-0 text-[13px] text-ink-soft">
-          {log.length === 0 && <li className="text-muted">No activity yet.</li>}
-          {log.map((a) => (
-            <li key={a.id}><span className="text-muted">{a.created_at.slice(0, 16)}</span> · <strong>{a.action}</strong> · {a.target}{a.reason ? ` · “${a.reason}”` : ""} · {a.admin}</li>
-          ))}
-        </ul>
-      </section>
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <Card title="Recent derbies & events" href="/admin/queue?type=Event&q=All">
+          {s.events.length === 0 ? <p className="m-0 px-4 py-6 text-[14px] text-muted">No events yet.</p> : (
+            <ul className="m-0 flex list-none flex-col divide-y divide-line p-0">
+              {s.events.map((r) => {
+                const d = r.l.data as { date?: string; days?: string; city?: string; province?: string; org?: string };
+                return (
+                  <li key={r.l.id}>
+                    <a href={`/admin/item/${r.l.id}`} className="flex items-center gap-3 px-4 py-3 text-ink no-underline hover:bg-white/[0.03]">
+                      <DateBox iso={d.date} />
+                      <span className="flex min-w-0 flex-1 flex-col">
+                        <span className="truncate text-[14.5px] font-semibold">{titleOf(r.l)}</span>
+                        <span className="truncate text-[12.5px] text-muted">{[d.city, d.province].filter(Boolean).join(", ")}{d.org ? ` · ${d.org}` : ""}</span>
+                      </span>
+                      <Chip tone={tone(r.qs)}>{label(r.qs)}</Chip>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </Card>
+        <Card title="Recent activity">
+          {s.log.length === 0 ? <p className="m-0 px-4 py-6 text-[14px] text-muted">No actions yet.</p> : (
+            <ul className="m-0 flex list-none flex-col gap-2.5 p-4 text-[13px]">
+              {s.log.map((a) => (
+                <li key={a.id} className="flex flex-col"><span><strong>{a.action}</strong> · <span className="text-ink-soft">{a.target}</span></span><span className="text-[11.5px] text-muted">{short(a.created_at)}{a.reason ? ` · “${a.reason}”` : ""}</span></li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      </div>
     </Page>
   );
 }
