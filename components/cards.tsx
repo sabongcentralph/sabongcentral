@@ -9,7 +9,7 @@ export function FarmCard({ f, compact = false }: { f: Listing<"farm">; compact?:
   const d: FarmData = f.data;
   return (
     <a href={`/farms/${f.slug}`} className={`${cardCls} ${compact ? "w-[220px] flex-none snap-start md:w-auto" : ""}`}>
-      <div className="overflow-hidden"><Photo className={compact ? "h-[120px]" : "h-[160px]"} label="Farm photo" src={d.cover ?? d.gallery?.[0]} /></div>
+      <div className="overflow-hidden"><Photo className={compact ? "h-[120px]" : "h-[160px]"} label="Farm photo" src={d.cover ?? d.gallery?.[0] ?? d.profile} /></div>
       <div className="flex flex-col gap-1.5 p-3.5">
         <div className="flex items-start gap-2">
           <h3 className="m-0 flex-1 text-[16px] font-bold leading-snug">{d.name}</h3>

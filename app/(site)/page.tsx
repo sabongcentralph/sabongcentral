@@ -66,7 +66,7 @@ export default async function Home() {
             <SectionHead title="Farm Spotlight" />
             <a href={`/farms/${spot.slug}`} className="card overflow-hidden rounded-2xl border-2 border-gold bg-cream text-ink no-underline md:flex">
               <div className="relative overflow-hidden md:w-1/2">
-                <Photo className="h-[170px] md:h-full md:min-h-[220px]" label="Farm photo" />
+                <Photo className="h-[170px] md:h-full md:min-h-[220px]" label="Farm photo" src={spot.data.cover ?? spot.data.gallery?.[0] ?? spot.data.profile} />
                 <span className="absolute left-3 top-3 rounded-md bg-[#e2b43a] px-2 py-1 text-[11px] font-extrabold tracking-[1.2px] text-[#3a0a0a]">FEATURED THIS WEEK</span>
               </div>
               <div className="flex flex-col gap-2 p-4 md:p-6">
