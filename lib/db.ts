@@ -10,7 +10,7 @@ export type Status = "pending" | "approved" | "rejected" | "hidden";
 
 export type FarmData = {
   name: string; province: string; city: string; about: string; ownerName: string; phone: string;
-  facebook: string; bloodlines: Bloodline[]; verified: boolean; est: string;
+  facebook: string; messenger?: string; bloodlines: Bloodline[]; verified: boolean; est: string;
   visit?: string; address?: string; // address is private: never shown publicly
   profile?: string; cover?: string; gallery?: string[]; // /media/p/... photo paths
 };

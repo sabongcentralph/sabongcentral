@@ -47,6 +47,9 @@ export function ListingForm({ tab, up, who, l, admin = false }: { tab: "farm" | 
         <label className={labelCls}>Contact number{admin ? " (public number only)" : " *"}<input name="phone" required={!admin} inputMode="tel" placeholder="09XX XXX XXXX" defaultValue={v("phone", m.phone)} className={input} /></label>
         <label className={labelCls}>Year established<input name="est" inputMode="numeric" maxLength={4} defaultValue={v("est")} className={input} /></label>
         <label className={labelCls}>Farm Facebook page *<input name="facebook" required maxLength={300} defaultValue={v("facebook", m.facebook)} placeholder="https://www.facebook.com/yourfarm" className={input} /></label>
+        <label className={labelCls}>Messenger link (for the Message button)<input name="messenger" maxLength={300} defaultValue={v("messenger")} placeholder="https://m.me/yourfarm" className={input} />
+          <span className="text-[12px] font-normal text-muted">On Facebook: your page → Messenger → copy the m.me link. Blank = we use the Facebook page.</span>
+        </label>
         <label className={`${labelCls} ${full}`}>About the farm<textarea name="about" rows={4} defaultValue={v("about")} className={`${input} py-2.5`} /></label>
         {up && <PhotoPicker name="profile" label="Profile photo (logo or farm sign)" />}
         {up && <PhotoPicker name="cover" label="Cover photo" />}
