@@ -4,9 +4,9 @@
 @theme {
   --color-noir: #121215;
   --color-noir-soft: #1d1d22;
-  --color-crimson: #d62828;
-  --color-crimson-dark: #b01c1c;
-  --color-wine: #c81e1e;
+  --color-crimson: #e81e25;
+  --color-crimson-dark: #c8161d;
+  --color-wine: #d8161e;
   --color-ivory: #f5f4f2;
   --color-cream: #ffffff;
   --color-sand: #d6d3ce;
@@ -51,14 +51,14 @@
 }
 
 :focus-visible {
-  outline: 2px solid #d62828;
+  outline: 2px solid #e81e25;
   outline-offset: 2px;
 }
 
 /* Photo placeholder until farms upload real photos. */
 .ph {
   background-color: #e9e7e3;
-  background-image: repeating-linear-gradient(135deg, rgb(214 40 40 / 0.06) 0 12px, transparent 12px 24px);
+  background-image: repeating-linear-gradient(135deg, rgb(232 30 37 / 0.06) 0 12px, transparent 12px 24px);
 }
 
 /* Calm, classy motion. All of it turns off for people who ask for less motion. */
@@ -88,7 +88,7 @@
   background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.35) 50%, transparent 70%);
   transform: translateX(-120%);
 }
-.lift:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgb(214 40 40 / 0.32); filter: brightness(1.05); }
+.lift:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgb(232 30 37 / 0.32); filter: brightness(1.05); }
 .lift:hover::after { transform: translateX(120%); transition: transform 0.7s ease; }
 
 .arrow { display: inline-block; transition: transform 0.25s ease; }
@@ -107,7 +107,7 @@ a:hover .arrow { transform: translateX(4px); }
 .card:hover .ph { transform: scale(1.06); }
 
 .field { transition: border-color 0.2s, box-shadow 0.2s; }
-.field:focus { border-color: var(--color-crimson); box-shadow: 0 0 0 3px rgb(214 40 40 / 0.15); outline: none; }
+.field:focus { border-color: var(--color-crimson); box-shadow: 0 0 0 3px rgb(232 30 37 / 0.15); outline: none; }
 
 /* Hero: bold red and gold slashes that slide in, then drift slowly; a gold streak runs along the bottom. */
 @keyframes slash-in { from { translate: 60px 0; opacity: 0; } to { translate: 0 0; opacity: 1; } }
@@ -122,7 +122,7 @@ a:hover .arrow { transform: translateX(4px); }
 .js-reveal [data-reveal].in { opacity: 1; transform: none; }
 
 /* Small live dot next to "Upcoming Derbies". */
-@keyframes pulse-dot { 0% { box-shadow: 0 0 0 0 rgb(214 40 40 / 0.55); } 100% { box-shadow: 0 0 0 10px rgb(214 40 40 / 0); } }
+@keyframes pulse-dot { 0% { box-shadow: 0 0 0 0 rgb(232 30 37 / 0.55); } 100% { box-shadow: 0 0 0 10px rgb(232 30 37 / 0); } }
 .live-dot { animation: pulse-dot 1.6s ease-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -140,8 +140,8 @@ dialog.drawer::backdrop { background: rgb(18 18 21 / 0.55); }
 /* Admin panel: black theme with bright red and gold, same tokens redefined. */
 .admin-dark {
   color-scheme: dark;
-  --color-crimson: #e0302f;
-  --color-crimson-dark: #b01c1c;
+  --color-crimson: #f0282e;
+  --color-crimson-dark: #c8161d;
   --color-wine: #ff5a5a;
   --color-ivory: #0e0e10;
   --color-cream: #18181c;

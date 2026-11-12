@@ -85,7 +85,7 @@ export function Row({ children, cols = 4 }: { children: React.ReactNode; cols?: 
 
 export const input = "field min-h-11 w-full rounded-[10px] border border-sand bg-cream px-3 text-[15px] text-ink";
 export const labelCls = "flex flex-col gap-1.5 text-[13px] font-semibold text-ink-soft";
-export const btnPrimary = "lift inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full border-0 bg-crimson px-5 text-[15px] font-semibold text-white no-underline shadow-[0_4px_14px_rgb(214_40_40/0.28)]";
+export const btnPrimary = "lift inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full border-0 bg-crimson px-5 text-[15px] font-semibold text-white no-underline shadow-[0_4px_14px_rgb(232_30_37/0.28)]";
 export const btnGhost = "inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full border border-sand bg-cream px-5 text-[14px] font-semibold text-crimson no-underline";
 
 export const statusTone = (s: string) => (s === "approved" ? "green" : s === "pending" ? "gold" : s === "rejected" ? "red" : "plain") as "green" | "gold" | "red" | "plain";

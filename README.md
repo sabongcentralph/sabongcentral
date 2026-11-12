@@ -44,7 +44,7 @@ TL / EN switch). Page content is in simple Taglish.
 
 ## Look
 
-Bold bright red (#D62828), black (#121215) and white, with a touch of gold
+Bold bright red (#E81E25), black (#121215) and white, with a touch of gold
 (#C8A44D). No maroon. Colors and fonts (Fraunces for headings, Inter for text)
 are theme tokens in `app/globals.css`, along with the motion (hero slashes,
 red tab sweep, card lift, button shine, fade-up on scroll via
