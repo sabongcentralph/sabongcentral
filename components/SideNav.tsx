@@ -37,6 +37,7 @@ export const SIDE_SECTIONS: { title: string; items: Item[] }[] = [
       { href: "/legal/disclaimer", label: "Legal Disclaimer" },
       { href: "/legal/market", label: "Marketplace Notice" },
       { href: "/legal/rules", label: "Portal Rules" },
+      { href: "/legal/responsible-gaming", label: "Responsible Gaming" },
     ],
   },
 ];
@@ -57,7 +58,7 @@ export function SideNav() {
           ))}
         </section>
       ))}
-      <p className="m-0 px-3 text-[11.5px] leading-relaxed text-muted">18 and over only. Information only: no bets, no payments.</p>
+      <p className="m-0 px-3 text-[11.5px] leading-relaxed text-muted">21 and over only. Gamble responsibly. Information only: no bets, no payments.</p>
     </nav>
   );
 }

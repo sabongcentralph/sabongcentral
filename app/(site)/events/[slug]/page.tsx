@@ -61,6 +61,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
           </div>
           <Note tone={d.derby ? "red" : "gold"}>Information only. Sabong Central does not organize events, accept bets, livestream fights, or receive event payments. Any fee is paid directly to the organizer.</Note>
           <ListedBy data={d} title={d.title} />
+          {d.derby && <p className="m-0 rounded-xl bg-blush px-3 py-2 text-[13px] font-semibold text-wine">21+ only · Gamble responsibly. Sabong Central does not take bets or sell tickets. Need help? National Problem Gambling Helpline (02) 8248-9568. <a href="/legal/responsible-gaming" className="text-wine">Learn more</a></p>}
           <a href={`/report?target=${encodeURIComponent("Event: " + d.title)}`} className="flex min-h-11 items-center gap-1.5 text-[14px] font-semibold text-wine no-underline"><Flag size={15} /> Report this event</a>
         </aside>
       </div>

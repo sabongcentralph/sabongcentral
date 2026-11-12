@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   if (!roles.length) return fail("Please pick at least one role.");
   if (!isFacebook(facebook)) return fail("Please add your Facebook page or profile link (facebook.com/…) so admins can verify you.");
   if (org && !orgUrl) return fail("The organization link doesn’t look like a web address.");
-  if (m.status === "incomplete" && (field(f, "adult", 2) !== "1" || field(f, "terms", 2) !== "1")) return fail("Please confirm you are 18+ and agree to the Portal Rules.");
+  if (m.status === "incomplete" && (field(f, "adult", 2) !== "1" || field(f, "terms", 2) !== "1")) return fail("Please confirm you are 21 or older and agree to the Portal Rules.");
   await saveProfile(m.id, { name, phone, roles, facebook, org_link: orgUrl });
   return back(req, m.status === "incomplete" ? "/portal?welcome=1" : "/portal?tab=account&saved=1");
 }

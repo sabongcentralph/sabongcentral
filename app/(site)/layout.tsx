@@ -1,4 +1,6 @@
+import { cookies } from "next/headers";
 import { getLang } from "@/lib/i18n";
+import { AgeGate } from "@/components/AgeGate";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomTabs } from "@/components/BottomTabs";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -7,8 +9,10 @@ import { SideNav } from "@/components/SideNav";
 // Public site chrome: header, side menu, footer, bottom tabs. The admin panel has its own.
 export default async function SiteLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const lang = await getLang();
+  const age = (await cookies()).get("sc_21")?.value;
   return (
     <div className="flex min-h-screen flex-col">
+      {age !== "1" && <AgeGate under={age === "no"} />}
       <div className="bg-[#2f2a1f] px-4 py-1.5 text-center text-[12px] font-semibold text-gold-light">
         BETA · Sabong Central is new. Listings are being added every day.
       </div>

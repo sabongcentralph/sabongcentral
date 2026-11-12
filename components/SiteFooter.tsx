@@ -8,6 +8,7 @@ const LINKS = [
   ["/legal/disclaimer", "Legal Disclaimer"],
   ["/legal/market", "Marketplace Notice"],
   ["/legal/rules", "Portal Rules"],
+  ["/legal/responsible-gaming", "Responsible Gaming"],
   ["/legal/faq", "FAQ"],
   ["/contact", "Contact Us"],
   ["/report", "Report Scam"],
@@ -23,7 +24,8 @@ export function SiteFooter({ lang }: { lang: Lang }) {
           <span className="text-[13px] text-[#cfb3ae]">
             {CONTACT_EMAIL} · Facebook: {FB_PAGE} · Manila, Philippines
           </span>
-          <span className="text-[12px] text-[#b89a95]">18 and over only</span>
+          <span className="text-[12px] font-semibold text-gold-light">21+ only · Gamble responsibly · We never take bets</span>
+          <span className="text-[12px] text-[#b89a95]">Problem with gambling? National Problem Gambling Helpline (PAGCOR): <a href="tel:0282489568" className="text-[#f1dcd8]">(02) 8248-9568</a>, 24/7</span>
         </div>
         <nav aria-label="Footer" className="grid grid-cols-2 gap-x-6 gap-y-1 sm:grid-cols-3">
           {LINKS.map(([href, text]) => (

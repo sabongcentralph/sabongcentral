@@ -78,7 +78,7 @@ function PasswordForm({ first, needTerms }: { first: boolean; needTerms: boolean
       <label className={labelCls}>New password again<input name="again" type="password" required minLength={10} autoComplete="new-password" className={input} /></label>
       {needTerms && (
         <>
-          <label className={`${full} flex items-start gap-2 text-[13.5px] text-ink-soft`}><input type="checkbox" name="adult" value="1" required className="mt-0.5 size-[17px] flex-none accent-crimson" /> I am 18 years old or older.</label>
+          <label className={`${full} flex items-start gap-2 text-[13.5px] text-ink-soft`}><input type="checkbox" name="adult" value="1" required className="mt-0.5 size-[17px] flex-none accent-crimson" /> I am 21 years old or older.</label>
           <label className={`${full} flex items-start gap-2 text-[13.5px] text-ink-soft`}><input type="checkbox" name="terms" value="1" required className="mt-0.5 size-[17px] flex-none accent-crimson" /> <span>I agree to the <a href="/legal/rules" className="font-semibold text-wine">Portal Rules</a>, <a href="/legal/terms" className="font-semibold text-wine">Terms of Use</a> and <a href="/legal/privacy" className="font-semibold text-wine">Privacy Notice</a>.</span></label>
         </>
       )}
@@ -103,7 +103,7 @@ function ProfileForm({ m, first }: { m: Member; first: boolean }) {
       <label className={`${labelCls} ${full}`}>Organization, farm or business link (optional)<input name="org_link" maxLength={300} defaultValue={m.org_link} placeholder="https://…" className={input} /></label>
       {first && (
         <>
-          <label className={`${full} flex items-start gap-2 text-[13.5px] text-ink-soft`}><input type="checkbox" name="adult" value="1" required className="mt-0.5 size-[17px] flex-none accent-crimson" /> I am 18 years old or older.</label>
+          <label className={`${full} flex items-start gap-2 text-[13.5px] text-ink-soft`}><input type="checkbox" name="adult" value="1" required className="mt-0.5 size-[17px] flex-none accent-crimson" /> I am 21 years old or older.</label>
           <label className={`${full} flex items-start gap-2 text-[13.5px] text-ink-soft`}><input type="checkbox" name="terms" value="1" required className="mt-0.5 size-[17px] flex-none accent-crimson" /> <span>I agree to the <a href="/legal/rules" className="font-semibold text-wine">Portal Rules</a>, <a href="/legal/terms" className="font-semibold text-wine">Terms of Use</a> and <a href="/legal/privacy" className="font-semibold text-wine">Privacy Notice</a>. Sabong Central never asks for government IDs.</span></label>
         </>
       )}

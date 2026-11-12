@@ -5,7 +5,7 @@ import { Note, Page } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
-const KEYS: Record<string, string> = { about: "About", terms: "Terms", privacy: "Privacy", rules: "Rules", market: "Market", faq: "FAQ", disclaimer: "Disclaimer" };
+const KEYS: Record<string, string> = { about: "About", terms: "Terms", privacy: "Privacy", rules: "Rules", market: "Market", faq: "FAQ", disclaimer: "Disclaimer", "responsible-gaming": "Responsible" };
 
 export async function generateMetadata({ params }: { params: Promise<{ doc: string }> }): Promise<Metadata> {
   const d = LEGAL[KEYS[(await params).doc]];
