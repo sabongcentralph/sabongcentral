@@ -589,21 +589,30 @@ export const NOTICES = [
     "title": "SAMPLE: Avian Influenza advisory for Region IV-A",
     "meta": "Bureau of Animal Industry · Nov 8, 2026",
     "text": "Poultry raisers are advised to tighten biosecurity and report sudden bird deaths.",
-    "source": "Source: bai.gov.ph (linked on the real site)"
+    "source": "Source: bai.gov.ph (linked on the real site)",
+    "issuer": "Bureau of Animal Industry",
+    "scope": "Region IV-A (CALABARZON)",
+    "expires": "Dec 31, 2026"
   },
   {
     "kind": "Official Advisories",
     "title": "SAMPLE: Temporary restrictions on moving poultry",
     "meta": "Department of Agriculture · Nov 3, 2026",
     "text": "A shipping permit and veterinary health certificate are required before moving poultry out of the province.",
-    "source": "Source: da.gov.ph (linked on the real site)"
+    "source": "Source: da.gov.ph (linked on the real site)",
+    "issuer": "Department of Agriculture",
+    "scope": "Batangas province",
+    "expires": "Until lifted"
   },
   {
     "kind": "Official Advisories",
     "title": "SAMPLE: Newcastle Disease vaccination schedule",
     "meta": "Provincial Veterinary Office · Oct 28, 2026",
     "text": "Free ND vaccination in Batangas barangays from Nov 15–30.",
-    "source": "Source: provincial vet office (linked on the real site)"
+    "source": "Source: provincial vet office (linked on the real site)",
+    "issuer": "Batangas Provincial Veterinary Office",
+    "scope": "Batangas barangays",
+    "expires": "Nov 30, 2026"
   },
   {
     "kind": "Safety Warnings",
@@ -658,14 +667,14 @@ export const SUPPLIERS = [
     "phone": "0919 330 8812"
   },
   {
-    "kind": "Agri Supply Stores",
+    "kind": "Agricultural Supply Stores",
     "name": "Farm Essentials",
     "place": "Tanauan City, Batangas",
     "about": "Leg bands, disinfectants, farm tools",
     "phone": "0927 789 4410"
   },
   {
-    "kind": "Agri Supply Stores",
+    "kind": "Agricultural Supply Stores",
     "name": "Rosario Agri Center (sample)",
     "place": "Rosario, Batangas",
     "about": "Vitamins, feeds, cleaning supplies",
@@ -674,3 +683,7 @@ export const SUPPLIERS = [
 ];
 
 export const BLOODLINES = ["Albany", "Bates Black", "Boston Roundhead", "Cardinal Club Kelso", "Cecil Davis Kelso", "Claret", "Col. Givens Hatch", "Duke Hulsey Grey", "Flarry Eye Grey", "GBS", "Gilmore Hatch", "Hatch", "Harold Brown Grey", "Hennie", "Kelso", "Lemon 84", "McLean Hatch", "Melsims Hatch", "Popeye Grey", "Red Fox Grey", "Roundhead", "Sweater", "White Kelso", "White Boston Roundhead", "White Hackle", "Yellow Leg Hatch", "Other"];
+
+// Topics used by the public submission form and the Learning Hub filters.
+export const ARTICLE_TOPICS = ["Breeding", "Nutrition", "Biosecurity", "Incubation", "Poultry Health", "Farm Management"];
+export const REEL_TOPICS = ["Feeding", "Poultry Health", "Breeding", "Farm Management", "Housing", "Incubation"];

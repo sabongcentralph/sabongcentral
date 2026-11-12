@@ -10,5 +10,6 @@ export const TABS = [
 ] as const;
 
 export function isActive(path: string, href: string) {
+  if (href === "/education" && (path === "/learn" || path.startsWith("/learn/"))) return true;
   return href === "/" ? path === "/" : path === href || path.startsWith(href + "/");
 }

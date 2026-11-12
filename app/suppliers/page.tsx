@@ -7,14 +7,14 @@ import { BIZ_NOTE, Empty, Note, Page, PageHead } from "@/components/ui";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Verified Suppliers" };
 
-const KINDS = ["Feed Manufacturers", "Equipment Providers", "Agri Supply Stores"];
+const KINDS = ["Feed Manufacturers", "Equipment Providers", "Agricultural Supply Stores"];
 
 export default async function SuppliersPage({ searchParams }: { searchParams: Promise<Search> }) {
   const kind = one((await searchParams).kind);
   const shown = (await approved("supplier")).filter((s) => !kind || s.data.kind === kind);
   return (
     <Page>
-      <PageHead kicker="Directory" title="Verified Suppliers" sub="Feed manufacturers, equipment providers and agri supply stores." />
+      <PageHead kicker="Directory" title="Verified Suppliers" sub="Feed manufacturers, equipment providers and agricultural supply stores." />
       <nav aria-label="Supplier types" className="-mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0">
         {["", ...KINDS].map((k) => (
           <a key={k || "all"} href={k ? `/suppliers?kind=${encodeURIComponent(k)}` : "/suppliers"} aria-current={k === kind ? "page" : undefined}
@@ -24,7 +24,16 @@ export default async function SuppliersPage({ searchParams }: { searchParams: Pr
         ))}
       </nav>
       <Note>{BIZ_NOTE} Deal with suppliers directly; no payments go through Sabong Central.</Note>
-      {shown.length === 0 ? <Empty>No suppliers.</Empty> : <div className="grid gap-3 md:grid-cols-2">{shown.map((s) => <SupplierCard key={s.id} s={s} />)}</div>}
+      {shown.length === 0 ? <Empty>No suppliers.</Empty> : (kind ? [kind] : KINDS).map((k) => {
+        const list = shown.filter((s) => s.data.kind === k);
+        return list.length === 0 ? null : (
+          <section key={k} className="flex flex-col gap-3">
+            <h2 className="m-0 font-serif text-[20px] font-semibold">{k}</h2>
+            <div className="grid gap-3 md:grid-cols-2">{list.map((s) => <SupplierCard key={s.id} s={s} />)}</div>
+          </section>
+        );
+      })}
+      <p className="m-0 text-[13px] text-muted">Suppliers sign up through the <a href="/portal" className="font-semibold text-wine">Portal</a> with the same checks as Market sellers.</p>
     </Page>
   );
 }

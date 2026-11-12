@@ -7,10 +7,7 @@ import { Note, Page, PageHead, btnPrimary, input, labelCls } from "@/components/
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Portal" };
 
-const TABS = [
-  ["farm", "Farm"], ["event", "Event"], ["good", "Market item"], ["reel", "Reel"], ["notice", "Announcement"],
-] as const;
-const TOPICS = ["Feeding", "Poultry Health", "Breeding", "Farm Management", "Housing", "Incubation"];
+const TABS = [["farm", "Farm"], ["event", "Event or seminar"], ["good", "Market item"]] as const;
 
 const Honeypot = () => <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px]" />;
 
@@ -24,10 +21,11 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
   return (
     <Page>
       <div className="mx-auto flex w-full max-w-[820px] flex-col gap-5">
-        <PageHead kicker="Portal" title="Submit a listing" sub="For farms, organizers and sellers. Every submission is reviewed by an admin before it goes public." />
+        <PageHead kicker="Member Portal" title="Submit a listing" sub="For farm owners, event and seminar organizers, venues, Market sellers and suppliers. Every listing is reviewed by an admin before it goes public." />
         <Note>
-          <strong>Test version.</strong> There's no login yet. Accounts (email code), business documents and your dashboard come in the next step. For now you can try submit → admin approve → live.
+          <strong>Test version.</strong> On the real site you will first create a Portal account: verify your email with a 6-digit code, add your mobile number, pick your role, and send your business registration or proof of legitimacy. Accounts are coming in the next step; for now you can try submit → admin approve → live.
         </Note>
+        <p className="m-0 text-[13.5px] text-ink-soft">Sharing an article, an educational reel or a community announcement? Use the <a href="/submit" className="font-semibold text-wine">public submission form</a> instead; no account needed.</p>
         <nav aria-label="Listing type" className="-mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0">
           {TABS.map(([k, label]) => (
             <a key={k} href={`/portal?tab=${k}`} aria-current={k === tab ? "page" : undefined}
@@ -51,6 +49,8 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
               <label className={labelCls}>Year established<input name="est" inputMode="numeric" maxLength={4} className={input} /></label>
               <label className={labelCls}>Facebook page (for the Message button)<input name="facebook" placeholder="facebook.com/yourfarm" className={input} /></label>
               <label className={`${labelCls} ${full}`}>About the farm<textarea name="about" rows={4} className={`${input} py-2.5`} /></label>
+              <label className={labelCls}>Visit policy<input name="visit" placeholder="e.g. By appointment only" className={input} /></label>
+              <label className={labelCls}>Exact address (private, admin only)<input name="address" className={input} /></label>
               <fieldset className={`m-0 border-0 p-0 ${full}`}>
                 <legend className="mb-1.5 text-[13px] font-semibold text-ink-soft">Bloodlines</legend>
                 <div className="grid grid-cols-2 gap-x-3 sm:grid-cols-3">
@@ -79,6 +79,7 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
               <label className={labelCls}>Start time<input name="start" type="time" className={input} /></label>
               <label className={labelCls}>End time<input name="end" type="time" className={input} /></label>
               <label className={`${full} flex min-h-9 items-center gap-2 text-[14px] font-semibold text-ink-soft`}><input type="checkbox" name="online" value="1" className="size-[17px] accent-crimson" /> Online event (webinar)</label>
+              <label className={`${labelCls} ${full}`}>Online link (webinars only)<input name="link" type="url" placeholder="Zoom, Facebook Live or Google Meet link" className={input} /></label>
               <LocationFields idPrefix="pe" />
               <label className={`${labelCls} ${full}`}>Venue<input name="venue" placeholder="Hall, farm, cockpit or arena" className={input} /></label>
               <label className={`${labelCls} ${full}`}>Description<textarea name="desc" rows={4} className={`${input} py-2.5`} /></label>
@@ -100,32 +101,21 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
                 </select>
               </label>
               <label className={labelCls}>Price (₱)<input name="price" inputMode="decimal" placeholder="850 (blank = ask for quote)" className={input} /></label>
+              <label className={labelCls}>Availability<select name="avail" className={input}>{["Available", "Reserved", "Sold"].map((a) => <option key={a}>{a}</option>)}</select></label>
+              <label className={labelCls}>Condition<select name="condition" className={input}>{["New", "Used", "Not applicable (service)"].map((a) => <option key={a}>{a}</option>)}</select></label>
+              <label className={`${labelCls} ${full}`}>Pickup or delivery info<input name="pickup" placeholder="e.g. Pickup in Lipa City, or seller arranges delivery" className={input} /></label>
               <label className={labelCls}>Seller name *<input name="seller" required className={input} /></label>
               <label className={labelCls}>Contact number *<input name="phone" required inputMode="tel" className={input} /></label>
               <LocationFields required idPrefix="pg" />
               <label className={`${labelCls} ${full}`}>Description<textarea name="desc" rows={4} className={`${input} py-2.5`} /></label>
-              <p className={`m-0 text-[12.5px] text-muted ${full}`}>Not allowed: live birds, fighting weapons and regulated veterinary medicines.</p>
-            </>
-          )}
-          {tab === "reel" && (
-            <>
-              <label className={`${labelCls} ${full}`}>Video link * (Facebook, YouTube or TikTok)
-                <input name="url" type="url" required placeholder="https://www.youtube.com/shorts/… or https://www.tiktok.com/@farm/video/…" className={input} />
-              </label>
-              <label className={labelCls}>Title *<input name="title" required className={input} /></label>
-              <label className={labelCls}>Topic<select name="topic" className={input}>{TOPICS.map((t) => <option key={t}>{t}</option>)}</select></label>
-              <label className={`${labelCls} ${full}`}>Farm name<input name="farm" className={input} /></label>
-              <p className={`m-0 text-[12.5px] text-muted ${full}`}>Educational only: no fight footage, betting content or animal cruelty.</p>
-            </>
-          )}
-          {tab === "notice" && (
-            <>
-              <label className={labelCls}>Farm name<input name="farm" className={input} /></label>
-              <label className={labelCls}>Title *<input name="title" required className={input} /></label>
-              <label className={`${labelCls} ${full}`}>Details *<textarea name="text" rows={4} required className={`${input} py-2.5`} /></label>
+              <p className={`m-0 text-[12.5px] text-muted ${full}`}>Not allowed: live birds, fighting weapons, regulated veterinary medicines, and anything gambling-related. No payments, checkout or delivery booking through Sabong Central.</p>
             </>
           )}
           <label className={`${labelCls} ${full}`}>Your name (for the admin)<input name="contactName" className={input} /></label>
+          <label className={`${full} flex items-start gap-2 text-[13.5px] text-ink-soft`}>
+            <input type="checkbox" name="confirm" value="1" required className="mt-0.5 size-[17px] flex-none accent-crimson" />
+            I confirm the information is accurate, and I agree to the <a href="/legal/rules" className="font-semibold text-wine">Portal Rules</a>{tab === "good" ? <> and <a href="/legal/market" className="font-semibold text-wine">Market Notice</a></> : null}.
+          </label>
           <button type="submit" className={`${btnPrimary} ${full}`}>Submit for review</button>
         </form>
       </div>

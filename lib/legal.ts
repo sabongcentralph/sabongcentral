@@ -106,7 +106,7 @@ export const LEGAL: Record<string, LegalDoc> = {
       ],
       [
         "What we collect",
-        "Visitors: limited technical data only. Account holders: name, contact details, roles, farm or business info, photos, verification documents, and account activity."
+        "Visitors: limited technical data only. Public form contributors (articles, reels, announcements): name and email, kept private and used only to review your submission. Portal members: name, email, mobile number, roles, farm or business info, photos, verification documents, and account activity. We do NOT collect government IDs."
       ],
       [
         "Why we collect it",
@@ -114,11 +114,11 @@ export const LEGAL: Record<string, LegalDoc> = {
       ],
       [
         "What is public",
-        "Farm or seller name, province and city, public business contact, photos, descriptions, and prices. Business documents and exact addresses are never shown publicly. We do not collect government IDs."
+        "Farm or seller name, province and city, public business contact, photos, descriptions, and prices. Exact addresses are not public by default, and business documents are never shown publicly."
       ],
       [
         "Business documents",
-        "Farms and organizers submit business registration papers. Seen only by authorized reviewers, never public, and deleted after rejection or account closure unless the law requires keeping them. We do not collect government IDs."
+        "Farms, organizers and venues submit business registration or proof of legitimacy; sellers may do so optionally. Verification documents are private and seen only by admins, never public. They are kept only as long as necessary and deleted after rejection or account closure unless the law requires keeping them. We do not collect government IDs."
       ],
       [
         "Sharing and retention",
@@ -130,7 +130,7 @@ export const LEGAL: Record<string, LegalDoc> = {
       ],
       [
         "Your rights",
-        "To be informed, access, correct, object, withdraw consent, erase or block, port, and complain to the National Privacy Commission (privacy.gov.ph)."
+        "To be informed, access, correct, object, withdraw consent, erase or block, port, and complain to the National Privacy Commission (privacy.gov.ph). To request access, correction or deletion, use the Contact page (topic: Privacy / data request) or email sabongcentralph@gmail.com."
       ],
       [
         "18+ only",

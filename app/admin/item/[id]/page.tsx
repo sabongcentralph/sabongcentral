@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/adminGuard";
-import { byId, counts, titleOf } from "@/lib/db";
+import { AVAILABILITY, EVENT_STATUSES, availOf, byId, counts, titleOf, type GoodData } from "@/lib/db";
 import { one, type Search } from "@/lib/content";
 import { toEmbed } from "@/lib/embed";
 import { AdminNav } from "@/components/AdminNav";
@@ -76,7 +76,19 @@ export default async function ReviewItem({ params, searchParams }: { params: Pro
             </div>
             <p className="m-0 text-[12px] text-muted">Approving an account does not approve its listings. Every action is logged with your name.</p>
           </form>
-          {l.status === "approved" && <a href={`/${PATH[l.kind]}/${l.slug}`} className="text-[14px] font-semibold text-wine">View on public site ↗</a>}
+          {(l.kind === "event" || l.kind === "good") && (
+            <form action="/api/admin/action" method="post" className="flex flex-wrap items-end gap-2 rounded-2xl border border-line bg-cream p-4">
+              <input type="hidden" name="id" value={l.id} />
+              <input type="hidden" name="action" value="set_state" />
+              <label className={`${labelCls} flex-1`}>{l.kind === "event" ? "Event status" : "Availability"}
+                <select name="state" defaultValue={l.kind === "event" ? String(data.status ?? "Upcoming") : availOf(l.data as GoodData)} className={input}>
+                  {(l.kind === "event" ? EVENT_STATUSES : AVAILABILITY).map((v) => <option key={v}>{v}</option>)}
+                </select>
+              </label>
+              <button type="submit" className={btnGhost}>Save</button>
+            </form>
+          )}
+          {l.status === "approved" && <a href={`/${l.kind === "event" && !isDerby ? "education" : PATH[l.kind]}/${l.slug}`} className="text-[14px] font-semibold text-wine">View on public site ↗</a>}
         </div>
       </div>
     </Page>

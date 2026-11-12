@@ -11,19 +11,33 @@ export type Status = "pending" | "approved" | "rejected" | "hidden";
 export type FarmData = {
   name: string; province: string; city: string; about: string; ownerName: string; phone: string;
   facebook: string; bloodlines: Bloodline[]; verified: boolean; est: string;
+  visit?: string; address?: string; // address is private: never shown publicly
 };
 export type EventData = {
   title: string; cat: string; sub: string; group: string; derby: boolean; date: string; days: string; longDate: string;
   time: string; province: string; city: string; online: boolean; venue: string; desc: string; topics: string;
   speakers: string; fee: string; reg: string; permits: string; org: string;
+  status?: EventStatus; link?: string;
 };
+export const EVENT_STATUSES = ["Upcoming", "Postponed", "Cancelled", "Completed"] as const;
+export type EventStatus = (typeof EVENT_STATUSES)[number];
 export type GoodData = {
   name: string; cat: string; sub: string; price: string; seller: string; phone: string; province: string; city: string;
   sold: boolean; sellerVerified: boolean; desc?: string;
+  avail?: Availability; condition?: string; pickup?: string;
 };
-export type ReelData = { title: string; topic: string; farm: string; farmSlug?: string; platform: string; url?: string; dur?: string };
-export type ArticleData = { title: string; topic: string; date: string; read: string; by: string; body: string[] };
-export type NoticeData = { kind: string; title: string; meta: string; text: string; source: string };
+export const AVAILABILITY = ["Available", "Reserved", "Sold", "Removed"] as const;
+export type Availability = (typeof AVAILABILITY)[number];
+export const availOf = (d: GoodData): Availability => d.avail ?? (d.sold ? "Sold" : "Available");
+export type ReelData = { title: string; topic: string; farm: string; farmSlug?: string; platform: string; url?: string; dur?: string; desc?: string };
+export type ArticleData = {
+  title: string; topic: string; date: string; read: string; by: string; body: string[];
+  summary?: string; org?: string; refs?: string[]; reviewed?: string;
+};
+export type NoticeData = {
+  kind: string; title: string; meta: string; text: string; source: string;
+  issuer?: string; scope?: string; url?: string; expires?: string;
+};
 export type SupplierData = { kind: string; name: string; place: string; about: string; phone: string };
 
 type DataOf = {
@@ -178,13 +192,19 @@ export async function approved<K extends Kind>(kind: K): Promise<Listing<K>[]> {
     .prepare(`select * from listings where kind = ? and status = 'approved' order by is_sample asc, case when is_sample = 1 then id end asc, created_at desc, id desc limit 1000`)
     .bind(kind)
     .all<Row>();
-  return results.map((r) => toListing<K>(r));
+  return results.map((r) => toListing<K>(r)).filter(isPublic);
+}
+
+// A seller can mark an item "Removed": it stays approved but leaves the public site.
+function isPublic(l: Listing): boolean {
+  return !(l.kind === "good" && (l.data as GoodData).avail === "Removed");
 }
 
 export async function approvedOne<K extends Kind>(kind: K, slug: string): Promise<Listing<K> | null> {
   await ensureDb();
   const r = await db().prepare(`select * from listings where kind = ? and slug = ? and status = 'approved'`).bind(kind, slug).first<Row>();
-  return r ? toListing<K>(r) : null;
+  const l = r ? toListing<K>(r) : null;
+  return l && isPublic(l) ? l : null;
 }
 
 export async function recent(limit = 6): Promise<Listing[]> {
@@ -279,6 +299,20 @@ export async function setVerified(id: number, on: boolean, admin: string) {
   await db().batch([
     db().prepare(`update listings set data = ?, updated_at = datetime('now') where id = ?`).bind(JSON.stringify(data), id),
     db().prepare(`insert into audit_log (admin, action, target) values (?, ?, ?)`).bind(admin, on ? "business verified" : "badge removed", `${l.kind}: ${titleOf(l)}`),
+  ]);
+}
+
+// Event status (Upcoming/Postponed/…) and Market availability (Available/Reserved/…).
+export async function setState(id: number, value: string, admin: string) {
+  const l = await byId(id);
+  if (!l) return;
+  const key = l.kind === "event" ? "status" : l.kind === "good" ? "avail" : null;
+  const allowed: readonly string[] = l.kind === "event" ? EVENT_STATUSES : AVAILABILITY;
+  if (!key || !allowed.includes(value)) return;
+  const data = { ...(l.data as object), [key]: value, ...(l.kind === "good" ? { sold: value === "Sold" } : {}) };
+  await db().batch([
+    db().prepare(`update listings set data = ?, updated_at = datetime('now') where id = ?`).bind(JSON.stringify(data), id),
+    db().prepare(`insert into audit_log (admin, action, target) values (?, ?, ?)`).bind(admin, `set ${key}: ${value}`, `${l.kind}: ${titleOf(l)}`),
   ]);
 }
 

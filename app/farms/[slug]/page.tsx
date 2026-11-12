@@ -23,7 +23,10 @@ export default async function FarmPage({ params, searchParams }: { params: Promi
   if (!farm) notFound();
   const d = farm.data;
   const [farms, reels, notices] = await Promise.all([approved("farm"), approved("reel"), approved("notice")]);
-  const others = farms.filter((f) => f.id !== farm.id && f.data.province === d.province).slice(0, 3);
+  // Similar farms: same province or a shared bloodline, closest matches first.
+  const lines = new Set(d.bloodlines.map((b) => b.name));
+  const score = (f: (typeof farms)[number]) => Number(f.data.province === d.province) * 2 + f.data.bloodlines.filter((b) => lines.has(b.name)).length;
+  const others = farms.filter((f) => f.id !== farm.id && score(f) > 0).sort((a, b) => score(b) - score(a)).slice(0, 3);
   const myReels = reels.filter((r) => r.data.farmSlug === slug || r.data.farm === d.name);
   const myNotices = notices.filter((n) => n.data.title.startsWith(d.name));
   const msg = d.facebook ? messengerHref(d.facebook) : null;
@@ -66,11 +69,11 @@ export default async function FarmPage({ params, searchParams }: { params: Promi
           </section>
           <aside className="flex flex-col gap-3">
             <dl className="m-0 flex flex-col divide-y divide-line rounded-2xl border border-line bg-cream px-4 text-[14px]">
-              {[["Owner", d.ownerName], ["Location", `${d.city}, ${d.province}`], ["Contact", d.phone], ["Established", d.est]].filter(([, v]) => v).map(([k, v]) => (
+              {[["Owner", d.ownerName], ["Location", `${d.city}, ${d.province}`], ["Contact", d.phone], ["Established", d.est], ["Visits", d.visit ?? ""]].filter(([, v]) => v).map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-3 py-2.5"><dt className="text-muted">{k}</dt><dd className="m-0 text-right font-semibold">{v}</dd></div>
               ))}
             </dl>
-            {d.verified && <p className="m-0 text-[11.5px] leading-relaxed text-muted">{BIZ_NOTE}</p>}
+            <p className="m-0 text-[11.5px] leading-relaxed text-muted">{d.verified ? BIZ_NOTE : "Not Business Verified yet: an admin has not reviewed this farm's business registration."}</p>
             <Note>Sabong Central is a directory only. Talk to the farm directly. No payments go through us.</Note>
           </aside>
         </div>
@@ -118,7 +121,7 @@ export default async function FarmPage({ params, searchParams }: { params: Promi
 
       {others.length > 0 && (
         <section className="flex flex-col gap-3">
-          <h2 className="m-0 font-serif text-[21px] font-semibold">More farms in {d.province}</h2>
+          <h2 className="m-0 font-serif text-[21px] font-semibold">Similar farms</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{others.map((f) => <FarmCard key={f.id} f={f} />)}</div>
         </section>
       )}

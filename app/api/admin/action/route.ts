@@ -1,5 +1,5 @@
 import { adminFromRequest, sameOrigin } from "@/lib/auth";
-import { setStatus, setVerified } from "@/lib/db";
+import { setState, setStatus, setVerified } from "@/lib/db";
 import { back, field } from "@/lib/forms";
 
 export async function POST(req: Request) {
@@ -19,6 +19,7 @@ export async function POST(req: Request) {
     await setStatus(id, "rejected", admin, reason);
   } else if (action === "hide") await setStatus(id, "hidden", admin, reason);
   else if (action === "restore") await setStatus(id, "approved", admin, reason);
+  else if (action === "set_state") await setState(id, field(f, "state", 20), admin);
   else if (action === "pending") await setStatus(id, "pending", admin, reason);
   const next = field(f, "next", 200);
   return back(req, next.startsWith("/admin") ? next : `/admin/item/${id}?done=${action}`);

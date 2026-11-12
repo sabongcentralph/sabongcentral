@@ -2,7 +2,8 @@ import { submit, type Kind } from "@/lib/db";
 import { sameOrigin } from "@/lib/auth";
 import { back, field, isBot } from "@/lib/forms";
 import { toEmbed } from "@/lib/embed";
-import { EVENT_CATS, GOODS_CATS } from "@/lib/sample";
+import { ARTICLE_TOPICS, EVENT_CATS, GOODS_CATS, REEL_TOPICS } from "@/lib/sample";
+import { AVAILABILITY } from "@/lib/db";
 import { AREAS } from "@/lib/locations";
 
 const validPlace = (p: string, c: string) => !!AREAS.find((a) => a.p === p)?.c.includes(c);
@@ -22,9 +23,20 @@ export async function POST(req: Request) {
   if (!sameOrigin(req)) return new Response("Forbidden", { status: 403 });
   const f = await req.formData();
   const kind = field(f, "kind", 20) as Kind;
-  if (isBot(f)) return back(req, `/portal?tab=${kind}&sent=1`);
-  const fail = (msg: string) => back(req, `/portal?tab=${kind}&error=${encodeURIComponent(msg)}`);
-  const by = field(f, "contactName", 120) || "Portal (test)";
+  // Articles, reels and announcements come from the public form; farms, events
+  // and Market items only through the Portal.
+  const isPublic = kind === "article" || kind === "reel" || kind === "notice";
+  const page = isPublic ? "/submit" : "/portal";
+  if (isBot(f)) return back(req, `${page}?tab=${kind}&sent=1`);
+  const fail = (msg: string) => back(req, `${page}?tab=${kind}&error=${encodeURIComponent(msg)}`);
+  const name = field(f, "contactName", 120), email = field(f, "email", 200);
+  if (isPublic) {
+    if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail("Please enter your name and a valid email.");
+    if (field(f, "confirm", 2) !== "1") return fail("Please tick the confirmation box.");
+  } else if (field(f, "confirm", 2) !== "1") {
+    return fail("Please confirm that the information is accurate.");
+  }
+  const by = isPublic ? `${name} <${email}> (public form)` : name || "Portal (test)";
   const province = field(f, "province", 80), city = field(f, "city", 80);
   let data: object;
 
@@ -35,7 +47,7 @@ export async function POST(req: Request) {
       name, province, city, est: field(f, "est", 4), ownerName: field(f, "ownerName", 120), phone: field(f, "phone", 40),
       facebook: field(f, "facebook", 200), about: field(f, "about", 2000), verified: false,
       bloodlines: f.getAll("line").map(String).slice(0, 12).map((n) => ({ name: n.slice(0, 40) })),
-      docs: field(f, "docs", 10) === "yes",
+      docs: field(f, "docs", 10) === "yes", visit: field(f, "visit", 300), address: field(f, "address", 300),
     };
   } else if (kind === "event") {
     const title = field(f, "title", 160), sub = field(f, "sub", 60), date = field(f, "date", 10), online = field(f, "online", 5) === "1";
@@ -52,6 +64,7 @@ export async function POST(req: Request) {
       province: online ? "Online" : province, city: online ? "Online" : city, online, venue: field(f, "venue", 200) || (online ? "Online" : ""),
       desc: field(f, "desc", 2000), topics: field(f, "topics", 300), speakers: field(f, "speakers", 300),
       fee: field(f, "fee", 80) || "Free", reg: field(f, "reg", 200), permits: field(f, "permits", 300), org: field(f, "org", 120) || by,
+      link: online ? field(f, "link", 300) : "", status: "Upcoming",
     };
   } else if (kind === "good") {
     const name = field(f, "name", 120), sub = field(f, "sub", 60);
@@ -60,12 +73,26 @@ export async function POST(req: Request) {
     data = {
       name, cat, sub, price: pesos(field(f, "price", 20)), seller: field(f, "seller", 120), phone: field(f, "phone", 40),
       province, city, sold: false, sellerVerified: false, desc: field(f, "desc", 2000),
+      avail: (AVAILABILITY as readonly string[]).includes(field(f, "avail", 20)) ? field(f, "avail", 20) : "Available",
+      condition: field(f, "condition", 40), pickup: field(f, "pickup", 300),
     };
   } else if (kind === "reel") {
     const title = field(f, "title", 160), url = field(f, "url", 500);
     const embed = toEmbed(url);
     if (!title || !embed) return fail("A title and a Facebook, YouTube or TikTok link are required.");
-    data = { title, topic: field(f, "topic", 60) || "Farm Management", farm: field(f, "farm", 120) || by, platform: embed.platform, url };
+    const topic = field(f, "topic", 60);
+    data = { title, topic: REEL_TOPICS.includes(topic) ? topic : "Farm Management", farm: field(f, "farm", 120) || name, platform: embed.platform, url, desc: field(f, "desc", 600) };
+  } else if (kind === "article") {
+    const title = field(f, "title", 160), topic = field(f, "topic", 60), body = field(f, "body", 20000);
+    if (!title || !ARTICLE_TOPICS.includes(topic) || body.length < 40) return fail("A title, topic and article text are required.");
+    const paras = body.split(/\n\s*\n/).map((p) => p.replace(/\s+/g, " ").trim()).filter(Boolean).slice(0, 80);
+    const words = body.split(/\s+/).length;
+    data = {
+      title, topic, body: paras, summary: field(f, "summary", 300), org: field(f, "org", 120), by: name,
+      refs: field(f, "refs", 2000).split("\n").map((r) => r.trim()).filter(Boolean).slice(0, 15),
+      date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Manila" }),
+      read: `${Math.max(1, Math.round(words / 200))} min read`,
+    };
   } else if (kind === "notice") {
     const title = field(f, "title", 160), text = field(f, "text", 1500), farm = field(f, "farm", 120);
     if (!title || !text) return fail("Title and details are required.");
@@ -75,5 +102,5 @@ export async function POST(req: Request) {
   }
 
   await submit(kind, data, by);
-  return back(req, `/portal?tab=${kind}&sent=1`);
+  return back(req, `${page}?tab=${kind}&sent=1`);
 }
