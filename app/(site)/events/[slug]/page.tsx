@@ -26,7 +26,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
   ];
   return (
     <Page>
-      <div className="-mx-4 -mt-5 md:mx-0 md:mt-0"><Photo className="h-[190px] md:h-[320px] md:rounded-2xl" label="Event poster" /></div>
+      <div className="-mx-4 -mt-5 md:mx-0 md:mt-0"><Photo className={d.poster ? "max-h-[560px] md:rounded-2xl" : "h-[190px] md:h-[320px] md:rounded-2xl"} contain={!!d.poster} label="Event poster" src={d.poster} /></div>
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-1.5">
           <Chip tone={d.derby ? "red" : d.group === "Education & Training" ? "green" : "gold"}>{d.group}</Chip>

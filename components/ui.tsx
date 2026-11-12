@@ -67,7 +67,10 @@ export function Empty({ children }: { children: React.ReactNode }) {
   return <p className="m-0 rounded-2xl border border-dashed border-sand p-8 text-center text-muted">{children}</p>;
 }
 
-export function Photo({ className = "", label = "Photo" }: { className?: string; label?: string }) {
+export function Photo({ className = "", label = "Photo", src, contain = false }: { className?: string; label?: string; src?: string; contain?: boolean }) {
+  if (src && /^\/media\/[a-z]\/[\w-]+\.(webp|jpg|png)$/.test(src)) {
+    return <img src={src} alt={label} loading="lazy" className={`block bg-[#1b1515] ${/(^|\s)(w-|size-)/.test(className) ? "" : "w-full"} ${contain ? "object-contain" : "object-cover"} ${className}`} />;
+  }
   return <div role="img" aria-label={label} className={`ph ${className}`} />;
 }
 

@@ -9,7 +9,7 @@ export function FarmCard({ f, compact = false }: { f: Listing<"farm">; compact?:
   const d: FarmData = f.data;
   return (
     <a href={`/farms/${f.slug}`} className={`${cardCls} ${compact ? "w-[220px] flex-none snap-start md:w-auto" : ""}`}>
-      <div className="overflow-hidden"><Photo className={compact ? "h-[120px]" : "h-[160px]"} label="Farm photo" /></div>
+      <div className="overflow-hidden"><Photo className={compact ? "h-[120px]" : "h-[160px]"} label="Farm photo" src={d.cover ?? d.gallery?.[0]} /></div>
       <div className="flex flex-col gap-1.5 p-3.5">
         <div className="flex items-start gap-2">
           <h3 className="m-0 flex-1 text-[16px] font-bold leading-snug">{d.name}</h3>
@@ -33,10 +33,10 @@ export function EventCard({ e, compact = false }: { e: Listing<"event">; compact
   const mon = new Date(Number(y), Number(m) - 1, 1).toLocaleString("en", { month: "short" }).toUpperCase();
   return (
     <a href={`/${d.derby ? "events" : "education"}/${e.slug}`} className={`${cardCls} flex-row gap-3 p-3 ${compact ? "w-[290px] flex-none snap-start md:w-auto" : ""}`}>
-      <div className="flex w-14 flex-none flex-col items-center justify-center rounded-xl bg-crimson py-2 text-white">
+      {d.poster ? <Photo className="h-[84px] w-[64px] flex-none rounded-xl" label="Event poster" src={d.poster} /> : <div className="flex w-14 flex-none flex-col items-center justify-center rounded-xl bg-crimson py-2 text-white">
         <span className="text-[11px] font-bold tracking-wider text-gold-light">{mon}</span>
         <span className="font-serif text-[24px] font-semibold leading-none">{day}</span>
-      </div>
+      </div>}
       <div className="flex min-w-0 flex-col gap-1">
         <div className="flex flex-wrap items-center gap-1.5"><Chip tone={groupTone(d.group)}>{d.derby ? d.sub : d.cat}</Chip>{d.status && d.status !== "Upcoming" && <Chip tone={d.status === "Completed" ? "plain" : "red"}>{d.status}</Chip>}{e.isSample && <SampleTag />}</div>
         <h3 className="m-0 text-[15px] font-bold leading-snug">{d.title}</h3>
@@ -59,7 +59,7 @@ export function GoodCard({ g, compact = false }: { g: Listing<"good">; compact?:
   return (
     <a href={`/market/${g.slug}`} className={`${cardCls} ${compact ? "w-[170px] flex-none snap-start md:w-auto" : ""}`}>
       <div className="relative overflow-hidden">
-        <Photo className="aspect-square" label="Product photo" />
+        <Photo className="aspect-square" label="Product photo" src={d.photos?.[0]} />
         <AvailBadge d={d} className="absolute left-2 top-2 px-2 py-0.5 text-[10.5px]" />
       </div>
       <div className="flex flex-col gap-1 p-3">
