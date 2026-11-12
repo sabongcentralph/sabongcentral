@@ -1,5 +1,5 @@
 import { getLang } from "@/lib/i18n";
-import { approved, recent, titleOf } from "@/lib/db";
+import { approved } from "@/lib/db";
 import { publicEvents } from "@/lib/content";
 import { ArticleCard, EventCard, FarmCard, GoodCard, NoticeCard, ReelCard } from "@/components/cards";
 import { BizBadge, Chip, Photo, Row, SampleTag, SectionHead, btnPrimary } from "@/components/ui";
@@ -13,14 +13,12 @@ const TX = {
   en: { kicker: "WELCOME!", title: "Your Hub for Gamefarms, Events, Supplies, and Education", ph: "Search farms, events, market, articles…" },
 };
 
-const kindPath = { farm: "farms", event: "events", good: "market", reel: "reels", article: "learn", notice: "notices", supplier: "suppliers" } as const;
-const kindLabel = { farm: "Farm", event: "Event", good: "Market", reel: "Reel", article: "Article", notice: "Notice", supplier: "Supplier" } as const;
 
 export default async function Home() {
   const lang = await getLang();
   const tx = TX[lang];
-  const [farms, events, goods, reels, articles, notices, latest] = await Promise.all([
-    approved("farm"), publicEvents(), approved("good"), approved("reel"), approved("article"), approved("notice"), recent(6),
+  const [farms, events, goods, reels, articles, notices] = await Promise.all([
+    approved("farm"), publicEvents(), approved("good"), approved("reel"), approved("article"), approved("notice"),
   ]);
   const spot = farms.find((f) => f.data.verified) ?? farms[0];
 
@@ -34,6 +32,12 @@ export default async function Home() {
         <div className="relative mx-auto flex max-w-[900px] flex-col items-center gap-3 text-center">
           <p className="rise m-0 text-[12px] font-bold tracking-[2px] text-gold-light">{tx.kicker}</p>
           <h1 className="rise rise-1 m-0 max-w-[820px] text-balance font-serif text-[27px] font-semibold leading-[1.18] md:text-[44px]">{tx.title}</h1>
+          <p className="rise rise-2 m-0 max-w-[640px] text-balance text-[14.5px] leading-relaxed text-[#f1dcd8] md:text-[16px]">
+            A Philippine gamefowl community directory for farms, education, supplies and lawful event information.
+          </p>
+          <p className="rise rise-3 m-0 rounded-full border border-gold/50 px-3.5 py-1 text-[12px] font-semibold text-gold-light">
+            Information only · No bets · No payments · No e-sabong · 18+
+          </p>
         </div>
       </section>
 
@@ -93,28 +97,29 @@ export default async function Home() {
         </section>
 
         <section className="flex flex-col gap-3">
-          <SectionHead title="Recently Added" />
-          <ul className="m-0 flex list-none flex-col divide-y divide-line rounded-2xl border border-line bg-cream p-0">
-            {latest.map((l) => (
-              <li key={l.id}>
-                <a href={`/${l.kind === "event" && !(l.data as { derby?: boolean }).derby ? "education" : kindPath[l.kind]}/${l.slug}`} className="flex min-h-12 items-center gap-3 px-4 py-2.5 text-ink no-underline">
-                  <Chip tone="plain">{kindLabel[l.kind]}</Chip>
-                  <span className="flex-1 text-[14px] font-semibold">{titleOf(l)}</span>
-                  <span className="text-[12px] text-muted">{l.isSample ? "Sample" : "New"}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="flex flex-col gap-3">
           <SectionHead title="Learning Hub · Latest Articles" href="/learn" />
           <div className="grid gap-3 md:grid-cols-2">{articles.slice(0, 4).map((a) => <ArticleCard key={a.id} a={a} />)}</div>
         </section>
 
         <section className="flex flex-col gap-3">
-          <SectionHead title="Community Notices" href="/notices" />
+          <SectionHead title="Advisories & Community Notices" href="/notices" />
           <div className="grid gap-3 md:grid-cols-3">{notices.slice(0, 3).map((n) => <NoticeCard key={n.id} n={n} />)}</div>
+        </section>
+
+        <section aria-labelledby="how" className="flex flex-col gap-3">
+          <h2 id="how" className="m-0 font-serif text-[22px] font-semibold">How it works</h2>
+          <ol className="m-0 grid list-none gap-3 p-0 md:grid-cols-3">
+            {[
+              ["1", "Submit", "Farms, organizers and sellers use their Portal account. Anyone can send an article, reel or announcement through the public form."],
+              ["2", "Admin review", "An admin checks every listing and, where needed, business registration or permits. Nothing goes public automatically."],
+              ["3", "Public listing", "Approved content appears on the site. Anyone can report a listing that breaks the rules."],
+            ].map(([n, t, d]) => (
+              <li key={n} className="flex gap-3 rounded-2xl border border-line bg-cream p-4">
+                <span className="flex size-9 flex-none items-center justify-center rounded-full bg-crimson font-serif text-[17px] font-semibold text-gold-light">{n}</span>
+                <span className="flex flex-col gap-1"><strong className="text-[15px]">{t}</strong><span className="text-[13.5px] leading-relaxed text-ink-soft">{d}</span></span>
+              </li>
+            ))}
+          </ol>
         </section>
 
         <section className="flex flex-col items-start gap-3 rounded-2xl bg-crimson p-5 text-white md:flex-row md:items-center md:justify-between">
@@ -122,7 +127,10 @@ export default async function Home() {
             <h2 className="m-0 font-serif text-[22px] font-semibold">Have a farm, event or product?</h2>
             <p className="m-0 mt-1 text-[14px] text-rose">Listing is free. An admin reviews everything before it goes public.</p>
           </div>
-          <a href="/portal" className="lift rounded-full bg-gold px-5 py-3 text-[15px] font-semibold text-[#3a0a0a] no-underline">Go to the Portal</a>
+          <div className="flex flex-wrap gap-2">
+            <a href="/portal" className="lift rounded-full bg-gold px-5 py-3 text-[15px] font-semibold text-[#3a0a0a] no-underline">Go to the Portal</a>
+            <a href="/submit" className="rounded-full border border-gold/70 px-5 py-3 text-[15px] font-semibold text-gold-light no-underline">Share an article or reel</a>
+          </div>
         </section>
       </div>
     </main>

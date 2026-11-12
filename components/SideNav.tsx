@@ -16,7 +16,8 @@ export const SIDE_SECTIONS: { title: string; items: Item[] }[] = [
   {
     title: "Account",
     items: [
-      { href: "/portal", label: "Portal (list your farm, event or product)", Icon: UserIcon },
+      { href: "/portal", label: "Portal (farms, organizers, sellers)", Icon: UserIcon },
+      { href: "/submit", label: "Share an article, reel or notice", Icon: MegaphoneIcon },
       { href: "/settings", label: "Settings", Icon: GearIcon },
     ],
   },

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { approved } from "@/lib/db";
+import { approved, availOf } from "@/lib/db";
 import { matches, one, type Search } from "@/lib/content";
 import { GOODS_CATS } from "@/lib/sample";
 import { GoodCard } from "@/components/cards";
@@ -22,7 +22,7 @@ export default async function GoodsPage({ searchParams }: { searchParams: Promis
     return matches(`${d.name} ${d.seller} ${d.sub}`, q) && (!cat || d.cat === cat) && (!sub || d.sub === sub) &&
       (!province || d.province === province) && (!city || d.city === city) &&
       (!min || (p !== null && p >= min)) && (!max || (p !== null && p <= max)) &&
-      (avail === "All" || (avail === "Sold" ? d.sold : !d.sold));
+      (avail === "All" || availOf(d) === avail);
   });
   const active = [q, cat, sub, province, city, min ? "1" : "", max ? "1" : "", avail !== "Available" ? "1" : ""].filter(Boolean).length;
 
@@ -50,18 +50,20 @@ export default async function GoodsPage({ searchParams }: { searchParams: Promis
           </select>
         </label>
         <label className={labelCls}>Availability
-          <select name="avail" defaultValue={avail} className={input}>{["Available", "Sold", "All"].map((a) => <option key={a}>{a}</option>)}</select>
+          <select name="avail" defaultValue={avail} className={input}>{["Available", "Reserved", "Sold", "All"].map((a) => <option key={a}>{a}</option>)}</select>
         </label>
         <LocationFields province={province} city={city} idPrefix="gf" />
         <label className={labelCls}>Min price (₱)<input name="min" type="number" min="0" inputMode="numeric" defaultValue={min || ""} className={input} /></label>
         <label className={labelCls}>Max price (₱)<input name="max" type="number" min="0" inputMode="numeric" defaultValue={max || ""} className={input} /></label>
       </FilterPanel>
-      <Note tone="red"><strong>Beware of scams.</strong> Verify the seller and the item before paying. No payments go through Sabong Central. <a href="/legal/market" className="font-semibold text-wine">Read more</a></Note>
+      <div className="grid gap-3 md:grid-cols-2">
+        <Note tone="red"><strong>Beware of scams.</strong> Verify the seller and the item before paying. Sabong Central is not the seller: no checkout, payments, escrow or delivery booking happen here. <a href="/legal/market" className="font-semibold text-wine">Read more</a></Note>
+        <Note><strong>Not allowed in the Market:</strong> live birds, fighting weapons, regulated veterinary medicines, and any gambling-related goods or services. <a href="/report?target=Market+listing" className="font-semibold text-wine">Report a listing</a></Note>
+      </div>
       <p className="m-0 text-[14px] text-ink-soft"><strong>{shown.length}</strong> listings</p>
       {shown.length === 0 ? <Empty>No listings match.</Empty> : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{shown.map((g) => <GoodCard key={g.id} g={g} />)}</div>
       )}
-      <p className="m-0 text-[12px] text-muted">Not allowed yet: live birds, fighting weapons and regulated veterinary medicines.</p>
     </Page>
   );
 }

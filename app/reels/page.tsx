@@ -1,3 +1,4 @@
+import { REEL_TOPICS } from "@/lib/sample";
 import type { Metadata } from "next";
 import { approved } from "@/lib/db";
 import { one, type Search } from "@/lib/content";
@@ -10,7 +11,7 @@ export const metadata: Metadata = { title: "Reels" };
 export default async function ReelsPage({ searchParams }: { searchParams: Promise<Search> }) {
   const topic = one((await searchParams).topic);
   const all = await approved("reel");
-  const topics = [...new Set(all.map((r) => r.data.topic))];
+  const topics = REEL_TOPICS;
   const shown = all.filter((r) => !topic || r.data.topic === topic);
   return (
     <Page>
@@ -26,7 +27,7 @@ export default async function ReelsPage({ searchParams }: { searchParams: Promis
       {shown.length === 0 ? <Empty>No reels here yet.</Empty> : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">{shown.map((r) => <ReelCard key={r.id} r={r} />)}</div>
       )}
-      <Note>Educational only: no fight footage, betting content or animal cruelty. Every reel is reviewed by an admin before it goes live.</Note>
+      <Note>Educational only: no fight footage, betting content or animal cruelty. Every reel is reviewed by an admin before it goes live. <a href="/submit?tab=reel" className="font-semibold text-wine">Submit a reel</a></Note>
     </Page>
   );
 }

@@ -19,14 +19,15 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
         ) : (
           <form action="/api/report" method="post" className="flex flex-col gap-4 rounded-2xl border border-line bg-cream p-4">
             {error && <Note tone="red">Please fill in the required fields.</Note>}
-            <label className={labelCls}>What are you reporting? *<input name="target" required defaultValue={target} placeholder="e.g. Seller: Farm Deals PH" className={input} /></label>
-            <label className={labelCls}>Dahilan *
+            <label className={labelCls}>Listing name or page link *<input name="target" required defaultValue={target} placeholder="e.g. Seller: Farm Deals PH, or https://…" className={input} /></label>
+            <label className={labelCls}>Reason *
               <select name="reason" required defaultValue={target.startsWith("Scam") ? "Scam / fraud" : ""} className={input}>
                 <option value="">Select</option>{REASONS.map((r) => <option key={r}>{r}</option>)}
               </select>
             </label>
             <label className={labelCls}>Details<textarea name="details" rows={5} placeholder="What happened? Dates, amounts, screenshots (describe them)…" className={`${input} py-2.5`} /></label>
-            <label className={labelCls}>Your contact (optional)<input name="contact" placeholder="Email or mobile, if you'd like updates" className={input} /></label>
+            <label className={labelCls}>Your contact (optional)<input name="contact" placeholder="Email or mobile, if you'd like us to follow up" className={input} /></label>
+            <p className="m-0 text-[12.5px] leading-relaxed text-muted">Confidential: your report and contact details are seen only by admins. We never tell the person you reported who sent it.</p>
             <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px]" />
             <button type="submit" className={btnPrimary}>Submit report</button>
           </form>

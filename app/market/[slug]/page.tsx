@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { approved, approvedOne } from "@/lib/db";
 import { telHref } from "@/lib/links";
-import { GoodCard } from "@/components/cards";
+import { AvailBadge, GoodCard } from "@/components/cards";
 import { BIZ_NOTE, BizBadge, Note, Page, Photo, SampleTag } from "@/components/ui";
 import { Flag } from "@/components/icons";
 
@@ -24,14 +24,21 @@ export default async function GoodPage({ params }: { params: Promise<{ slug: str
       <div className="grid gap-5 md:grid-cols-2">
         <div className="relative -mx-4 -mt-5 md:mx-0 md:mt-0">
           <Photo className="aspect-square md:rounded-2xl" label="Product photo" />
-          <span className={`absolute left-4 top-4 rounded-md px-2.5 py-1 text-[12px] font-bold text-white ${d.sold ? "bg-ink-soft" : "bg-[#2f5b3a]"}`}>{d.sold ? "Sold" : "Available"}</span>
+          <AvailBadge d={d} className="absolute left-4 top-4 px-2.5 py-1 text-[12px]" />
         </div>
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <span className="text-[12px] font-semibold text-gold-dark">{d.cat} · {d.sub}</span>
             <div className="flex items-start gap-2"><h1 className="m-0 flex-1 font-serif text-[26px] font-semibold leading-tight md:text-[34px]">{d.name}</h1>{g.isSample && <SampleTag />}</div>
             <span className="text-[26px] font-bold text-crimson">{d.price}</span>
+            <span className="text-[12.5px] text-muted">Last updated {new Date(g.updatedAt.replace(" ", "T") + "Z").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Manila" })}</span>
           </div>
+          {(d.condition || d.pickup) && (
+            <dl className="m-0 flex flex-col divide-y divide-line rounded-2xl border border-line bg-cream px-4 text-[14px]">
+              {d.condition && <div className="flex justify-between gap-4 py-2.5"><dt className="text-muted">Condition</dt><dd className="m-0 text-right font-semibold">{d.condition}</dd></div>}
+              {d.pickup && <div className="flex justify-between gap-4 py-2.5"><dt className="flex-none text-muted">Pickup / delivery</dt><dd className="m-0 text-right font-semibold">{d.pickup}</dd></div>}
+            </dl>
+          )}
           {d.desc && (
             <section className="rounded-2xl border border-line bg-cream p-4">
               <h2 className="m-0 text-[16px] font-bold">Description</h2>
@@ -55,7 +62,7 @@ export default async function GoodPage({ params }: { params: Promise<{ slug: str
             </a>
           </section>
           <Note tone="red"><strong>Beware of scams.</strong> Even a Business Verified seller is not a guarantee of the item or delivery. Don't pay before you confirm the item.</Note>
-          <Note><strong>Independent seller.</strong> Sabong Central is not the seller, and no payments go through us.</Note>
+          <Note><strong>Contact the seller directly.</strong> Sabong Central is not the seller and receives no payment. Pickup or delivery is arranged between you and the seller.</Note>
         </div>
       </div>
       {more.length > 0 && (

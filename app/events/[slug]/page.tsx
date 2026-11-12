@@ -16,9 +16,13 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
   const ev = await approvedOne("event", (await params).slug);
   if (!ev || (ev.data.derby && !derbyEnabled())) notFound();
   const d = ev.data;
+  const status = d.status ?? "Upcoming";
+  // Permit numbers and documents stay private; the public only sees whether they were checked.
+  const permit = d.derby ? "Cockpit license and LGU event permit verified by admin" : d.permits ? "Permits reviewed by admin" : "Organizer's proof of legitimacy reviewed by admin";
   const facts: [string, string][] = [
-    ["Date", d.longDate], ["Time", d.time], ["Venue", d.venue], ["Location", d.online ? "Online" : `${d.city}, ${d.province}`],
-    ["Organizer", d.org], ["Fee", d.fee], ["Registration", d.reg], ["Topics", d.topics], ["Speakers", d.speakers], ["Permits", d.permits],
+    ["Status", status], ["Date", d.longDate], ["Time", d.time], ["Venue", d.venue], ["Location", d.online ? "Online" : `${d.city}, ${d.province}`],
+    ["Organizer", d.org], ["Fee", d.fee ? `${d.fee}${/\d/.test(d.fee) ? " (paid directly to the organizer)" : ""}` : ""], ["Registration", d.reg],
+    ["Topics / program", d.topics], ["Speakers", d.speakers], ["Permits", permit],
   ];
   return (
     <Page>
@@ -27,12 +31,14 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
         <div className="flex flex-wrap items-center gap-1.5">
           <Chip tone={d.derby ? "red" : d.group === "Education & Training" ? "green" : "gold"}>{d.group}</Chip>
           <Chip tone="plain">{d.derby ? d.sub : `${d.cat} · ${d.sub}`}</Chip>
+          {status !== "Upcoming" && <Chip tone={status === "Completed" ? "plain" : "red"}>{status}</Chip>}
           {ev.isSample && <SampleTag />}
         </div>
         <h1 className="m-0 font-serif text-[28px] font-semibold leading-tight md:text-[38px]">{d.title}</h1>
         <p className="m-0 flex items-center gap-1.5 text-[14px] text-ink-soft"><CalendarIcon size={16} /> {d.longDate} · {d.time}</p>
         <p className="m-0 flex items-center gap-1.5 text-[14px] text-ink-soft"><Pin size={16} /> {d.venue}</p>
       </div>
+      {(status === "Cancelled" || status === "Postponed") && <Note tone="red">This event is <strong>{status.toLowerCase()}</strong>. Check with the organizer for updates.</Note>}
       {ev.isSample && <Note tone="red">This is a sample event to show how the site looks. It is not a real event.</Note>}
       <div className="grid gap-5 md:grid-cols-[2fr_1fr]">
         <section className="flex flex-col gap-3">
@@ -43,19 +49,16 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
               <div key={k} className="flex justify-between gap-4 py-2.5"><dt className="flex-none text-muted">{k}</dt><dd className="m-0 text-right font-semibold">{v}</dd></div>
             ))}
           </dl>
+          {d.online && d.link && <a href={d.link} target="_blank" rel="noopener noreferrer nofollow" className="text-[14px] font-semibold text-wine">Online link ↗</a>}
         </section>
         <aside className="flex flex-col gap-3">
           <div className="flex flex-col gap-2 rounded-2xl border border-line bg-cream p-4">
             <h2 className="m-0 text-[16px] font-bold">About the Organizer</h2>
             <span className="text-[15px] font-semibold">{d.org}</span>
             <BizBadge small />
-            <span className="text-[12px] text-muted">An admin reviewed this organizer's proof of legitimacy.</span>
+            <span className="text-[12px] text-muted">An admin reviewed this organizer's business registration or proof of legitimacy. This is not a guarantee of the event or any transaction.</span>
           </div>
-          {d.derby ? (
-            <Note tone="red">Information only. Sabong Central does not organize events, accept bets, or livestream fights.</Note>
-          ) : (
-            <Note>The fee is paid to the organizer for the seminar or workshop. No payments go through Sabong Central.</Note>
-          )}
+          <Note tone={d.derby ? "red" : "gold"}>Information only. Sabong Central does not organize events, accept bets, livestream fights, or receive event payments. Any fee is paid directly to the organizer.</Note>
           <a href={`/report?target=${encodeURIComponent("Event: " + d.title)}`} className="flex min-h-11 items-center gap-1.5 text-[14px] font-semibold text-wine no-underline"><Flag size={15} /> Report this event</a>
         </aside>
       </div>

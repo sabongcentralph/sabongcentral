@@ -18,7 +18,7 @@ export default async function ReelPage({ params }: { params: Promise<{ slug: str
   if (!r) notFound();
   const d = r.data;
   const embed = toEmbed(d.url);
-  const more = (await approved("reel")).filter((x) => x.id !== r.id).slice(0, 4);
+  const more = (await approved("reel")).filter((x) => x.id !== r.id).sort((x, y) => Number(y.data.topic === d.topic) - Number(x.data.topic === d.topic)).slice(0, 4);
   return (
     <Page>
       <div className="grid gap-5 md:grid-cols-[minmax(0,420px)_1fr]">
@@ -42,13 +42,14 @@ export default async function ReelPage({ params }: { params: Promise<{ slug: str
           <div className="flex flex-wrap gap-1.5"><Chip tone="green">{d.topic}</Chip><Chip tone="plain">{embed?.platform ?? d.platform}</Chip>{r.isSample && <SampleTag />}</div>
           <h1 className="m-0 font-serif text-[26px] font-semibold leading-tight">{d.title}</h1>
           {d.farmSlug ? <a href={`/farms/${d.farmSlug}`} className="text-[15px] font-semibold text-wine">{d.farm}</a> : <span className="text-[15px] font-semibold">{d.farm}</span>}
+          {d.desc && <p className="m-0 text-[15px] leading-relaxed text-ink-soft">{d.desc}</p>}
           {d.url && <a href={d.url} target="_blank" rel="noopener noreferrer" className="text-[13px] font-semibold text-wine">Watch on {embed?.platform ?? d.platform} ↗</a>}
-          <Note>Educational content only. This video is embedded from {embed?.platform ?? d.platform} and is not hosted by Sabong Central.</Note>
+          <Note>External content: this video is embedded from {embed?.platform ?? d.platform} and is not hosted by Sabong Central. Educational content only: no fight footage, betting, animal cruelty or prohibited products.</Note>
           <a href={`/report?target=${encodeURIComponent("Reel: " + d.title)}`} className="flex min-h-11 items-center gap-1.5 text-[14px] font-semibold text-wine no-underline"><Flag size={15} /> Report this reel</a>
         </div>
       </div>
       <section className="flex flex-col gap-3">
-        <h2 className="m-0 font-serif text-[21px] font-semibold">More reels</h2>
+        <h2 className="m-0 font-serif text-[21px] font-semibold">Related reels</h2>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">{more.map((x) => <ReelCard key={x.id} r={x} />)}</div>
       </section>
     </Page>
