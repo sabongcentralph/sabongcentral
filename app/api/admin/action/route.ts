@@ -1,5 +1,5 @@
 import { adminFromRequest, sameOrigin } from "@/lib/auth";
-import { addNote, review, setState, setVerified } from "@/lib/db";
+import { addNote, decideEdit, review, setState, setVerified } from "@/lib/db";
 import { back, field } from "@/lib/forms";
 
 export async function POST(req: Request) {
@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   const action = field(f, "action", 30);
   const reason = field(f, "reason", 500);
   if (!id) return back(req, "/admin");
-  const needsReason = action === "reject" || action === "request_changes";
+  const needsReason = action === "reject" || action === "request_changes" || action === "edit_reject";
   if (needsReason && !reason) return back(req, `/admin/item/${id}?error=reason`);
 
   if (action === "approve" || action === "restore") await review(id, "Approved", admin, reason);
@@ -23,6 +23,8 @@ export async function POST(req: Request) {
   else if (action === "hide") await review(id, "Hidden", admin, reason);
   else if (action === "archive") await review(id, "Archived", admin, reason);
   else if (action === "pending") await review(id, "New", admin, reason);
+  else if (action === "edit_approve") await decideEdit(id, true, admin, reason);
+  else if (action === "edit_reject") await decideEdit(id, false, admin, reason);
   else if (action === "set_state") await setState(id, field(f, "state", 20), admin);
   else if (action === "note") {
     const body = field(f, "note", 2000);

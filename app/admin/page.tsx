@@ -73,7 +73,7 @@ export default async function AdminDashboard() {
         <Tile hot href="/admin/queue" icon={<ShieldIcon size={24} />} label="Waiting for review" n={s.waiting.length} sub={s.needsChanges ? `${s.needsChanges} waiting on submitter changes` : "New and in-review submissions"} />
         <Tile hot href="/admin/members" icon={<UserIcon size={24} />} label="Member applications" n={s.applications} sub="New Portal accounts to check" />
         <Tile hot href="/admin/queue?q=All&risk=Permit+needed" icon={<CalendarIcon size={24} />} label="Derby permits to check" n={s.permits.length} sub="Cockpit license and LGU permit" />
-        <Tile hot href="/admin/reports" icon={<AlertIcon size={24} />} label="Open reports" n={s.reports} sub="Scams, wrong info, prohibited items" />
+        <Tile hot href="/admin/reports" icon={<AlertIcon size={24} />} label="Reports to handle" n={s.reports} sub="New, investigating or escalated" />
 
       </div>
 

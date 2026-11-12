@@ -1,9 +1,9 @@
-import { submit, type Kind } from "@/lib/db";
+import { byId, memberEdit, submit, type Kind } from "@/lib/db";
 import { sameOrigin } from "@/lib/auth";
 import { back, field, isBot } from "@/lib/forms";
 import { toEmbed } from "@/lib/embed";
 import { isFacebook, toUrl } from "@/lib/links";
-import { canSubmit, linkListing, memberFromRequest } from "@/lib/members";
+import { canSubmit, linkListing, memberFromRequest, ownsListing } from "@/lib/members";
 import { badPhoto, photoFiles, savePhotos } from "@/lib/media";
 import { ARTICLE_TOPICS, EVENT_CATS, GOODS_CATS, REEL_TOPICS } from "@/lib/sample";
 import { AVAILABILITY } from "@/lib/db";
@@ -31,7 +31,9 @@ export async function POST(req: Request) {
   const isPublic = kind === "article" || kind === "reel" || kind === "notice";
   const page = isPublic ? "/submit" : "/portal";
   if (isBot(f)) return back(req, `${page}?tab=${kind}&sent=1`);
-  const fail = (msg: string) => back(req, `${page}?tab=${kind}&error=${encodeURIComponent(msg)}`);
+  // A member editing one of their own listings.
+  const editId = Number(field(f, "edit", 12)) || 0;
+  const fail = (msg: string) => back(req, `${page}?tab=${editId ? `edit&id=${editId}` : kind}&error=${encodeURIComponent(msg)}`);
   const name = field(f, "contactName", 120), email = field(f, "email", 200);
   // Farms, events and Market items need a signed-in Portal member.
   const member = isPublic ? null : await memberFromRequest(req);
@@ -51,6 +53,8 @@ export async function POST(req: Request) {
   const vlink = member && !field(f, "vlink", 300) ? member.org_link : toUrl(field(f, "vlink", 300));
   if (!isFacebook(vfb)) return fail("Please add a Facebook page or profile link (facebook.com/…) so admins can verify you.");
   if (field(f, "vlink", 300) && !vlink) return fail("The organization link doesn’t look like a web address.");
+  const old = editId ? await byId(editId) : null;
+  if (editId && (!member || !old || old.kind !== kind || !(await ownsListing(member.id, editId)))) return fail("You can only edit your own listings.");
   const by = isPublic ? `${name} <${email}> (public form)` : `${member!.name || member!.email} <${member!.email}> (member #${member!.id})`;
   const province = field(f, "province", 80), city = field(f, "city", 80);
   let data: object;
@@ -80,6 +84,7 @@ export async function POST(req: Request) {
       desc: field(f, "desc", 2000), topics: field(f, "topics", 300), speakers: field(f, "speakers", 300),
       fee: field(f, "fee", 80) || "Free", reg: field(f, "reg", 200), permits: field(f, "permits", 300), org: field(f, "org", 120) || member?.name || name || "Organizer",
       link: online ? field(f, "link", 300) : "", status: "Upcoming",
+      endDate: end && end > date ? end : "", startTime: field(f, "start", 5), endTime: field(f, "end", 5),
     };
   } else if (kind === "good") {
     const name = field(f, "name", 120), sub = field(f, "sub", 60);
@@ -125,6 +130,13 @@ export async function POST(req: Request) {
   for (const [k, files] of Object.entries(groups)) {
     const paths = await savePhotos(files);
     if (paths.length) pics[k] = k === "gallery" || k === "photos" ? paths : paths[0];
+  }
+  if (old) {
+    // Keep photos that weren't replaced, and fields only admins or quick actions change.
+    const o = old.data as unknown as Record<string, unknown>;
+    const kept = Object.fromEntries(["profile", "cover", "gallery", "poster", "photos", "verified", "sellerVerified", "status", "renewed"].filter((k) => k in o && !(k in pics)).map((k) => [k, o[k]]));
+    const out = await memberEdit(old, { ...data, ...kept, ...pics, verifyFacebook: vfb, verifyLink: vlink }, by);
+    return back(req, `/portal?edited=${out}`);
   }
   data = { ...data, ...pics, verifyFacebook: vfb, verifyLink: vlink };
   const id = await submit(kind, data, by);

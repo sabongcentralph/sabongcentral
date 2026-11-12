@@ -1,5 +1,5 @@
 import { pendingMembers } from "./members";
-import { audit, byStatus, counts, flagsOf, openReportTargets, queueStatus, stages, type Flag, type Listing, type QueueStatus } from "./db";
+import { audit, byStatus, counts, editIds, flagsOf, openReportTargets, queueStatus, stages, type Flag, type Listing, type QueueStatus } from "./db";
 
 // Queue types: events are split into derbies and seminars/training.
 export const TYPES = ["Farm", "Event", "Seminar/Training", "Market", "Supplier", "Reel", "Article", "Announcement"] as const;
@@ -10,11 +10,12 @@ export function typeOf(l: Listing): QType {
   return KIND_TYPE[l.kind];
 }
 
-export type Row = { l: Listing; qs: QueueStatus; type: QType; flags: Flag[] };
+export type Row = { l: Listing; qs: QueueStatus; type: QType; flags: Flag[]; edit: boolean };
 
 export async function queueRows(): Promise<Row[]> {
-  const [all, st, targets] = await Promise.all([byStatus("all"), stages(), openReportTargets()]);
-  return all.map((l) => ({ l, qs: queueStatus(l.status, st.get(l.id)), type: typeOf(l), flags: flagsOf(l, targets) }));
+  const [all, st, targets, ed] = await Promise.all([byStatus("all"), stages(), openReportTargets(), editIds()]);
+  const edits = new Set(ed);
+  return all.map((l) => ({ l, qs: queueStatus(l.status, st.get(l.id)), type: typeOf(l), flags: flagsOf(l, targets), edit: edits.has(l.id) }));
 }
 
 // Everything the admin header bell and the dashboard need, in one pass.
@@ -29,6 +30,7 @@ export async function adminSummary() {
   return {
     rows, log, applications,
     newCount: by("New").length,
+    edits: rows.filter((r) => r.edit).length,
     waiting, permits, risky, live,
     needsChanges: by("Needs Changes").length,
     reports: c.reports ?? 0,
@@ -44,10 +46,11 @@ export type Summary = Awaited<ReturnType<typeof adminSummary>>;
 export function alertsOf(s: Summary): { label: string; n: number; href: string; tone: "red" | "gold" }[] {
   return [
     { label: "new submissions to review", n: s.newCount, href: "/admin/queue", tone: "red" as const },
+    { label: "edits to live listings", n: s.edits, href: "/admin/queue?q=Edits", tone: "red" as const },
     { label: "member applications", n: s.applications, href: "/admin/members", tone: "red" as const },
     { label: "derby permits to check", n: s.permits.length, href: "/admin/queue?q=All&risk=Permit+needed", tone: "red" as const },
     { label: "possible prohibited content", n: s.risky.length, href: "/admin/queue?q=All&risk=Possible+prohibited+content", tone: "red" as const },
-    { label: "open reports", n: s.reports, href: "/admin/reports", tone: "red" as const },
+    { label: "reports needing action", n: s.reports, href: "/admin/reports", tone: "red" as const },
     { label: "new messages", n: s.messages, href: "/admin/messages", tone: "gold" as const },
   ].filter((a) => a.n > 0);
 }

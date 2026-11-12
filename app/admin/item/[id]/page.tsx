@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/adminGuard";
-import { AVAILABILITY, EVENT_STATUSES, availOf, byId, counts, flagsOf, historyFor, notesFor, openReportTargets, queueStatus, reportsAbout, stages, titleOf, type GoodData } from "@/lib/db";
+import { AVAILABILITY, EVENT_STATUSES, availOf, byId, counts, flagsOf, historyFor, notesFor, openReportTargets, pendingEdit, reportLabel, queueStatus, reportsAbout, stages, titleOf, type GoodData } from "@/lib/db";
 import { one, type Search } from "@/lib/content";
 import { toEmbed } from "@/lib/embed";
 import { STATUS_LABEL, memberByListing } from "@/lib/members";
@@ -52,6 +52,10 @@ export default async function ReviewItem({ params, searchParams }: { params: Pro
   const flags = flagsOf(l, targets);
   const data = l.data as unknown as Record<string, unknown>;
   const member = await memberByListing(l.id);
+  const edit = await pendingEdit(l.id);
+  const SKIP = new Set(["verifyFacebook", "verifyLink", "days", "longDate", "time", "cat", "group", "derby", "sold"]);
+  const changes = edit ? [...new Set([...Object.keys(data), ...Object.keys(edit.data)])]
+    .filter((k) => !SKIP.has(k) && show(data[k]) !== show(edit.data[k])).map((k) => [k, show(data[k]), show(edit.data[k])] as const) : [];
   const embed = l.kind === "reel" ? toEmbed(String(data.url ?? "")) : null;
   const canBadge = l.kind === "farm" || l.kind === "good";
   const badgeOn = l.kind === "farm" ? !!data.verified : !!data.sellerVerified;
@@ -72,6 +76,35 @@ export default async function ReviewItem({ params, searchParams }: { params: Pro
       {member && <a href={`/admin/members/${member.id}`} className="w-fit rounded-full border border-line bg-cream px-3 py-1.5 text-[13px] font-semibold text-ink no-underline">Member: {member.name || member.email} · {STATUS_LABEL[member.status]} ›</a>}
       <p className="m-0 text-[13px] text-muted">Submitted by {l.submittedBy ?? "—"} · {l.createdAt}{l.reason ? ` · Last note: “${l.reason}”` : ""}</p>
       <VerifyLinks fb={String(data.verifyFacebook ?? (l.kind === "farm" ? data.facebook ?? "" : ""))} link={String(data.verifyLink ?? "")} />
+      {edit && (
+        <section className="flex flex-col gap-3 rounded-2xl border-2 border-gold bg-cream p-4">
+          <div className="flex flex-wrap items-center gap-2"><Chip tone="gold">Edit waiting</Chip><span className="text-[13px] text-muted">Sent {edit.created_at} by {edit.by}. The live version stays up until you approve.</span></div>
+          {changes.length === 0 ? <p className="m-0 text-[14px]">No visible changes.</p> : (
+            <dl className="m-0 flex flex-col divide-y divide-line text-[14px]">
+              {changes.map(([k, a, b]) => (
+                <div key={k} className="flex flex-col gap-1 py-2">
+                  <dt className="font-semibold">{k}</dt>
+                  <dd className="m-0 grid gap-1 md:grid-cols-2">
+                    <span className="rounded-lg bg-ivory px-2 py-1 text-muted line-through decoration-wine/50">{a || "(empty)"}</span>
+                    <span className="rounded-lg bg-ok-bg px-2 py-1 font-semibold">{b || "(empty)"}</span>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )}
+          {(() => {
+            const before = ["profile", "cover", "gallery", "photos", "poster"].flatMap((k) => (Array.isArray(data[k]) ? (data[k] as string[]) : data[k] ? [String(data[k])] : []));
+            const after = ["profile", "cover", "gallery", "photos", "poster"].flatMap((k) => (Array.isArray(edit.data[k]) ? (edit.data[k] as string[]) : edit.data[k] ? [String(edit.data[k])] : []));
+            const added = after.filter((p) => !before.includes(p));
+            return added.length ? <div className="flex flex-col gap-1.5"><strong className="text-[14px]">New photos</strong><div className="grid grid-cols-3 gap-2 md:grid-cols-6">{added.map((p) => <a key={p} href={p} target="_blank" rel="noopener"><img src={p} alt="" className="aspect-square w-full rounded-lg object-cover" /></a>)}</div></div> : null;
+          })()}
+          <form action="/api/admin/action" method="post" className="flex flex-col gap-2">
+            <input type="hidden" name="id" value={l.id} />
+            <label className={labelCls}>Reason (required to reject; the member sees it)<input name="reason" className={input} /></label>
+            <div className="flex flex-wrap gap-2">{act("edit_approve", "Approve edit", btnPrimary)}{act("edit_reject", "Reject edit", btnGhost)}</div>
+          </form>
+        </section>
+      )}
       {isDerby && <Note tone="red">Derby listing: verify the cockpit license and LGU event permit before approving. Permits stated: <strong>{show(data.permits) || "none"}</strong></Note>}
       {l.kind === "farm" && <Note>Business registration stated by submitter: <strong>{data.docs ? "Yes (request a copy)" : "Not yet"}</strong>. Only give the “Business Verified” badge after reviewing the papers.</Note>}
 
@@ -132,7 +165,7 @@ export default async function ReviewItem({ params, searchParams }: { params: Pro
             ))}
             <h2 className="m-0 mt-2 text-[15px] font-bold">Reports about this item</h2>
             {reps.length === 0 ? <span className="text-muted">None.</span> : reps.map((r) => (
-              <span key={r.id}><span className="text-muted">#{r.id} · {r.created_at.slice(0, 16)}</span> · <strong>{r.reason}</strong> · {r.status}{r.details ? ` · ${r.details.slice(0, 120)}` : ""}</span>
+              <span key={r.id}><span className="text-muted">#{r.id} · {r.created_at.slice(0, 16)}</span> · <strong>{r.reason}</strong> · <a href={`/admin/reports?s=all#r${r.id}`} className="font-semibold text-wine">{reportLabel(r.status)}</a>{r.details ? ` · ${r.details.slice(0, 120)}` : ""}</span>
             ))}
           </section>
           {(l.kind === "event" || l.kind === "good") && (
