@@ -19,6 +19,7 @@ export type EventData = {
   time: string; province: string; city: string; online: boolean; venue: string; desc: string; topics: string;
   speakers: string; fee: string; reg: string; permits: string; org: string;
   status?: EventStatus; link?: string; poster?: string;
+  endDate?: string; startTime?: string; endTime?: string; // raw form values, so members can edit
 };
 export const EVENT_STATUSES = ["Upcoming", "Postponed", "Cancelled", "Completed"] as const;
 export type EventStatus = (typeof EVENT_STATUSES)[number];
@@ -26,6 +27,7 @@ export type GoodData = {
   name: string; cat: string; sub: string; price: string; seller: string; phone: string; province: string; city: string;
   sold: boolean; sellerVerified: boolean; desc?: string;
   avail?: Availability; condition?: string; pickup?: string; photos?: string[];
+  renewed?: string; // ISO time the seller last renewed it
 };
 export const AVAILABILITY = ["Available", "Reserved", "Sold", "Removed"] as const;
 export type Availability = (typeof AVAILABILITY)[number];
@@ -118,6 +120,22 @@ const SCHEMA = [
     created_at text not null default (datetime('now'))
   )`,
   `create index if not exists admin_notes_listing on admin_notes (listing_id)`,
+  // A member's edit to a live listing waits here; the live version stays up until an admin approves it.
+  `create table if not exists listing_edits (
+    listing_id integer primary key,
+    data text not null,
+    by text not null,
+    created_at text not null default (datetime('now'))
+  )`,
+  // Admin notes on a report (status changes and findings).
+  `create table if not exists report_notes (
+    id integer primary key autoincrement,
+    report_id integer not null,
+    admin text not null,
+    status text,
+    body text,
+    created_at text not null default (datetime('now'))
+  )`,
   `create table if not exists sessions (
     token_hash text primary key,
     email text not null,
@@ -214,7 +232,16 @@ export async function approved<K extends Kind>(kind: K): Promise<Listing<K>[]> {
 
 // A seller can mark an item "Removed": it stays approved but leaves the public site.
 function isPublic(l: Listing): boolean {
-  return !(l.kind === "good" && (l.data as GoodData).avail === "Removed");
+  if (l.kind !== "good") return true;
+  return (l.data as GoodData).avail !== "Removed" && !(!l.isSample && daysLeft(l) <= 0);
+}
+
+// Market items stay up for MARKET_DAYS after they are listed or renewed by the seller.
+export const MARKET_DAYS = 60;
+export function daysLeft(l: Pick<Listing, "data" | "createdAt">): number {
+  const from = (l.data as { renewed?: string }).renewed ?? l.createdAt;
+  const t = Date.parse(from.includes("T") ? from : from.replace(" ", "T") + "Z");
+  return Math.ceil(MARKET_DAYS - (Date.now() - t) / 86_400_000);
 }
 
 export async function approvedOne<K extends Kind>(kind: K, slug: string): Promise<Listing<K> | null> {
@@ -258,7 +285,7 @@ export async function counts(): Promise<Record<string, number>> {
   const { results } = await db().prepare(`select status, count(*) as n from listings group by status`).all<{ status: string; n: number }>();
   const out: Record<string, number> = { pending: 0, approved: 0, rejected: 0, hidden: 0 };
   for (const r of results) out[r.status] = r.n;
-  const rep = await db().prepare(`select count(*) as n from reports where status = 'open'`).first<{ n: number }>();
+  const rep = await db().prepare(`select count(*) as n from reports where status in ('open','investigating','escalated')`).first<{ n: number }>();
   const msg = await db().prepare(`select count(*) as n from messages where status = 'new'`).first<{ n: number }>();
   out.reports = rep?.n ?? 0;
   out.messages = msg?.n ?? 0;
@@ -349,7 +376,7 @@ export function flagsOf(l: Listing, reportTargets: string[]): Flag[] {
 
 export async function openReportTargets(): Promise<string[]> {
   await ensureDb();
-  const { results } = await db().prepare(`select target from reports where status != 'resolved'`).all<{ target: string }>();
+  const { results } = await db().prepare(`select target from reports where status in ('open','investigating','escalated')`).all<{ target: string }>();
   return results.map((r) => r.target);
 }
 
@@ -416,7 +443,139 @@ export type Message = { id: number; name: string; email: string; topic: string; 
 
 export async function reports(): Promise<Report[]> {
   await ensureDb();
-  return (await db().prepare(`select * from reports order by (status = 'open') desc, id desc limit 200`).all<Report>()).results;
+  return (await db().prepare(`select * from reports order by (status = 'open') desc, id desc limit 500`).all<Report>()).results;
+}
+
+// Report workflow. "open" is shown as New.
+export const REPORT_STATUSES = [["open", "New"], ["investigating", "Investigating"], ["escalated", "Escalated"], ["resolved", "Resolved"], ["no_action", "No action"]] as const;
+export type ReportStatus = (typeof REPORT_STATUSES)[number][0];
+export const reportLabel = (s: string) => REPORT_STATUSES.find(([k]) => k === s)?.[1] ?? s;
+export type ReportNote = { id: number; report_id: number; admin: string; status: string | null; body: string | null; created_at: string };
+
+export async function setReport(id: number, status: ReportStatus | null, admin: string, note: string) {
+  await ensureDb();
+  const d = db();
+  const r = await d.prepare(`select * from reports where id = ?`).bind(id).first<Report>();
+  if (!r || (!status && !note)) return;
+  const change = status && status !== r.status ? status : null;
+  await d.batch([
+    ...(change ? [d.prepare(`update reports set status = ? where id = ?`).bind(change, id)] : []),
+    d.prepare(`insert into report_notes (report_id, admin, status, body) values (?, ?, ?, ?)`).bind(id, admin, change, note || null),
+    d.prepare(`insert into audit_log (admin, action, target, reason) values (?, ?, ?, ?)`).bind(admin, change ? `report: ${reportLabel(change).toLowerCase()}` : "report note", `report #${id}: ${r.target}`, note || null),
+  ]);
+}
+
+export async function reportNotes(): Promise<Map<number, ReportNote[]>> {
+  await ensureDb();
+  const { results } = await db().prepare(`select * from report_notes order by id desc limit 2000`).all<ReportNote>();
+  const out = new Map<number, ReportNote[]>();
+  for (const n of results) out.set(n.report_id, [...(out.get(n.report_id) ?? []), n]);
+  return out;
+}
+
+// The listing a report is about, matched by its title (reports store the title text).
+export async function listingsNamed(target: string): Promise<Listing[]> {
+  await ensureDb();
+  const t = target.trim().toLowerCase();
+  if (t.length < 3) return [];
+  const { results } = await db().prepare(`select * from listings where is_sample = 0 or status = 'approved' order by id desc limit 1000`).all<Row>();
+  return results.map((r) => toListing(r)).filter((l) => { const n = titleOf(l).toLowerCase(); return n.length > 3 && (t.includes(n) || n.includes(t)); }).slice(0, 3);
+}
+
+// ---- Member changes to their own listings ----
+
+export type PendingEdit = { data: Record<string, unknown>; by: string; created_at: string };
+
+export async function pendingEdit(id: number): Promise<PendingEdit | null> {
+  await ensureDb();
+  const r = await db().prepare(`select * from listing_edits where listing_id = ?`).bind(id).first<{ data: string; by: string; created_at: string }>();
+  if (!r) return null;
+  try { return { data: JSON.parse(r.data), by: r.by, created_at: r.created_at }; } catch { return null; }
+}
+
+export async function editIds(): Promise<number[]> {
+  await ensureDb();
+  return (await db().prepare(`select listing_id from listing_edits order by created_at`).all<{ listing_id: number }>()).results.map((r) => r.listing_id);
+}
+
+// Live listing: the edit waits for review. Anything else: replace it and send it back to review.
+export async function memberEdit(l: Listing, data: object, who: string): Promise<"waiting" | "resubmitted"> {
+  const d = db();
+  const target = `${l.kind}: ${titleOf(l)}`;
+  if (l.status === "approved") {
+    await d.batch([
+      d.prepare(`insert into listing_edits (listing_id, data, by) values (?, ?, ?) on conflict(listing_id) do update set data = excluded.data, by = excluded.by, created_at = datetime('now')`).bind(l.id, JSON.stringify(data), who),
+      d.prepare(`insert into audit_log (admin, action, target) values (?, 'edit submitted', ?)`).bind(who, target),
+    ]);
+    return "waiting";
+  }
+  await d.batch([
+    d.prepare(`update listings set data = ?, status = 'pending', reason = null, updated_at = datetime('now') where id = ?`).bind(JSON.stringify(data), l.id),
+    d.prepare(`delete from review_stage where listing_id = ?`).bind(l.id),
+    d.prepare(`delete from listing_edits where listing_id = ?`).bind(l.id),
+    d.prepare(`insert into audit_log (admin, action, target) values (?, 'resubmitted', ?)`).bind(who, target),
+  ]);
+  return "resubmitted";
+}
+
+export async function decideEdit(id: number, approve: boolean, admin: string, reason: string) {
+  const l = await byId(id);
+  const e = await pendingEdit(id);
+  if (!l || !e) return;
+  const d = db();
+  // Admin-controlled fields always come from the live listing.
+  const keep = Object.fromEntries(["verified", "sellerVerified"].filter((k) => k in (l.data as object)).map((k) => [k, (l.data as Record<string, unknown>)[k]]));
+  await d.batch([
+    ...(approve ? [d.prepare(`update listings set data = ?, reason = null, updated_at = datetime('now') where id = ?`).bind(JSON.stringify({ ...e.data, ...keep }), id)] : []),
+    ...(!approve && reason ? [d.prepare(`update listings set reason = ? where id = ?`).bind(reason, id)] : []),
+    d.prepare(`delete from listing_edits where listing_id = ?`).bind(id),
+    d.prepare(`insert into audit_log (admin, action, target, reason) values (?, ?, ?, ?)`).bind(admin, approve ? "edit approved" : "edit rejected", `${l.kind}: ${titleOf(l)}`, reason || null),
+  ]);
+}
+
+export const UNPUBLISHED_BY_OWNER = "Unpublished by the owner";
+
+// Quick changes a member can make without review.
+export async function ownerAction(l: Listing, action: string, value: string, who: string): Promise<string | null> {
+  const d = db();
+  const target = `${l.kind}: ${titleOf(l)}`;
+  const log = (a: string) => d.prepare(`insert into audit_log (admin, action, target) values (?, ?, ?)`).bind(who, a, target);
+  const live = l.status === "approved";
+  if (action === "state") {
+    if (!live || (l.kind !== "event" && l.kind !== "good")) return "Only live events and Market items can change status.";
+    await setState(l.id, value, who);
+    return null;
+  }
+  if (action === "renew") {
+    if (!live || l.kind !== "good") return "Only live Market items can be renewed.";
+    const data = { ...(l.data as object), renewed: new Date().toISOString() };
+    await d.batch([d.prepare(`update listings set data = ?, updated_at = datetime('now') where id = ?`).bind(JSON.stringify(data), l.id), log("renewed")]);
+    return null;
+  }
+  if (action === "unpublish") {
+    if (l.status === "hidden" || l.status === "rejected") return "This listing is already not public.";
+    await d.batch([
+      d.prepare(`update listings set status = 'hidden', reason = ?, updated_at = datetime('now') where id = ?`).bind(UNPUBLISHED_BY_OWNER, l.id),
+      d.prepare(`insert into review_stage (listing_id, stage) values (?, 'archived') on conflict(listing_id) do update set stage = 'archived', updated_at = datetime('now')`).bind(l.id),
+      d.prepare(`delete from listing_edits where listing_id = ?`).bind(l.id),
+      log("unpublished by owner"),
+    ]);
+    return null;
+  }
+  if (action === "republish") {
+    if (l.reason !== UNPUBLISHED_BY_OWNER) return "Only listings you unpublished yourself can be sent back. Please contact us.";
+    await d.batch([
+      d.prepare(`update listings set status = 'pending', reason = null, updated_at = datetime('now') where id = ?`).bind(l.id),
+      d.prepare(`delete from review_stage where listing_id = ?`).bind(l.id),
+      log("republish requested"),
+    ]);
+    return null;
+  }
+  if (action === "cancel_edit") {
+    await d.batch([d.prepare(`delete from listing_edits where listing_id = ?`).bind(l.id), log("edit withdrawn")]);
+    return null;
+  }
+  return "Unknown action.";
 }
 export async function messages(): Promise<Message[]> {
   await ensureDb();

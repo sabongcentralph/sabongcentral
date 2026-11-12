@@ -1,5 +1,5 @@
 import { adminFromRequest, sameOrigin } from "@/lib/auth";
-import { db, logAction } from "@/lib/db";
+import { REPORT_STATUSES, db, setReport, type ReportStatus } from "@/lib/db";
 import { back, field } from "@/lib/forms";
 
 // Close a report or mark a contact message as read.
@@ -10,10 +10,14 @@ export async function POST(req: Request) {
   const id = Number(field(f, "id", 12));
   const what = field(f, "what", 10);
   if (what === "report") {
-    const status = field(f, "status", 20) === "open" ? "open" : "resolved";
-    await db().prepare(`update reports set status = ? where id = ?`).bind(status, id).run();
-    await logAction(admin, `report ${status}`, `report #${id}`, field(f, "note", 300));
-    return back(req, "/admin/reports");
+    const s = field(f, "status", 20);
+    const status = REPORT_STATUSES.some(([k]) => k === s) ? (s as ReportStatus) : null;
+    const note = field(f, "note", 500);
+    const cur = await db().prepare(`select status from reports where id = ?`).bind(id).first<{ status: string }>();
+    const closing = status && status !== cur?.status && ["resolved", "no_action", "escalated"].includes(status);
+    if (closing && !note) return back(req, `/admin/reports?error=note#r${id}`);
+    await setReport(id, status, admin, note);
+    return back(req, `/admin/reports?done=1#r${id}`);
   }
   await db().prepare(`update messages set status = 'read' where id = ?`).bind(id).run();
   return back(req, "/admin/messages");

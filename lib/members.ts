@@ -134,6 +134,11 @@ export async function linkListing(listingId: number, memberId: number) {
   await db().prepare(`insert or replace into member_listings (listing_id, member_id) values (?, ?)`).bind(listingId, memberId).run();
 }
 
+export async function ownsListing(memberId: number, listingId: number): Promise<boolean> {
+  await ensureMembers();
+  return !!(await db().prepare(`select 1 from member_listings where listing_id = ? and member_id = ?`).bind(listingId, memberId).first());
+}
+
 export async function listingsOf(memberId: number): Promise<{ l: Listing; qs: QueueStatus }[]> {
   await ensureMembers();
   const { results } = await db().prepare(`select listing_id from member_listings where member_id = ? order by listing_id desc`).bind(memberId).all<{ listing_id: number }>();
