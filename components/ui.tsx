@@ -30,7 +30,7 @@ export function SectionHead({ title, href, more = "See all", live }: { title: st
 
 export function BizBadge({ small = false }: { small?: boolean }) {
   return (
-    <span className={`inline-flex flex-none items-center gap-1 self-start rounded-full bg-[#e6efe8] font-bold text-[#2f5b3a] ${small ? "px-2 py-0.5 text-[10.5px]" : "px-2.5 py-1 text-[12px]"}`}>
+    <span className={`inline-flex flex-none items-center gap-1 self-start rounded-full bg-ok-bg font-bold text-ok ${small ? "px-2 py-0.5 text-[10.5px]" : "px-2.5 py-1 text-[12px]"}`}>
       <ShieldCheck size={small ? 12 : 14} /> Business Verified
     </span>
   );

@@ -55,6 +55,37 @@
   outline-offset: 2px;
 }
 
+/* Dark mode: follows the phone or computer setting automatically. Same red, black and gold; dark surfaces. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --color-wine: #ff4d52;
+    --color-ivory: #0b0b0d;
+    --color-cream: #17171b;
+    --color-sand: #34343b;
+    --color-line: #26262c;
+    --color-blush: #3a1416;
+    --color-rose: #3a1c1e;
+    --color-gold-dark: #e0bf68;
+    --color-ink: #f4f4f5;
+    --color-ink-soft: #d4d4d8;
+    --color-muted: #9d9da6;
+    --color-ok-bg: #163021;
+    --color-ok: #6fd391;
+    --color-ok-line: #2c5a3c;
+    --color-warn-bg: #3a2c0c;
+    --color-warn: #f0c24f;
+    --color-note-bg: #241d10;
+    --color-info-bg: #162438;
+    --color-info: #8ab4f0;
+    --color-red-line: #5c2224;
+  }
+  :root .ph { background-color: #1f1f24; }
+  :root .field { background-color: #121215; }
+  ::placeholder { color: #75757d; }
+  .card:hover { box-shadow: 0 16px 34px rgb(0 0 0 / 0.5); }
+}
+
 /* Photo placeholder until farms upload real photos. */
 .ph {
   background-color: #e9e7e3;

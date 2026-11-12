@@ -49,6 +49,7 @@ Bold bright red (#E81E25), black (#121215) and white, with a touch of gold
 are theme tokens in `app/globals.css`, along with the motion (hero slashes,
 red tab sweep, card lift, button shine, fade-up on scroll via
 `components/Reveal.tsx`), all of which turn off for reduced motion.
+Dark mode follows the visitor's phone or computer setting (`prefers-color-scheme`).
 Phone-first: five bottom tabs on phones, top navigation on desktop.
 
 ## End-to-end test
