@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { UserIcon, AlertIcon, BookIcon, CalendarIcon, FarmIcon, GearIcon, HomeIcon, MailIcon, ShieldIcon } from "../icons";
 
-type Counts = { waiting: number; reports: number; messages: number; permits: number; members: number };
+type Counts = { waiting: number; reports: number; messages: number; permits: number; members: number; docs: number };
 type Item = { href: string; label: string; icon: (p: { size?: number }) => React.ReactNode; badge?: keyof Counts; subs?: [string, string][] };
 
 const ITEMS: Item[] = [
@@ -29,6 +29,7 @@ const ITEMS: Item[] = [
     ["/admin/queue?type=Announcement&q=All", "Announcements"],
   ] },
   { href: "/admin/members", label: "Members", icon: UserIcon, badge: "members" },
+  { href: "/admin/documents", label: "Documents", icon: BookIcon, badge: "docs" },
   { href: "/admin/reports", label: "Reports", icon: AlertIcon, badge: "reports" },
   { href: "/admin/messages", label: "Messages", icon: MailIcon, badge: "messages" },
   { href: "/admin/account", label: "Account", icon: GearIcon },
