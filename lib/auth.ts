@@ -23,7 +23,7 @@ export async function hashPassword(password: string): Promise<string> {
   return `pbkdf2$${it}$${b64(salt)}$${b64(await pbkdf2(password, salt, it))}`;
 }
 
-async function verifyPassword(password: string, stored: string): Promise<boolean> {
+export async function verifyPassword(password: string, stored: string): Promise<boolean> {
   const [algo, it, salt, hash] = stored.split("$");
   if (algo !== "pbkdf2") return false;
   const got = new Uint8Array(await pbkdf2(password, unb64(salt), Number(it)));

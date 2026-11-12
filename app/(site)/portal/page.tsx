@@ -6,7 +6,7 @@ import { PhotoPicker } from "@/components/PhotoPicker";
 import { uploadsOn } from "@/lib/media";
 import { Chip, Note, Page, PageHead, btnGhost, btnPrimary, input, labelCls } from "@/components/ui";
 import { DOC_TYPES, MAX_DOC_PAGES, docLabel, docsOf, daysToExpiry, isValid, type Doc } from "@/lib/docs";
-import { ROLES, STATUS_LABEL, canSubmit, currentMember, listingsOf, testMode, type Member } from "@/lib/members";
+import { ROLES, STATUS_LABEL, canSubmit, currentMember, listingsOf, passwordState, testMode, type Member } from "@/lib/members";
 import { AVAILABILITY, EVENT_STATUSES, MARKET_DAYS, UNPUBLISHED_BY_OWNER, availOf, byId, daysLeft, editIds, titleOf, type GoodData, type Listing, type QueueStatus } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -131,35 +131,68 @@ function SubmitForm({ tab, up, m, l }: { tab: "farm" | "event" | "good"; up: boo
   );
 }
 
-// Step 1 and 2: email, then the 6-digit code.
+// Sign in with email and password. Accounts are created by Sabong Central for now;
+// email codes come back once email sending is set up (EMAIL_ENABLED).
 async function SignIn({ sp }: { sp: Search }) {
-  const step = one(sp.step), email = one(sp.email), test = one(sp.test), error = one(sp.error);
-  const test_ = await testMode();
+  const step = one(sp.step), email = one(sp.email), error = one(sp.error);
+  const codes = !(await testMode());
   return (
     <Page>
       <div className="mx-auto flex w-full max-w-[460px] flex-col gap-5">
-        <PageHead kicker="Member Portal" title={step === "code" ? "Enter your code" : "Sign in or create an account"} sub="For farm owners, event and seminar organizers, venues, Market sellers and suppliers. No password: we email you a 6-digit code." />
+        <PageHead kicker="Member Portal" title={step === "code" ? "Enter your code" : "Sign in"} sub="For farm owners, event and seminar organizers, venues, Market sellers and suppliers." />
         {error && <Note tone="red">{error}</Note>}
-        {step === "code" && email ? (
+        {step === "code" && email && codes ? (
           <form action="/api/member/verify" method="post" className="flex flex-col gap-4 rounded-2xl border border-line bg-cream p-5">
             <input type="hidden" name="email" value={email} />
             <p className="m-0 text-[14px] text-ink-soft">We sent a 6-digit code to <strong>{email}</strong>. It expires in 10 minutes.</p>
-            {test && <Note><strong>Test site:</strong> email sending isn’t set up yet, so here is your code: <strong className="text-[17px] tracking-[0.2em]">{test}</strong></Note>}
             <label className={labelCls}>6-digit code<input name="code" required inputMode="numeric" autoComplete="one-time-code" pattern="[0-9 ]{6,7}" maxLength={7} autoFocus className={`${input} text-center text-[22px] tracking-[0.35em]`} /></label>
             <button type="submit" className={btnPrimary}>Continue</button>
             <a href="/portal" className="text-center text-[13.5px] font-semibold text-wine">Use a different email or get a new code</a>
           </form>
         ) : (
-          <form action="/api/member/code" method="post" className="flex flex-col gap-4 rounded-2xl border border-line bg-cream p-5">
+          <form action="/api/member/login" method="post" className="flex flex-col gap-4 rounded-2xl border border-line bg-cream p-5">
             <Honeypot />
             <label className={labelCls}>Email<input name="email" type="email" required autoComplete="email" defaultValue={email} className={input} /></label>
-            <button type="submit" className={btnPrimary}>Send me a code</button>
-            {test_ && <p className="m-0 text-[12px] text-muted">Test site: the code is shown on screen instead of emailed.</p>}
+            <label className={labelCls}>Password<input name="password" type="password" required autoComplete="current-password" className={input} /></label>
+            <button type="submit" className={btnPrimary}>Sign in</button>
+            <p className="m-0 text-[12.5px] text-muted">Forgot your password? <a href="/contact" className="font-semibold text-wine">Contact us</a> and we’ll send you a new temporary one.</p>
           </form>
+        )}
+        {codes && step !== "code" && (
+          <form action="/api/member/code" method="post" className="flex flex-col gap-3 rounded-2xl border border-line bg-cream p-5">
+            <Honeypot />
+            <span className="text-[14px] font-semibold">New here, or prefer a code?</span>
+            <label className={labelCls}>Email<input name="email" type="email" required autoComplete="email" className={input} /></label>
+            <button type="submit" className={btnGhost}>Email me a sign-in code</button>
+          </form>
+        )}
+        {!codes && (
+          <div className="flex flex-col gap-1.5 rounded-2xl border border-dashed border-sand p-4 text-[13.5px] text-ink-soft">
+            <strong className="text-ink">No account yet?</strong>
+            <span>Portal accounts are created by Sabong Central after a quick check. Send us your name, mobile number, Facebook page and what you do (farm, organizer, seller…) through <a href="/contact" className="font-semibold text-wine">Contact Us</a>, and we’ll send you a temporary password.</span>
+          </div>
         )}
         <p className="m-0 text-[13.5px] text-ink-soft">Just sharing an article, an educational reel or a community announcement? Use the <a href="/submit" className="font-semibold text-wine">public submission form</a>; no account needed.</p>
       </div>
     </Page>
+  );
+}
+
+// First sign-in with a temporary password (and the Account tab): choose a password.
+function PasswordForm({ first, needTerms }: { first: boolean; needTerms: boolean }) {
+  return (
+    <form action="/api/member/password" method="post" className={box}>
+      {!first && <label className={`${labelCls} ${full}`}>Current password<input name="current" type="password" required autoComplete="current-password" className={input} /></label>}
+      <label className={labelCls}>New password (10+ characters)<input name="next" type="password" required minLength={10} autoComplete="new-password" className={input} /></label>
+      <label className={labelCls}>New password again<input name="again" type="password" required minLength={10} autoComplete="new-password" className={input} /></label>
+      {needTerms && (
+        <>
+          <label className={`${full} flex items-start gap-2 text-[13.5px] text-ink-soft`}><input type="checkbox" name="adult" value="1" required className="mt-0.5 size-[17px] flex-none accent-crimson" /> I am 18 years old or older.</label>
+          <label className={`${full} flex items-start gap-2 text-[13.5px] text-ink-soft`}><input type="checkbox" name="terms" value="1" required className="mt-0.5 size-[17px] flex-none accent-crimson" /> <span>I agree to the <a href="/legal/rules" className="font-semibold text-wine">Portal Rules</a>, <a href="/legal/terms" className="font-semibold text-wine">Terms of Use</a> and <a href="/legal/privacy" className="font-semibold text-wine">Privacy Notice</a>.</span></label>
+        </>
+      )}
+      <button type="submit" className={`${btnPrimary} ${full}`}>{first ? "Save my password" : "Change password"}</button>
+    </form>
   );
 }
 
@@ -291,6 +324,19 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
   const m = await currentMember();
   if (!m) return <SignIn sp={sp} />;
   const error = one(sp.error);
+  const pw = await passwordState(m.id);
+  if (pw.mustChange) {
+    return (
+      <Page>
+        <div className="mx-auto flex w-full max-w-[560px] flex-col gap-5">
+          <PageHead kicker="Member Portal" title={`Welcome, ${m.name.split(" ")[0] || "there"}`} sub="Please choose your own password to replace the temporary one." />
+          {error && <Note tone="red">{error}</Note>}
+          <PasswordForm first needTerms={!pw.terms} />
+          <form action="/api/member/logout" method="post"><button type="submit" className={btnGhost}>Sign out</button></form>
+        </div>
+      </Page>
+    );
+  }
   if (m.status === "incomplete") {
     return (
       <Page>
@@ -323,7 +369,7 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
           </div>
           <Chip tone={m.status === "active" ? "green" : m.status === "pending" ? "gold" : "red"}>{STATUS_LABEL[m.status]}</Chip>
         </div>
-        {one(sp.welcome) === "1" && <Note tone="green"><strong>Welcome!</strong> Your account is waiting for admin approval. You can already submit listings; they go live after review.</Note>}
+        {one(sp.welcome) === "1" && <Note tone="green"><strong>Welcome!</strong> {m.status === "active" ? "Your password is saved. You can now submit listings; they go live after review." : "Your account is waiting for admin approval. You can already submit listings; they go live after review."}</Note>}
         {m.status === "pending" && one(sp.welcome) !== "1" && <Note>Your account is waiting for admin approval. Listings you submit are reviewed before they go public.</Note>}
         {blocked && <Note tone="red">Your account is {STATUS_LABEL[m.status].toLowerCase()}, so you can’t submit listings. Please <a href="/contact" className="font-semibold">contact us</a>.</Note>}
         {sent && <Note tone="green"><strong>Received!</strong> Your listing is pending review. You can follow it under My listings.</Note>}
@@ -380,8 +426,10 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
 
         {tab === "account" && (
           <>
-            {one(sp.saved) === "1" && <Note tone="green">Saved.</Note>}
+            {one(sp.saved) && <Note tone="green">{one(sp.saved) === "pw" ? "Password changed." : "Saved."}</Note>}
             <ProfileForm m={m} first={false} />
+            <h2 className="m-0 mt-2 text-[17px] font-bold">{pw.has ? "Change password" : "Set a password"}</h2>
+            <PasswordForm first={!pw.has} needTerms={false} />
             <form action="/api/member/logout" method="post"><button type="submit" className={btnGhost}>Sign out</button></form>
           </>
         )}

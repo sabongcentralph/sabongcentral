@@ -6,7 +6,7 @@ import { Note, Page, PageHead, btnPrimary, input, labelCls } from "@/components/
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Contact Us" };
 
-const TOPICS = ["General question", "Listing help", "Report a problem", "Privacy / data request", "Partnership"];
+const TOPICS = ["General question", "Request a Portal account", "Forgot my Portal password", "Listing help", "Report a problem", "Privacy / data request", "Partnership"];
 
 export default async function ContactPage({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams;
