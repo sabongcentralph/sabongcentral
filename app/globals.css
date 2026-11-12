@@ -85,3 +85,10 @@ a:hover .arrow { transform: translateX(4px); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* Side menu drawer (phones and tablets). */
+dialog.drawer { inset: 0 auto 0 0; }
+dialog.drawer[open] { animation: drawer-in 0.22s ease-out; }
+dialog.drawer::backdrop { background: rgb(31 26 24 / 0.45); }
+@keyframes drawer-in { from { transform: translateX(-100%); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { dialog.drawer[open] { animation: none; } }

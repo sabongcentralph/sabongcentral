@@ -1,11 +1,12 @@
-import { BagIcon, CalendarIcon, FarmIcon, HomeIcon, ReelIcon } from "./icons";
+import { BagIcon, CalendarIcon, FarmIcon, GradIcon, HomeIcon, ReelIcon } from "./icons";
 
 export const TABS = [
   { href: "/", label: { tl: "Home", en: "Home" }, Icon: HomeIcon },
   { href: "/events", label: { tl: "Events", en: "Events" }, Icon: CalendarIcon },
   { href: "/reels", label: { tl: "Reels", en: "Reels" }, Icon: ReelIcon },
   { href: "/farms", label: { tl: "Farms", en: "Farms" }, Icon: FarmIcon },
-  { href: "/goods", label: { tl: "Goods", en: "Goods" }, Icon: BagIcon },
+  { href: "/education", label: { tl: "Education", en: "Education" }, Icon: GradIcon },
+  { href: "/market", label: { tl: "Market", en: "Market" }, Icon: BagIcon },
 ] as const;
 
 export function isActive(path: string, href: string) {

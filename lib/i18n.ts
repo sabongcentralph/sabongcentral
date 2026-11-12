@@ -7,7 +7,7 @@ export const LANG_COOKIE = "lang";
 // Every label on the site lives here, in Taglish and English.
 const dict = {
   // header and footer
-  tagline: { tl: "Philippine Gamefowl & Poultry Community", en: "Philippine Gamefowl & Poultry Community" },
+  tagline: { tl: "Philippine Gamefowl Community", en: "Philippine Gamefowl Community" },
   portal: { tl: "Portal", en: "Portal" },
   navFarms: { tl: "Farms", en: "Farms" },
   navDerbies: { tl: "Derby Schedule", en: "Derby Schedule" },

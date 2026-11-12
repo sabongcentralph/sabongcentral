@@ -4,11 +4,12 @@ import { getLang } from "@/lib/i18n";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomTabs } from "@/components/BottomTabs";
 import { SiteFooter } from "@/components/SiteFooter";
+import { SideNav } from "@/components/SideNav";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: { default: SITE_NAME, template: `%s · ${SITE_NAME}` },
-  description: "Philippine gamefowl and poultry community: gamefarms, events, supplies and poultry education. Information only: no bets, no payments.",
+  description: "Philippine gamefowl community: gamefarms, derby schedules, supplies and education. Information only: no bets, no payments.",
   robots: { index: false, follow: false }, // test site: keep out of search engines until launch
 };
 
@@ -32,7 +33,12 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             TEST SITE · sample data only, not live yet
           </div>
           <AppHeader lang={lang} />
-          {children}
+          <div className="mx-auto flex w-full max-w-[1400px] flex-1">
+            <aside className="sticky top-[66px] hidden self-start h-[calc(100dvh-66px)] w-[250px] flex-none overflow-y-auto border-r border-line py-6 pl-3 pr-2 lg:block">
+              <SideNav />
+            </aside>
+            <div className="flex min-w-0 flex-1 flex-col">{children}</div>
+          </div>
           <SiteFooter lang={lang} />
           <BottomTabs lang={lang} />
         </div>

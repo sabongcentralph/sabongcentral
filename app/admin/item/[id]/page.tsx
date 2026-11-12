@@ -10,7 +10,7 @@ import { Chip, Note, Page, btnGhost, btnPrimary, input, labelCls, statusTone } f
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Review" };
 
-const PATH = { farm: "farms", event: "events", good: "goods", reel: "reels", article: "learn", notice: "notices", supplier: "suppliers" } as const;
+const PATH = { farm: "farms", event: "events", good: "market", reel: "reels", article: "learn", notice: "notices", supplier: "suppliers" } as const;
 
 function show(v: unknown): string {
   if (Array.isArray(v)) return v.map((x) => (typeof x === "object" && x && "name" in x ? (x as { name: string }).name : String(x))).join(", ");

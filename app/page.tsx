@@ -4,19 +4,17 @@ import { publicEvents } from "@/lib/content";
 import { ArticleCard, EventCard, FarmCard, GoodCard, NoticeCard, ReelCard } from "@/components/cards";
 import { BizBadge, Chip, Photo, Row, SampleTag, SectionHead, btnPrimary } from "@/components/ui";
 import { LocationFields } from "@/components/LocationFields";
-import {
-  AlertIcon, BagIcon, BookIcon, CalendarIcon, DownloadIcon, FarmIcon, GradIcon, MegaphoneIcon, Pin, ReelIcon, SearchIcon, TruckIcon,
-} from "@/components/icons";
+import { Pin, SearchIcon } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
 
 const TX = {
-  tl: { kicker: "WELCOME!", title: "Your Hub for Gamefarms, Events, Supplies, and Poultry Education", ph: "Search farms, goods, events, articles…" },
-  en: { kicker: "WELCOME!", title: "Your Hub for Gamefarms, Events, Supplies, and Poultry Education", ph: "Search farms, goods, events, articles…" },
+  tl: { kicker: "WELCOME!", title: "Your Hub for Gamefarms, Events, Supplies, and Education", ph: "Search farms, events, market, articles…" },
+  en: { kicker: "WELCOME!", title: "Your Hub for Gamefarms, Events, Supplies, and Education", ph: "Search farms, events, market, articles…" },
 };
 
-const kindPath = { farm: "farms", event: "events", good: "goods", reel: "reels", article: "learn", notice: "notices", supplier: "suppliers" } as const;
-const kindLabel = { farm: "Farm", event: "Event", good: "Goods", reel: "Reel", article: "Article", notice: "Notice", supplier: "Supplier" } as const;
+const kindPath = { farm: "farms", event: "events", good: "market", reel: "reels", article: "learn", notice: "notices", supplier: "suppliers" } as const;
+const kindLabel = { farm: "Farm", event: "Event", good: "Market", reel: "Reel", article: "Article", notice: "Notice", supplier: "Supplier" } as const;
 
 export default async function Home() {
   const lang = await getLang();
@@ -26,27 +24,14 @@ export default async function Home() {
   ]);
   const spot = farms.find((f) => f.data.verified) ?? farms[0];
 
-  const hero = [
-    { href: "/farms", label: "Farms", Icon: FarmIcon },
-    { href: "/events", label: "Events", Icon: CalendarIcon },
-    { href: "/reels", label: "Reels", Icon: ReelIcon },
-    { href: "/goods", label: "Goods", Icon: BagIcon },
-    { href: "/learn", label: "Learning Hub", Icon: BookIcon },
-  ];
-  const quick = [
-    { href: "/learn", label: "Articles & Guides", Icon: BookIcon },
-    { href: "/events?group=Education+%26+Training", label: "Classes & Training", Icon: GradIcon },
-    { href: "/learn?topic=Downloads", label: "Breeder Resources", Icon: DownloadIcon },
-    { href: "/suppliers", label: "Verified Suppliers", Icon: TruckIcon },
-    { href: "/notices", label: "Community Notices", Icon: MegaphoneIcon },
-    { href: "/report?target=Scam+report", label: "Report Scam", Icon: AlertIcon, warn: true },
-  ];
+  const derbies = events.filter((e) => e.data.derby);
+  const classes = events.filter((e) => !e.data.derby);
 
   return (
     <main className="flex flex-col">
-      <section className="relative overflow-hidden bg-crimson-dark px-4 pb-6 pt-6 text-white md:px-6 md:pb-10 md:pt-12">
+      <section className="relative overflow-hidden bg-crimson-dark px-4 pb-6 pt-6 text-white md:px-6 md:pb-10 md:pt-12 lg:mx-6 lg:mt-6 lg:rounded-3xl">
         <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(120%_70%_at_50%_0%,rgba(201,162,74,.28),rgba(67,10,16,0)_60%)]" />
-        <div className="relative mx-auto flex max-w-[1200px] flex-col gap-4">
+        <div className="relative mx-auto flex max-w-[1100px] flex-col gap-4">
           <p className="rise m-0 text-[12px] font-bold tracking-[2px] text-gold-light">{tx.kicker}</p>
           <h1 className="rise rise-1 m-0 max-w-[760px] font-serif text-[26px] font-semibold leading-[1.15] md:text-[46px]">{tx.title}</h1>
           <form action="/search" method="get" role="search" className="rise rise-2 flex max-w-[640px] items-center gap-2 rounded-full bg-cream p-1.5 pl-4">
@@ -55,30 +40,13 @@ export default async function Home() {
             <input id="home-q" name="q" type="search" placeholder={tx.ph} className="min-h-10 min-w-0 flex-1 border-0 bg-transparent text-[15px] text-ink outline-none" />
             <button type="submit" className="min-h-10 cursor-pointer rounded-full border-0 bg-crimson px-4 text-sm font-semibold text-white">Search</button>
           </form>
-          <nav aria-label="Sections" className="rise rise-3 grid max-w-[640px] grid-cols-5 gap-2 pt-1">
-            {hero.map(({ href, label, Icon }) => (
-              <a key={href} href={href} className="flex flex-col items-center gap-1.5 text-center text-[11.5px] font-semibold leading-tight text-white no-underline">
-                <span className="lift flex size-12 items-center justify-center rounded-2xl border border-gold/60 bg-white/10 text-gold-light md:size-14"><Icon size={22} /></span>
-                {label}
-              </a>
-            ))}
-          </nav>
         </div>
       </section>
 
       <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-8 px-4 pb-10 pt-6 md:px-6">
-        <section aria-label="Quick links" className="grid grid-cols-3 gap-2.5 md:grid-cols-6">
-          {quick.map(({ href, label, Icon, warn }) => (
-            <a key={label} href={href} className={`card flex min-h-[84px] flex-col items-center justify-center gap-1.5 rounded-2xl border p-2 text-center text-[12px] font-semibold leading-tight no-underline ${warn ? "border-[#e3b7b0] bg-blush text-wine" : "border-line bg-cream text-ink"}`}>
-              <Icon size={22} className={warn ? "text-wine" : "text-crimson"} />
-              {label}
-            </a>
-          ))}
-        </section>
-
         <section className="flex flex-col gap-3 rounded-2xl border border-line bg-cream p-4">
           <h2 className="m-0 flex items-center gap-2 font-serif text-[21px] font-semibold"><Pin size={18} className="text-crimson" /> Near you</h2>
-          <p className="m-0 text-[13px] text-muted">Pick a province and city to see farms, events, goods and suppliers in your area.</p>
+          <p className="m-0 text-[13px] text-muted">Pick a province and city to see farms, events, market listings and suppliers in your area.</p>
           <form action="/search" method="get" className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
             <LocationFields idPrefix="nb" />
             <button type="submit" className={btnPrimary}>Search</button>
@@ -86,8 +54,13 @@ export default async function Home() {
         </section>
 
         <section className="flex flex-col gap-3">
-          <SectionHead title="Upcoming Events" href="/events" />
-          <Row>{events.slice(0, 4).map((e) => <EventCard key={e.id} e={e} compact />)}</Row>
+          <SectionHead title="Upcoming Derbies" href="/events" />
+          {derbies.length ? <Row>{derbies.slice(0, 4).map((e) => <EventCard key={e.id} e={e} compact />)}</Row> : <p className="m-0 text-[14px] text-muted">No derbies scheduled yet.</p>}
+        </section>
+
+        <section className="flex flex-col gap-3">
+          <SectionHead title="Seminars, Training & Expos" href="/education" />
+          <Row>{classes.slice(0, 4).map((e) => <EventCard key={e.id} e={e} compact />)}</Row>
         </section>
 
         {spot && (
@@ -121,7 +94,7 @@ export default async function Home() {
         </section>
 
         <section className="flex flex-col gap-3">
-          <SectionHead title="Latest Goods" href="/goods" />
+          <SectionHead title="Latest in the Market" href="/market" />
           <Row>{goods.slice(0, 4).map((g) => <GoodCard key={g.id} g={g} compact />)}</Row>
         </section>
 
@@ -130,7 +103,7 @@ export default async function Home() {
           <ul className="m-0 flex list-none flex-col divide-y divide-line rounded-2xl border border-line bg-cream p-0">
             {latest.map((l) => (
               <li key={l.id}>
-                <a href={`/${kindPath[l.kind]}/${l.slug}`} className="flex min-h-12 items-center gap-3 px-4 py-2.5 text-ink no-underline">
+                <a href={`/${l.kind === "event" && !(l.data as { derby?: boolean }).derby ? "education" : kindPath[l.kind]}/${l.slug}`} className="flex min-h-12 items-center gap-3 px-4 py-2.5 text-ink no-underline">
                   <Chip tone="plain">{kindLabel[l.kind]}</Chip>
                   <span className="flex-1 text-[14px] font-semibold">{titleOf(l)}</span>
                   <span className="text-[12px] text-muted">{l.isSample ? "Sample" : "New"}</span>
