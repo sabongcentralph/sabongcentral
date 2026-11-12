@@ -20,6 +20,7 @@ export default async function AdminMembers({ searchParams }: { searchParams: Pro
     <Page>
       <div className="flex flex-col gap-1">
         <h1 className="m-0 font-serif text-[26px] font-semibold">Members & applications</h1>
+        <a href="/admin/members/new" className="mb-2 w-fit rounded-full bg-crimson px-4 py-2 text-[14px] font-semibold text-white no-underline">+ Create account</a>
         <p className="m-0 text-[13.5px] text-muted">Farms, organizers, venues, sellers and suppliers with Portal accounts. Check their Facebook link before approving. No government IDs are collected.</p>
       </div>
       <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 md:mx-0 md:px-0">

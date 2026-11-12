@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { hashPassword, verifyPassword } from "./auth";
 import { byId, db, ensureDb, logAction, queueStatus, stages, type Listing, type QueueStatus } from "./db";
 
 // Member Portal accounts: farms, organizers, sellers, suppliers, venues.
@@ -48,6 +49,12 @@ export function ensureMembers(): Promise<void> {
         d.prepare(`create table if not exists member_sessions (token_hash text primary key, member_id integer not null, expires_at text not null)`),
         d.prepare(`create table if not exists member_listings (listing_id integer primary key, member_id integer not null)`),
         d.prepare(`create index if not exists member_listings_m on member_listings (member_id)`),
+        // Passwords (Em, 2026-11-12): until email sending is set up, an admin creates the
+        // account and sends a temporary password, which the member changes on first sign-in.
+        d.prepare(`create table if not exists member_passwords (
+          member_id integer primary key, pw_hash text not null, must_change integer not null default 1,
+          terms integer not null default 0, updated_at text not null default (datetime('now')))`),
+        d.prepare(`create table if not exists member_login_fails (email text not null, at text not null default (datetime('now')))`),
       ]);
     })().catch((e) => { ready = null; throw e; });
   }
@@ -88,12 +95,86 @@ export async function verifyCode(email: string, code: string): Promise<{ token: 
   }
   await db().prepare(`delete from member_codes where email = ?`).bind(e).run();
   await db().prepare(`insert or ignore into members (email) values (?)`).bind(e).run();
-  await db().prepare(`update members set last_login = datetime('now') where email = ?`).bind(e).run();
   const m = await db().prepare(`select * from members where email = ?`).bind(e).first<MemberRow>();
-  const token = b64(crypto.getRandomValues(new Uint8Array(32)));
-  await db().prepare(`insert into member_sessions (token_hash, member_id, expires_at) values (?, ?, datetime('now', '+${SESSION_DAYS} days'))`).bind(await sha256(token), m!.id).run();
-  return { token, member: toMember(m!) };
+  return { token: await startSession(m!.id), member: toMember(m!) };
 }
+
+async function startSession(memberId: number): Promise<string> {
+  const token = b64(crypto.getRandomValues(new Uint8Array(32)));
+  await db().batch([
+    db().prepare(`insert into member_sessions (token_hash, member_id, expires_at) values (?, ?, datetime('now', '+${SESSION_DAYS} days'))`).bind(await sha256(token), memberId),
+    db().prepare(`update members set last_login = datetime('now') where id = ?`).bind(memberId),
+  ]);
+  return token;
+}
+
+// Easy to read out or type: no 0/O or 1/l/I. Example: k7Pm-x4Qa-9t
+export function tempPassword(): string {
+  const abc = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const r = crypto.getRandomValues(new Uint8Array(10));
+  const s = Array.from(r, (n) => abc[n % abc.length]).join("");
+  return `${s.slice(0, 4)}-${s.slice(4, 8)}-${s.slice(8)}`;
+}
+
+export type NewMember = { email: string; name: string; phone: string; roles: Role[]; facebook: string; org_link: string };
+
+// Admin creates an account; returns the temporary password to send the member.
+export async function createMember(p: NewMember, admin: string): Promise<{ id: number; temp: string } | "exists"> {
+  await ensureMembers();
+  const e = p.email.trim().toLowerCase();
+  if (await db().prepare(`select 1 from members where email = ?`).bind(e).first()) return "exists";
+  const r = await db().prepare(`insert into members (email, name, phone, roles, facebook, org_link, status) values (?, ?, ?, ?, ?, ?, 'active') returning id`)
+    .bind(e, p.name, p.phone, p.roles.join(","), p.facebook, p.org_link).first<{ id: number }>();
+  const temp = tempPassword();
+  await db().prepare(`insert into member_passwords (member_id, pw_hash) values (?, ?)`).bind(r!.id, await hashPassword(temp)).run();
+  await logAction(admin, "account created", `member #${r!.id}: ${p.name}`);
+  return { id: r!.id, temp };
+}
+
+// New temporary password; signs the member out everywhere.
+export async function resetPassword(id: number, admin: string): Promise<string | null> {
+  const m = await memberById(id);
+  if (!m) return null;
+  const temp = tempPassword();
+  const h = await hashPassword(temp);
+  await db().batch([
+    db().prepare(`insert into member_passwords (member_id, pw_hash, must_change) values (?, ?, 1) on conflict(member_id) do update set pw_hash = excluded.pw_hash, must_change = 1, updated_at = datetime('now')`).bind(id, h),
+    db().prepare(`delete from member_sessions where member_id = ?`).bind(id),
+  ]);
+  await logAction(admin, "temporary password issued", `member #${id}: ${m.name || m.email}`);
+  return temp;
+}
+
+// Email + password sign-in. 5 wrong tries in 15 minutes locks that email for a while.
+export async function passwordLogin(email: string, password: string): Promise<{ token: string } | "bad" | "locked" | "blocked"> {
+  await ensureMembers();
+  const e = email.trim().toLowerCase();
+  const fails = await db().prepare(`select count(*) as n from member_login_fails where email = ? and at > datetime('now', '-15 minutes')`).bind(e).first<{ n: number }>();
+  if ((fails?.n ?? 0) >= 5) return "locked";
+  const row = await db().prepare(`select m.id, m.status, p.pw_hash from members m join member_passwords p on p.member_id = m.id where m.email = ?`).bind(e).first<{ id: number; status: string; pw_hash: string }>();
+  if (!row || !(await verifyPassword(password, row.pw_hash))) {
+    await db().prepare(`insert into member_login_fails (email) values (?)`).bind(e).run();
+    return "bad";
+  }
+  if (row.status === "suspended" || row.status === "closed") return "blocked";
+  await db().prepare(`delete from member_login_fails where email = ?`).bind(e).run();
+  return { token: await startSession(row.id) };
+}
+
+export async function passwordState(memberId: number): Promise<{ has: boolean; mustChange: boolean; terms: boolean }> {
+  await ensureMembers();
+  const r = await db().prepare(`select must_change, terms from member_passwords where member_id = ?`).bind(memberId).first<{ must_change: number; terms: number }>();
+  return { has: !!r, mustChange: !!r?.must_change, terms: !!r?.terms };
+}
+
+export async function setOwnPassword(memberId: number, pw: string, terms: boolean) {
+  await ensureMembers();
+  await db().prepare(`insert into member_passwords (member_id, pw_hash, must_change, terms) values (?, ?, 0, ?) on conflict(member_id) do update set pw_hash = excluded.pw_hash, must_change = 0, terms = max(member_passwords.terms, excluded.terms), updated_at = datetime('now')`)
+    .bind(memberId, await hashPassword(pw), terms ? 1 : 0).run();
+  await logAction(`member #${memberId}`, "password changed", `member #${memberId}`);
+}
+
+export const PW_MIN = 10;
 
 export const memberCookie = (token: string) => `${COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_DAYS * 86400}`;
 export const clearMemberCookie = `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`;
