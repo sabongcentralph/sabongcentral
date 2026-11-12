@@ -5,7 +5,7 @@ export const TABS = [
   { href: "/events", label: { tl: "Events", en: "Events" }, Icon: CalendarIcon },
   { href: "/reels", label: { tl: "Reels", en: "Reels" }, Icon: ReelIcon },
   { href: "/farms", label: { tl: "Farms", en: "Farms" }, Icon: FarmIcon },
-  { href: "/education", label: { tl: "Education", en: "Education" }, Icon: GradIcon },
+  { href: "/education", label: { tl: "Learn", en: "Learn" }, Icon: GradIcon },
   { href: "/market", label: { tl: "Market", en: "Market" }, Icon: BagIcon },
 ] as const;
 

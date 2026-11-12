@@ -39,7 +39,7 @@ export async function EventDirectory({ sp, mode }: { sp: Search; mode: DirMode }
     <Page>
       {mode === "derby"
         ? <PageHead kicker="Derby Schedule" title="Events" sub="Derby schedules with verified permits: date, venue and organizer." />
-        : <PageHead kicker="Learn & Grow" title="Education" sub="Seminars, workshops, training, webinars, expos and community events." />}
+        : <PageHead kicker="Learn & Grow" title="Learn" sub="Seminars, workshops, training, webinars, expos and community events." />}
       {mode === "education" && (
         <a href="/learn" className="card flex items-center justify-between gap-3 rounded-2xl border border-line bg-cream px-4 py-3 text-[14px] font-semibold text-ink no-underline">
           Articles, guides and breeder resources in the Learning Hub <span className="text-crimson">→</span>
