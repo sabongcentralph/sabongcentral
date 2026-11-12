@@ -15,7 +15,7 @@ export function FarmCard({ f, compact = false, tag }: { f: Listing<"farm">; comp
           <h3 className="m-0 flex-1 text-[16px] font-bold leading-snug">{d.name}</h3>
           {f.isSample && <SampleTag />}
         </div>
-        {tag && <span className={`w-fit rounded-md px-1.5 py-0.5 text-[10.5px] font-extrabold tracking-[1px] ${tag === "Sponsored" ? "bg-[#e2b43a] text-[#3a0a0a]" : "bg-blush text-wine"}`}>{tag.toUpperCase()}</span>}
+        {tag && <span className={`w-fit rounded-md px-1.5 py-0.5 text-[10.5px] font-extrabold tracking-[1px] ${tag === "Sponsored" ? "bg-gold text-noir" : "bg-blush text-wine"}`}>{tag.toUpperCase()}</span>}
         {d.verified && <BizBadge small />}
         <p className="m-0 flex items-center gap-1 text-[13px] text-muted"><Pin size={13} />{d.city}, {d.province}</p>
         <div className="flex flex-wrap gap-1">
@@ -51,7 +51,7 @@ export function EventCard({ e, compact = false }: { e: Listing<"event">; compact
 
 export function AvailBadge({ d, className }: { d: GoodData; className: string }) {
   const a = availOf(d);
-  const bg = a === "Available" ? "bg-[#2f5b3a]" : a === "Reserved" ? "bg-[#a07a2c]" : "bg-ink-soft";
+  const bg = a === "Available" ? "bg-[#2f5b3a]" : a === "Reserved" ? "bg-gold-dark" : "bg-ink-soft";
   return <span className={`rounded-md font-bold text-white ${bg} ${className}`}>{a}</span>;
 }
 
@@ -64,7 +64,7 @@ export function GoodCard({ g, compact = false, tag }: { g: Listing<"good">; comp
         <AvailBadge d={d} className="absolute left-2 top-2 px-2 py-0.5 text-[10.5px]" />
       </div>
       <div className="flex flex-col gap-1 p-3">
-        {tag && <span className={`w-fit rounded-md px-1.5 py-0.5 text-[10.5px] font-extrabold tracking-[1px] ${tag === "Sponsored" ? "bg-[#e2b43a] text-[#3a0a0a]" : "bg-blush text-wine"}`}>{tag.toUpperCase()}</span>}
+        {tag && <span className={`w-fit rounded-md px-1.5 py-0.5 text-[10.5px] font-extrabold tracking-[1px] ${tag === "Sponsored" ? "bg-gold text-noir" : "bg-blush text-wine"}`}>{tag.toUpperCase()}</span>}
         <span className="text-[11px] font-semibold text-gold-dark">{d.cat} · {d.sub}</span>
         <h3 className="m-0 text-[14px] font-bold leading-snug">{d.name}</h3>
         <span className="text-[16px] font-bold text-crimson">{d.price}</span>

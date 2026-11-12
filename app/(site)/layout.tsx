@@ -5,6 +5,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { BottomTabs } from "@/components/BottomTabs";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SideNav } from "@/components/SideNav";
+import { Reveal } from "@/components/Reveal";
 
 // Public site chrome: header, side menu, footer, bottom tabs. The admin panel has its own.
 export default async function SiteLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -13,7 +14,7 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
   return (
     <div className="flex min-h-screen flex-col">
       {age !== "1" && <AgeGate under={age === "no"} />}
-      <div className="bg-[#2f2a1f] px-4 py-1.5 text-center text-[12px] font-semibold text-gold-light">
+      <div className="bg-crimson px-4 py-1.5 text-center text-[12px] font-semibold text-white">
         BETA · Sabong Central is new. Listings are being added every day.
       </div>
       <AppHeader lang={lang} />
@@ -25,6 +26,7 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
       </div>
       <SiteFooter lang={lang} />
       <BottomTabs lang={lang} />
+      <Reveal />
     </div>
   );
 }

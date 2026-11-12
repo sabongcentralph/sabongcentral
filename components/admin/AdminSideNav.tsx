@@ -50,7 +50,7 @@ export function AdminSideNav({ counts }: { counts: Counts }) {
         return (
           <div key={it.label}>
             <a href={it.href} aria-current={on ? "page" : undefined}
-              className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-[15px] font-semibold no-underline transition-colors ${on ? "bg-crimson text-white shadow-[0_6px_18px_rgb(200_35_47/0.35)]" : "text-ink-soft hover:bg-white/5"}`}>
+              className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-[15px] font-semibold no-underline transition-colors ${on ? "bg-crimson text-white shadow-[0_6px_18px_rgb(224_48_47/0.35)]" : "text-ink-soft hover:bg-white/5"}`}>
               <Icon size={20} />
               <span className="flex-1">{it.label}</span>
               {n > 0 && <span className={`min-w-6 rounded-full px-1.5 text-center text-[12px] font-bold leading-6 ${on ? "bg-white text-crimson" : "bg-crimson text-white"}`}>{n}</span>}
@@ -84,14 +84,14 @@ export function AdminTabs({ counts }: { counts: Counts }) {
     ["/admin/account", "Account", GearIcon, 0],
   ];
   return (
-    <nav aria-label="Admin tabs" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-[#0c0909]/95 px-1.5 pb-[max(6px,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur lg:hidden">
+    <nav aria-label="Admin tabs" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-[#09090b]/95 px-1.5 pb-[max(6px,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur lg:hidden">
       {tabs.map(([href, label, Icon, n]) => {
         const on = href === "/admin" ? path === "/admin" : path.startsWith(href) || (href === "/admin/queue" && path.startsWith("/admin/item"));
         return (
           <a key={href} href={href} aria-current={on ? "page" : undefined}
             className={`relative mx-0.5 flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl text-[11.5px] font-semibold no-underline ${on ? "bg-crimson text-white" : "text-muted"}`}>
             <Icon size={21} />{label}
-            {n > 0 && <span className="absolute right-2 top-1 min-w-5 rounded-full bg-crimson px-1 text-center text-[10.5px] font-bold leading-5 text-white ring-2 ring-[#0c0909]">{n}</span>}
+            {n > 0 && <span className="absolute right-2 top-1 min-w-5 rounded-full bg-crimson px-1 text-center text-[10.5px] font-bold leading-5 text-white ring-2 ring-[#09090b]">{n}</span>}
           </a>
         );
       })}

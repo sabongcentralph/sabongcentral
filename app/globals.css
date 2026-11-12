@@ -1,22 +1,24 @@
 @import "tailwindcss";
 
-/* Sabong Central look: warm ivory, deep red, touches of gold. */
+/* Sabong Central look: bold bright red, black and white, with a touch of gold. No maroon. */
 @theme {
-  --color-crimson: #6b0f1a;
-  --color-crimson-dark: #430a10;
-  --color-wine: #a61e1e;
-  --color-ivory: #f6eedf;
-  --color-cream: #fffcf5;
-  --color-sand: #d9cbb2;
-  --color-line: #e8dcc6;
-  --color-blush: #f6e3e0;
-  --color-rose: #f1dad6;
-  --color-gold: #c9a24a;
-  --color-gold-light: #e2c275;
-  --color-gold-dark: #a07a2c;
-  --color-ink: #1f1a18;
-  --color-ink-soft: #4a3f3b;
-  --color-muted: #6b5f5a;
+  --color-noir: #121215;
+  --color-noir-soft: #1d1d22;
+  --color-crimson: #d62828;
+  --color-crimson-dark: #b01c1c;
+  --color-wine: #c81e1e;
+  --color-ivory: #f5f4f2;
+  --color-cream: #ffffff;
+  --color-sand: #d6d3ce;
+  --color-line: #e6e3de;
+  --color-blush: #fde8e8;
+  --color-rose: #f9d4d4;
+  --color-gold: #c8a44d;
+  --color-gold-light: #e6c76e;
+  --color-gold-dark: #9a7728;
+  --color-ink: #16161a;
+  --color-ink-soft: #3c3c44;
+  --color-muted: #66666f;
   --color-ok-bg: #e6efe8;
   --color-ok: #2f5b3a;
   --color-ok-line: #9fbfa8;
@@ -25,7 +27,7 @@
   --color-note-bg: #fff8e8;
   --color-info-bg: #e3ebf6;
   --color-info: #2f5ba6;
-  --color-red-line: #e3b7b0;
+  --color-red-line: #f2b8b8;
 
   --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-serif: Fraunces, Georgia, "Times New Roman", serif;
@@ -49,14 +51,14 @@
 }
 
 :focus-visible {
-  outline: 2px solid #b3261e;
+  outline: 2px solid #d62828;
   outline-offset: 2px;
 }
 
 /* Photo placeholder until farms upload real photos. */
 .ph {
-  background-color: #eadfc9;
-  background-image: repeating-linear-gradient(135deg, rgb(107 15 26 / 0.06) 0 12px, transparent 12px 24px);
+  background-color: #e9e7e3;
+  background-image: repeating-linear-gradient(135deg, rgb(214 40 40 / 0.06) 0 12px, transparent 12px 24px);
 }
 
 /* Calm, classy motion. All of it turns off for people who ask for less motion. */
@@ -70,53 +72,86 @@
 .rise-3 { animation-delay: 0.24s; }
 .rise-4 { animation-delay: 0.32s; }
 
+/* Top tabs: a red bar sweeps in under the tab. */
 .nav-link {
-  background: linear-gradient(var(--color-gold), var(--color-gold)) 0 calc(100% - 6px) / 0 1.5px no-repeat;
-  transition: background-size 0.35s ease, color 0.2s;
+  background: linear-gradient(var(--color-crimson), var(--color-crimson)) 0 calc(100% - 4px) / 0 3px no-repeat;
+  transition: background-size 0.35s cubic-bezier(0.2, 0.7, 0.2, 1), color 0.2s;
 }
 .nav-link:hover,
-.nav-link[aria-current="page"] { background-size: 100% 1.5px; color: #fff; }
+.nav-link[aria-current="page"] { background-size: 100% 3px; color: #fff; }
+.nav-link[aria-current="page"] { font-weight: 700; }
 
-.lift { transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s; }
-.lift:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgb(67 10 16 / 0.28); filter: brightness(1.06); }
+/* Buttons lift, and a light shine sweeps across on hover. */
+.lift { position: relative; overflow: hidden; transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s; }
+.lift::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.35) 50%, transparent 70%);
+  transform: translateX(-120%);
+}
+.lift:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgb(214 40 40 / 0.32); filter: brightness(1.05); }
+.lift:hover::after { transform: translateX(120%); transition: transform 0.7s ease; }
 
 .arrow { display: inline-block; transition: transform 0.25s ease; }
 a:hover .arrow { transform: translateX(4px); }
 
-.card { transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease; }
-.card:hover { box-shadow: 0 14px 34px rgb(107 15 26 / 0.14); transform: translateY(-2px); border-color: var(--color-gold); }
+/* Cards lift, get a red edge, and a red bar grows along the top. */
+.card { position: relative; transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease; }
+.card::before {
+  content: ""; position: absolute; left: 0; top: 0; z-index: 2; height: 3px; width: 100%;
+  background: linear-gradient(90deg, var(--color-crimson), var(--color-gold));
+  transform: scaleX(0); transform-origin: left; transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.card:hover { box-shadow: 0 16px 34px rgb(18 18 21 / 0.16); transform: translateY(-4px); border-color: var(--color-crimson); }
+.card:hover::before { transform: scaleX(1); }
 .card .ph { transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1); }
-.card:hover .ph { transform: scale(1.05); }
+.card:hover .ph { transform: scale(1.06); }
 
 .field { transition: border-color 0.2s, box-shadow 0.2s; }
-.field:focus { border-color: var(--color-wine); box-shadow: 0 0 0 3px rgb(166 30 30 / 0.12); outline: none; }
+.field:focus { border-color: var(--color-crimson); box-shadow: 0 0 0 3px rgb(214 40 40 / 0.15); outline: none; }
+
+/* Hero: bold red and gold slashes that slide in, then drift slowly; a gold streak runs along the bottom. */
+@keyframes slash-in { from { translate: 60px 0; opacity: 0; } to { translate: 0 0; opacity: 1; } }
+@keyframes slash-drift { 0%, 100% { translate: 0 0; } 50% { translate: -14px 6px; } }
+.hero-slash { animation: slash-in 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both, slash-drift 7s ease-in-out 0.9s infinite; }
+.hero-slash-2 { animation-delay: 0.15s, 1.05s; }
+@keyframes streak { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+.hero-streak { animation: streak 4.5s cubic-bezier(0.6, 0, 0.4, 1) infinite; }
+
+/* Sections fade up one after another as they scroll into view. Hidden only once the script is running. */
+.js-reveal [data-reveal] { opacity: 0; transform: translateY(22px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.js-reveal [data-reveal].in { opacity: 1; transform: none; }
+
+/* Small live dot next to "Upcoming Derbies". */
+@keyframes pulse-dot { 0% { box-shadow: 0 0 0 0 rgb(214 40 40 / 0.55); } 100% { box-shadow: 0 0 0 10px rgb(214 40 40 / 0); } }
+.live-dot { animation: pulse-dot 1.6s ease-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
+  .js-reveal [data-reveal] { opacity: 1; transform: none; }
 }
 
 /* Side menu drawer (phones and tablets). */
 dialog.drawer { inset: 0 auto 0 0; }
 dialog.drawer[open] { animation: drawer-in 0.22s ease-out; }
-dialog.drawer::backdrop { background: rgb(31 26 24 / 0.45); }
+dialog.drawer::backdrop { background: rgb(18 18 21 / 0.55); }
 @keyframes drawer-in { from { transform: translateX(-100%); } to { transform: none; } }
 @media (prefers-reduced-motion: reduce) { dialog.drawer[open] { animation: none; } }
 
-/* Admin panel: dark theme with red and gold, same tokens redefined. */
+/* Admin panel: black theme with bright red and gold, same tokens redefined. */
 .admin-dark {
   color-scheme: dark;
-  --color-crimson: #c8232f;
-  --color-crimson-dark: #8f1622;
-  --color-wine: #ff6f6f;
-  --color-ivory: #110d0d;
-  --color-cream: #1b1515;
-  --color-sand: #3b3030;
-  --color-line: #2c2323;
-  --color-blush: #3a1719;
-  --color-rose: #3a1f20;
-  --color-ink: #f4eeea;
-  --color-ink-soft: #d9cdc8;
-  --color-muted: #a3958f;
+  --color-crimson: #e0302f;
+  --color-crimson-dark: #b01c1c;
+  --color-wine: #ff5a5a;
+  --color-ivory: #0e0e10;
+  --color-cream: #18181c;
+  --color-sand: #34343b;
+  --color-line: #27272d;
+  --color-blush: #3a1517;
+  --color-rose: #3a1d1f;
+  --color-ink: #f4f4f5;
+  --color-ink-soft: #d4d4d8;
+  --color-muted: #9b9ba3;
   --color-ok-bg: #173022;
   --color-ok: #6fd391;
   --color-ok-line: #2c5a3c;
@@ -125,10 +160,10 @@ dialog.drawer::backdrop { background: rgb(31 26 24 / 0.45); }
   --color-note-bg: #241d10;
   --color-info-bg: #162438;
   --color-info: #8ab4f0;
-  --color-red-line: #5a2226;
+  --color-red-line: #5c2224;
   background: var(--color-ivory);
   color: var(--color-ink);
 }
-.admin-dark .field { background: #141010; }
-.admin-dark ::placeholder { color: #7d706b; }
+.admin-dark .field { background: #121215; }
+.admin-dark ::placeholder { color: #75757d; }
 .bell > summary::-webkit-details-marker { display: none; }

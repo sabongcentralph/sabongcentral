@@ -6,7 +6,7 @@ export function FilterPanel({ children, active, action, reset }: { children: Rea
     <details className="group rounded-2xl border border-line bg-cream md:open:bg-cream" open={active > 0 ? true : undefined}>
       <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-4 text-[15px] font-semibold [&::-webkit-details-marker]:hidden">
         <FilterIcon size={18} className="text-crimson" /> Filter
-        {active > 0 && <span className="rounded-full bg-gold px-2 py-0.5 text-[11px] font-bold text-[#3a0a0a]">{active}</span>}
+        {active > 0 && <span className="rounded-full bg-gold px-2 py-0.5 text-[11px] font-bold text-noir">{active}</span>}
         <span className="ml-auto text-[13px] text-muted group-open:hidden">Open</span>
         <span className="ml-auto hidden text-[13px] text-muted group-open:inline">Close</span>
       </summary>

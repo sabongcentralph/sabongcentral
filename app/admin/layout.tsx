@@ -32,7 +32,7 @@ export default async function AdminLayout({ children }: Readonly<{ children: Rea
   const counts = { waiting: s.waiting.length, reports: s.reports, messages: s.messages, permits: s.permits.length, members: s.applications, docs: s.docs };
   return (
     <div className="admin-dark min-h-screen lg:flex">
-      <aside className="sticky top-0 hidden h-dvh w-[264px] flex-none flex-col gap-6 overflow-y-auto border-r border-line bg-[#0c0909] px-3 py-5 lg:flex">
+      <aside className="sticky top-0 hidden h-dvh w-[264px] flex-none flex-col gap-6 overflow-y-auto border-r border-line bg-[#09090b] px-3 py-5 lg:flex">
         <div className="px-2"><Logo /></div>
         <AdminSideNav counts={counts} />
       </aside>
@@ -43,7 +43,7 @@ export default async function AdminLayout({ children }: Readonly<{ children: Rea
           <div className="ml-auto flex items-center gap-1.5">
             <Bell alerts={alertsOf(s)} log={s.log} />
             <a href="/admin/account" className="flex items-center gap-2 rounded-full py-1 pl-1 pr-1 text-ink no-underline hover:bg-white/10 sm:pr-3">
-              <span className="flex size-9 items-center justify-center rounded-full bg-[#2a2020] text-ink-soft"><UserIcon size={20} /></span>
+              <span className="flex size-9 items-center justify-center rounded-full bg-[#26262c] text-ink-soft"><UserIcon size={20} /></span>
               <span className="hidden flex-col leading-tight sm:flex"><span className="text-[13.5px] font-semibold">Admin</span><span className="text-[11.5px] text-muted">Super Admin</span></span>
             </a>
           </div>

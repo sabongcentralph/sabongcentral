@@ -57,7 +57,7 @@ export async function EventDirectory({ sp, mode }: { sp: Search; mode: DirMode }
       {groups.length > 0 && <nav aria-label="Event groups" className="-mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0">
         {groups.map((g) => (
           <a key={g} href={qs(g)} aria-current={g === group ? "page" : undefined}
-            className={`flex min-h-10 flex-none items-center rounded-full px-4 text-[13.5px] font-semibold no-underline ${g === group ? "bg-crimson text-white shadow-[inset_0_-2px_0_#c9a24a]" : "border border-line bg-cream text-ink-soft"}`}>
+            className={`flex min-h-10 flex-none items-center rounded-full px-4 text-[13.5px] font-semibold no-underline ${g === group ? "bg-crimson text-white shadow-[inset_0_-2px_0_#c8a44d]" : "border border-line bg-cream text-ink-soft"}`}>
             {g}
           </a>
         ))}

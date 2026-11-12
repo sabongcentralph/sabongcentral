@@ -19,8 +19,8 @@ const short = (iso: string) => {
 
 function Tile({ href, icon, label, n, sub, hot = false }: { href: string; icon: React.ReactNode; label: string; n: number; sub: string; hot?: boolean }) {
   return (
-    <a href={href} className={`lift flex items-center gap-3.5 rounded-2xl border p-4 text-ink no-underline ${hot && n > 0 ? "border-crimson/60 bg-gradient-to-br from-[#3a1216] to-cream" : "border-line bg-cream"}`}>
-      <span className={`flex size-12 flex-none items-center justify-center rounded-xl ${hot && n > 0 ? "bg-crimson text-white" : "bg-[#2a1c1c] text-wine"}`}>{icon}</span>
+    <a href={href} className={`lift flex items-center gap-3.5 rounded-2xl border p-4 text-ink no-underline ${hot && n > 0 ? "border-crimson/60 bg-gradient-to-br from-[#3a1517] to-cream" : "border-line bg-cream"}`}>
+      <span className={`flex size-12 flex-none items-center justify-center rounded-xl ${hot && n > 0 ? "bg-crimson text-white" : "bg-[#26262c] text-wine"}`}>{icon}</span>
       <span className="flex min-w-0 flex-col">
         <span className="text-[13px] font-semibold text-ink-soft">{label}</span>
         <span className="text-[30px] font-bold leading-tight">{n}</span>
@@ -95,7 +95,7 @@ export default async function AdminDashboard() {
                 ["/admin/messages", `Messages${s.messages ? ` (${s.messages})` : ""}`, <MailIcon key="c" size={22} />],
                 ["/", "View public site", <Pin key="d" size={22} />],
               ] as const).map(([href, l, icon]) => (
-                <a key={href} href={href} className="lift flex min-h-[84px] flex-col items-center justify-center gap-1.5 rounded-xl border border-line bg-[#140f0f] px-2 text-center text-[13px] font-semibold text-ink no-underline">
+                <a key={href} href={href} className="lift flex min-h-[84px] flex-col items-center justify-center gap-1.5 rounded-xl border border-line bg-[#121215] px-2 text-center text-[13px] font-semibold text-ink no-underline">
                   <span className="text-wine">{icon}</span>{l}
                 </a>
               ))}

@@ -15,10 +15,10 @@ export function PageHead({ kicker, title, sub, children }: { kicker?: string; ti
   );
 }
 
-export function SectionHead({ title, href, more = "See all" }: { title: string; href?: string; more?: string }) {
+export function SectionHead({ title, href, more = "See all", live }: { title: string; href?: string; more?: string; live?: boolean }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <h2 className="m-0 font-serif text-[21px] font-semibold md:text-[24px]">{title}</h2>
+      <h2 className="m-0 flex items-center gap-2.5 font-serif text-[21px] font-semibold md:text-[24px]"><span aria-hidden="true" className={`h-6 w-1 rounded-full bg-crimson ${live ? "hidden" : ""}`} />{live && <span aria-hidden="true" className="live-dot size-2.5 rounded-full bg-crimson" />}{title}</h2>
       {href && (
         <a href={href} className="flex min-h-10 items-center gap-0.5 text-sm font-semibold text-wine no-underline">
           {more} <ChevronRight size={16} className="arrow" />
@@ -69,7 +69,7 @@ export function Empty({ children }: { children: React.ReactNode }) {
 
 export function Photo({ className = "", label = "Photo", src, contain = false }: { className?: string; label?: string; src?: string; contain?: boolean }) {
   if (src && /^\/media\/[a-z]\/[\w-]+\.(webp|jpg|png)$/.test(src)) {
-    return <img src={src} alt={label} loading="lazy" className={`block bg-[#1b1515] ${/(^|\s)(w-|size-)/.test(className) ? "" : "w-full"} ${contain ? "object-contain" : "object-cover"} ${className}`} />;
+    return <img src={src} alt={label} loading="lazy" className={`block bg-noir-soft ${/(^|\s)(w-|size-)/.test(className) ? "" : "w-full"} ${contain ? "object-contain" : "object-cover"} ${className}`} />;
   }
   return <div role="img" aria-label={label} className={`ph ${className}`} />;
 }
@@ -85,7 +85,7 @@ export function Row({ children, cols = 4 }: { children: React.ReactNode; cols?: 
 
 export const input = "field min-h-11 w-full rounded-[10px] border border-sand bg-cream px-3 text-[15px] text-ink";
 export const labelCls = "flex flex-col gap-1.5 text-[13px] font-semibold text-ink-soft";
-export const btnPrimary = "lift inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full border-0 bg-crimson px-5 text-[15px] font-semibold text-white no-underline shadow-[inset_0_-2px_0_#c9a24a]";
+export const btnPrimary = "lift inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full border-0 bg-crimson px-5 text-[15px] font-semibold text-white no-underline shadow-[0_4px_14px_rgb(214_40_40/0.28)]";
 export const btnGhost = "inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full border border-sand bg-cream px-5 text-[14px] font-semibold text-crimson no-underline";
 
 export const statusTone = (s: string) => (s === "approved" ? "green" : s === "pending" ? "gold" : s === "rejected" ? "red" : "plain") as "green" | "gold" | "red" | "plain";
