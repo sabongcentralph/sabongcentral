@@ -1,3 +1,4 @@
+import { VerifyFields } from "@/components/VerifyFields";
 import type { Metadata } from "next";
 import { one, type Search } from "@/lib/content";
 import { BLOODLINES, EVENT_CATS, GOODS_CATS } from "@/lib/sample";
@@ -47,7 +48,7 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
               <label className={labelCls}>Owner name<input name="ownerName" className={input} /></label>
               <label className={labelCls}>Contact number *<input name="phone" required inputMode="tel" placeholder="09XX XXX XXXX" className={input} /></label>
               <label className={labelCls}>Year established<input name="est" inputMode="numeric" maxLength={4} className={input} /></label>
-              <label className={labelCls}>Facebook page (for the Message button)<input name="facebook" placeholder="facebook.com/yourfarm" className={input} /></label>
+              <label className={labelCls}>Farm Facebook page *<input name="facebook" required maxLength={300} placeholder="https://www.facebook.com/yourfarm" className={input} /></label>
               <label className={`${labelCls} ${full}`}>About the farm<textarea name="about" rows={4} className={`${input} py-2.5`} /></label>
               <label className={labelCls}>Visit policy<input name="visit" placeholder="e.g. By appointment only" className={input} /></label>
               <label className={labelCls}>Exact address (private, admin only)<input name="address" className={input} /></label>
@@ -111,6 +112,7 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
               <p className={`m-0 text-[12.5px] text-muted ${full}`}>Not allowed: live birds, fighting weapons, regulated veterinary medicines, and anything gambling-related. No payments, checkout or delivery booking through Sabong Central.</p>
             </>
           )}
+          <VerifyFields farm={tab === "farm"} />
           <label className={`${labelCls} ${full}`}>Your name (for the admin)<input name="contactName" className={input} /></label>
           <label className={`${full} flex items-start gap-2 text-[13.5px] text-ink-soft`}>
             <input type="checkbox" name="confirm" value="1" required className="mt-0.5 size-[17px] flex-none accent-crimson" />

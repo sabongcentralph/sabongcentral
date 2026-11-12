@@ -1,3 +1,4 @@
+import { VerifyFields } from "@/components/VerifyFields";
 import type { Metadata } from "next";
 import { one, type Search } from "@/lib/content";
 import { ARTICLE_TOPICS, REEL_TOPICS } from "@/lib/sample";
@@ -70,6 +71,7 @@ export default async function SubmitPage({ searchParams }: { searchParams: Promi
               <p className={`m-0 text-[12.5px] text-muted ${full}`}>Only admins post official advisories (DA, BAI, provincial vet office).</p>
             </>
           )}
+          <VerifyFields />
           <label className={labelCls}>Your name or display name *<input name="contactName" required maxLength={120} className={input} /></label>
           <label className={labelCls}>Email (for the admin, not public) *<input name="email" type="email" required maxLength={200} className={input} /></label>
           <label className={`${full} flex items-start gap-2 text-[13.5px] text-ink-soft`}>

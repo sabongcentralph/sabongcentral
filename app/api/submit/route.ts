@@ -9,6 +9,16 @@ import { AREAS } from "@/lib/locations";
 const validPlace = (p: string, c: string) => !!AREAS.find((a) => a.p === p)?.c.includes(c);
 const pesos = (v: string) => (v ? (/^\d[\d,]*(\.\d+)?$/.test(v) ? `₱${v}` : v) : "₱ quote");
 
+function toUrl(v: string): string {
+  const t = v.trim();
+  if (!t) return "";
+  try {
+    const u = new URL(/^https?:\/\//i.test(t) ? t : `https://${t}`);
+    return u.hostname.includes(".") ? u.toString() : "";
+  } catch { return ""; }
+}
+const isFacebook = (u: string) => { try { return /(^|\.)(facebook\.com|fb\.com|fb\.me)$/i.test(new URL(u).hostname); } catch { return false; } };
+
 function longDate(iso: string) {
   const d = new Date(iso + "T00:00:00Z");
   return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
@@ -36,6 +46,12 @@ export async function POST(req: Request) {
   } else if (field(f, "confirm", 2) !== "1") {
     return fail("Please confirm that the information is accurate.");
   }
+  // Verification links (Em, 2026-11-12): a Facebook page is required from every
+  // submitter; farms give their farm page. Admin-only, except the farm page.
+  const vfb = toUrl(field(f, kind === "farm" ? "facebook" : "vfb", 300));
+  const vlink = toUrl(field(f, "vlink", 300));
+  if (!isFacebook(vfb)) return fail("Please add a Facebook page or profile link (facebook.com/…) so admins can verify you.");
+  if (field(f, "vlink", 300) && !vlink) return fail("The organization link doesn’t look like a web address.");
   const by = isPublic ? `${name} <${email}> (public form)` : name || "Portal (test)";
   const province = field(f, "province", 80), city = field(f, "city", 80);
   let data: object;
@@ -101,6 +117,7 @@ export async function POST(req: Request) {
     return fail("Unknown listing type.");
   }
 
+  data = { ...data, verifyFacebook: vfb, verifyLink: vlink };
   await submit(kind, data, by);
   return back(req, `${page}?tab=${kind}&sent=1`);
 }

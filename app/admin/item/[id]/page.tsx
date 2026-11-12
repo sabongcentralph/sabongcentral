@@ -12,6 +12,28 @@ export const metadata: Metadata = { title: "Review" };
 
 const PATH = { farm: "farms", event: "events", good: "market", reel: "reels", article: "learn", notice: "notices", supplier: "suppliers" } as const;
 
+function safeHref(v: string): string | null {
+  const t = v.trim();
+  if (!t) return null;
+  try {
+    const u = new URL(/^https?:\/\//i.test(t) ? t : `https://${t}`);
+    return u.protocol === "https:" || u.protocol === "http:" ? u.toString() : null;
+  } catch { return null; }
+}
+
+// Facebook page and organization link the submitter gave for verification.
+function VerifyLinks({ fb, link }: { fb: string; link: string }) {
+  const a = safeHref(fb), b = safeHref(link);
+  return (
+    <div className="flex flex-col gap-1.5 rounded-2xl border border-gold bg-cream p-4 text-[14px]">
+      <strong>Verification links</strong>
+      <span>Facebook: {a ? <a href={a} target="_blank" rel="noopener noreferrer nofollow" className="break-all font-semibold text-wine">{fb}</a> : <span className="text-muted">none given (older or sample listing)</span>}</span>
+      <span>Organization link: {b ? <a href={b} target="_blank" rel="noopener noreferrer nofollow" className="break-all font-semibold text-wine">{link}</a> : <span className="text-muted">none given</span>}</span>
+      <span className="text-[12.5px] text-muted">Check that the page is real, active and matches the name on this submission. Private: never shown publicly.</span>
+    </div>
+  );
+}
+
 function show(v: unknown): string {
   if (Array.isArray(v)) return v.map((x) => (typeof x === "object" && x && "name" in x ? (x as { name: string }).name : String(x))).join(", ");
   if (typeof v === "boolean") return v ? "Yes" : "No";
@@ -47,6 +69,7 @@ export default async function ReviewItem({ params, searchParams }: { params: Pro
       </div>
       <h1 className="m-0 font-serif text-[28px] font-semibold leading-tight">{titleOf(l)}</h1>
       <p className="m-0 text-[13px] text-muted">Submitted by {l.submittedBy ?? "—"} · {l.createdAt}{l.reason ? ` · Last note: “${l.reason}”` : ""}</p>
+      <VerifyLinks fb={String(data.verifyFacebook ?? (l.kind === "farm" ? data.facebook ?? "" : ""))} link={String(data.verifyLink ?? "")} />
       {isDerby && <Note tone="red">Derby listing: verify the cockpit license and LGU event permit before approving. Permits stated: <strong>{show(data.permits) || "none"}</strong></Note>}
       {l.kind === "farm" && <Note>Business registration stated by submitter: <strong>{data.docs ? "Yes (request a copy)" : "Not yet"}</strong>. Only give the “Business Verified” badge after reviewing the papers.</Note>}
 
