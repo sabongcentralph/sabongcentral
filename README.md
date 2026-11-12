@@ -48,3 +48,11 @@ Warm ivory, deep red and touches of gold. Colors and fonts (Fraunces for
 headings, Inter for text) are theme tokens in `app/globals.css`, along with
 the small animations, which turn off for visitors who prefer reduced motion.
 Phone-first: five bottom tabs on phones, top navigation on desktop.
+
+## End-to-end test
+
+`npm run test:e2e` walks through the whole site on a local copy: public pages and links,
+public forms, admin review, admin-created member accounts, listings with photos, edits,
+Business Verified documents, reports and account safety (66 checks, phone and desktop).
+It only uses the local test database (`.cloudflare/state`), never the live site.
+Needs Playwright once: `npm i -g playwright && npx playwright install chromium`.
