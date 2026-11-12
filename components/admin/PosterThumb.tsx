@@ -8,7 +8,7 @@ const TONES: Record<string, string> = {
 
 export function PosterThumb({ title, group, poster, className = "" }: { title: string; group?: string; poster?: string; className?: string }) {
   const box = `relative flex h-[60px] w-[104px] flex-none overflow-hidden rounded-lg border border-white/10 md:h-[68px] md:w-[120px] ${className}`;
-  if (poster && /^https:\/\//.test(poster)) {
+  if (poster && /^\/media\/p\/[\w-]+\.(webp|jpg|png)$/.test(poster)) {
     return <span className={box}><img src={poster} alt="" loading="lazy" className="size-full object-cover" /></span>;
   }
   const words = title.replace(/[^\p{L}\p{N}\s&-]/gu, "").split(/\s+/).filter(Boolean);

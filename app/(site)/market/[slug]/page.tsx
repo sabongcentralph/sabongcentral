@@ -23,7 +23,8 @@ export default async function GoodPage({ params }: { params: Promise<{ slug: str
     <Page>
       <div className="grid gap-5 md:grid-cols-2">
         <div className="relative -mx-4 -mt-5 md:mx-0 md:mt-0">
-          <Photo className="aspect-square md:rounded-2xl" label="Product photo" />
+          <Photo className="aspect-square md:rounded-2xl" label="Product photo" src={d.photos?.[0]} />
+          {(d.photos?.length ?? 0) > 1 && <div className="mt-2 flex gap-2 px-4 md:px-0">{d.photos!.slice(1).map((p) => <a key={p} href={p}><Photo className="size-20 rounded-lg" label="Product photo" src={p} /></a>)}</div>}
           <AvailBadge d={d} className="absolute left-4 top-4 px-2.5 py-1 text-[12px]" />
         </div>
         <div className="flex flex-col gap-4">

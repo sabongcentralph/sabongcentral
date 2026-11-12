@@ -2,6 +2,7 @@ import { submit, type Kind } from "@/lib/db";
 import { sameOrigin } from "@/lib/auth";
 import { back, field, isBot } from "@/lib/forms";
 import { toEmbed } from "@/lib/embed";
+import { badPhoto, photoFiles, savePhotos } from "@/lib/media";
 import { ARTICLE_TOPICS, EVENT_CATS, GOODS_CATS, REEL_TOPICS } from "@/lib/sample";
 import { AVAILABILITY } from "@/lib/db";
 import { AREAS } from "@/lib/locations";
@@ -117,7 +118,17 @@ export async function POST(req: Request) {
     return fail("Unknown listing type.");
   }
 
-  data = { ...data, verifyFacebook: vfb, verifyLink: vlink };
+  // Photos (only Portal listings): checked before saving anything.
+  const groups = kind === "farm" ? { profile: photoFiles(f, "profile", 1), cover: photoFiles(f, "cover", 1), gallery: photoFiles(f, "gallery", 6) }
+    : kind === "event" ? { poster: photoFiles(f, "poster", 1) } : kind === "good" ? { photos: photoFiles(f, "photos", 3) } : {};
+  const bad = badPhoto(Object.values(groups).flat());
+  if (bad) return fail(bad);
+  const pics: Record<string, string | string[]> = {};
+  for (const [k, files] of Object.entries(groups)) {
+    const paths = await savePhotos(files);
+    if (paths.length) pics[k] = k === "gallery" || k === "photos" ? paths : paths[0];
+  }
+  data = { ...data, ...pics, verifyFacebook: vfb, verifyLink: vlink };
   await submit(kind, data, by);
   return back(req, `${page}?tab=${kind}&sent=1`);
 }

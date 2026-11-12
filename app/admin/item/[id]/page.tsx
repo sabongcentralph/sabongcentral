@@ -82,6 +82,13 @@ export default async function ReviewItem({ params, searchParams }: { params: Pro
         </dl>
         <div className="flex flex-col gap-4">
           {l.kind === "event" && <PosterThumb title={titleOf(l)} group={String(data.group ?? "")} poster={String(data.poster ?? "")} className="!h-auto !w-full aspect-[16/9] [&>span:nth-child(2)]:!text-[26px]" />}
+          {(() => {
+            const ps = ["profile", "cover", "gallery", "photos", "poster"].flatMap((k) => (Array.isArray(data[k]) ? (data[k] as string[]) : data[k] ? [String(data[k])] : []))
+              .filter((p) => /^\/media\/p\/[\w-]+\.(webp|jpg|png)$/.test(p) && !(l.kind === "event" && p === data.poster));
+            return ps.length ? (
+              <div className="grid grid-cols-3 gap-2">{ps.map((p) => <a key={p} href={p} target="_blank" rel="noopener"><img src={p} alt="" className="aspect-square w-full rounded-lg object-cover" /></a>)}</div>
+            ) : null;
+          })()}
           {embed && (
             <div className={`overflow-hidden rounded-2xl bg-black ${embed.vertical ? "mx-auto aspect-[9/16] w-full max-w-[300px]" : "aspect-video"}`}>
               <iframe src={embed.src} title="Preview" className="size-full border-0" loading="lazy" allow="encrypted-media; picture-in-picture" allowFullScreen />

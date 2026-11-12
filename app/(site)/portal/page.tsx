@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { one, type Search } from "@/lib/content";
 import { BLOODLINES, EVENT_CATS, GOODS_CATS } from "@/lib/sample";
 import { LocationFields } from "@/components/LocationFields";
+import { PhotoPicker } from "@/components/PhotoPicker";
+import { uploadsOn } from "@/lib/media";
 import { Note, Page, PageHead, btnPrimary, input, labelCls } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +20,7 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
   const sent = one(sp.sent) === "1", error = one(sp.error);
   const box = "flex flex-col gap-4 rounded-2xl border border-line bg-cream p-4 md:grid md:grid-cols-2";
   const full = "md:col-span-2";
+  const up = await uploadsOn();
 
   return (
     <Page>
@@ -38,7 +41,7 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
         {sent && <Note tone="green"><strong>Received!</strong> Your submission is pending review. It will appear on the site once an admin approves it.</Note>}
         {error && <Note tone="red">{error}</Note>}
 
-        <form action="/api/submit" method="post" className={box}>
+        <form action="/api/submit" method="post" encType="multipart/form-data" className={box}>
           <input type="hidden" name="kind" value={tab} />
           <Honeypot />
           {tab === "farm" && (
@@ -50,6 +53,9 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
               <label className={labelCls}>Year established<input name="est" inputMode="numeric" maxLength={4} className={input} /></label>
               <label className={labelCls}>Farm Facebook page *<input name="facebook" required maxLength={300} placeholder="https://www.facebook.com/yourfarm" className={input} /></label>
               <label className={`${labelCls} ${full}`}>About the farm<textarea name="about" rows={4} className={`${input} py-2.5`} /></label>
+              {up && <PhotoPicker name="profile" label="Profile photo (logo or farm sign)" />}
+              {up && <PhotoPicker name="cover" label="Cover photo" />}
+              {up && <div className={full}><PhotoPicker name="gallery" label="Farm photos" max={6} /></div>}
               <label className={labelCls}>Visit policy<input name="visit" placeholder="e.g. By appointment only" className={input} /></label>
               <label className={labelCls}>Exact address (private, admin only)<input name="address" className={input} /></label>
               <fieldset className={`m-0 border-0 p-0 ${full}`}>
@@ -88,6 +94,7 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
               <label className={labelCls}>Speakers<input name="speakers" className={input} /></label>
               <label className={labelCls}>Fee<input name="fee" placeholder="Free or ₱500" className={input} /></label>
               <label className={labelCls}>Registration / contact<input name="reg" className={input} /></label>
+              {up && <div className={full}><PhotoPicker name="poster" label="Event poster" hint="One poster image. No betting odds or fight photos." /></div>}
               <label className={`${labelCls} ${full}`}>Permits<input name="permits" placeholder="e.g. LGU event permit no., cockpit license (required for derbies)" className={input} /></label>
               <p className={`m-0 text-[12.5px] text-muted ${full}`}>Derby listings need a verified cockpit license and LGU permit before they are published. Poster upload comes with accounts.</p>
             </>
@@ -108,6 +115,7 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
               <label className={labelCls}>Seller name *<input name="seller" required className={input} /></label>
               <label className={labelCls}>Contact number *<input name="phone" required inputMode="tel" className={input} /></label>
               <LocationFields required idPrefix="pg" />
+              {up && <div className={full}><PhotoPicker name="photos" label="Product photos" max={3} /></div>}
               <label className={`${labelCls} ${full}`}>Description<textarea name="desc" rows={4} className={`${input} py-2.5`} /></label>
               <p className={`m-0 text-[12.5px] text-muted ${full}`}>Not allowed: live birds, fighting weapons, regulated veterinary medicines, and anything gambling-related. No payments, checkout or delivery booking through Sabong Central.</p>
             </>

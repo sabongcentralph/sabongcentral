@@ -12,19 +12,20 @@ export type FarmData = {
   name: string; province: string; city: string; about: string; ownerName: string; phone: string;
   facebook: string; bloodlines: Bloodline[]; verified: boolean; est: string;
   visit?: string; address?: string; // address is private: never shown publicly
+  profile?: string; cover?: string; gallery?: string[]; // /media/p/... photo paths
 };
 export type EventData = {
   title: string; cat: string; sub: string; group: string; derby: boolean; date: string; days: string; longDate: string;
   time: string; province: string; city: string; online: boolean; venue: string; desc: string; topics: string;
   speakers: string; fee: string; reg: string; permits: string; org: string;
-  status?: EventStatus; link?: string;
+  status?: EventStatus; link?: string; poster?: string;
 };
 export const EVENT_STATUSES = ["Upcoming", "Postponed", "Cancelled", "Completed"] as const;
 export type EventStatus = (typeof EVENT_STATUSES)[number];
 export type GoodData = {
   name: string; cat: string; sub: string; price: string; seller: string; phone: string; province: string; city: string;
   sold: boolean; sellerVerified: boolean; desc?: string;
-  avail?: Availability; condition?: string; pickup?: string;
+  avail?: Availability; condition?: string; pickup?: string; photos?: string[];
 };
 export const AVAILABILITY = ["Available", "Reserved", "Sold", "Removed"] as const;
 export type Availability = (typeof AVAILABILITY)[number];
