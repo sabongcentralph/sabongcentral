@@ -45,10 +45,10 @@ export function SampleTag() {
 
 export function Chip({ children, tone = "red" }: { children: React.ReactNode; tone?: "red" | "green" | "gold" | "blue" | "plain" }) {
   const tones = {
-    red: "bg-blush text-crimson",
-    green: "bg-[#e6efe8] text-[#2f5b3a]",
-    gold: "bg-[#fff1d6] text-[#7a5a12]",
-    blue: "bg-[#e3ebf6] text-[#2f5ba6]",
+    red: "bg-blush text-wine",
+    green: "bg-ok-bg text-ok",
+    gold: "bg-warn-bg text-warn",
+    blue: "bg-info-bg text-info",
     plain: "bg-cream border border-line text-ink-soft",
   };
   return <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11.5px] font-semibold ${tones[tone]}`}>{children}</span>;
@@ -56,9 +56,9 @@ export function Chip({ children, tone = "red" }: { children: React.ReactNode; to
 
 export function Note({ children, tone = "gold" }: { children: React.ReactNode; tone?: "gold" | "red" | "green" }) {
   const tones = {
-    gold: "bg-[#fff8e8] border-gold-light text-ink-soft",
-    red: "bg-blush border-[#e3b7b0] text-crimson",
-    green: "bg-[#e6efe8] border-[#9fbfa8] text-[#2f5b3a]",
+    gold: "bg-note-bg border-gold-light text-ink-soft",
+    red: "bg-blush border-red-line text-wine",
+    green: "bg-ok-bg border-ok-line text-ok",
   };
   return <div role="note" className={`rounded-xl border px-3.5 py-3 text-[13px] leading-relaxed ${tones[tone]}`}>{children}</div>;
 }

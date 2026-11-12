@@ -17,6 +17,15 @@
   --color-ink: #1f1a18;
   --color-ink-soft: #4a3f3b;
   --color-muted: #6b5f5a;
+  --color-ok-bg: #e6efe8;
+  --color-ok: #2f5b3a;
+  --color-ok-line: #9fbfa8;
+  --color-warn-bg: #fff1d6;
+  --color-warn: #7a5a12;
+  --color-note-bg: #fff8e8;
+  --color-info-bg: #e3ebf6;
+  --color-info: #2f5ba6;
+  --color-red-line: #e3b7b0;
 
   --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-serif: Fraunces, Georgia, "Times New Roman", serif;
@@ -92,3 +101,34 @@ dialog.drawer[open] { animation: drawer-in 0.22s ease-out; }
 dialog.drawer::backdrop { background: rgb(31 26 24 / 0.45); }
 @keyframes drawer-in { from { transform: translateX(-100%); } to { transform: none; } }
 @media (prefers-reduced-motion: reduce) { dialog.drawer[open] { animation: none; } }
+
+/* Admin panel: dark theme with red and gold, same tokens redefined. */
+.admin-dark {
+  color-scheme: dark;
+  --color-crimson: #c8232f;
+  --color-crimson-dark: #8f1622;
+  --color-wine: #ff6f6f;
+  --color-ivory: #110d0d;
+  --color-cream: #1b1515;
+  --color-sand: #3b3030;
+  --color-line: #2c2323;
+  --color-blush: #3a1719;
+  --color-rose: #3a1f20;
+  --color-ink: #f4eeea;
+  --color-ink-soft: #d9cdc8;
+  --color-muted: #a3958f;
+  --color-ok-bg: #173022;
+  --color-ok: #6fd391;
+  --color-ok-line: #2c5a3c;
+  --color-warn-bg: #3a2c0c;
+  --color-warn: #f0c24f;
+  --color-note-bg: #241d10;
+  --color-info-bg: #162438;
+  --color-info: #8ab4f0;
+  --color-red-line: #5a2226;
+  background: var(--color-ivory);
+  color: var(--color-ink);
+}
+.admin-dark .field { background: #141010; }
+.admin-dark ::placeholder { color: #7d706b; }
+.bell > summary::-webkit-details-marker { display: none; }
