@@ -684,6 +684,17 @@ await step("admin approves the edit from Edits waiting, and the public page upda
   await go(phone, "/market");
   await see(phone, item + " Deluxe");
 });
+await step("admin puts the item in a Sponsored Market slot", async () => {
+  await go(admin, "/admin/placements");
+  const opt = await admin.locator("select[name=addg_id] option", { hasText: item }).getAttribute("value");
+  await admin.selectOption("select[name=addg_id]", opt);
+  await admin.check("input[name=addg_sp]");
+  await admin.click("button:has-text('Save placements')");
+  await admin.waitForURL(/saved=1/);
+  await go(phone, "/market");
+  const first = await phone.locator("main a[href^='/market/']").first().innerText();
+  if (!first.includes(item) || !first.toUpperCase().includes("SPONSORED")) fail("sponsored item is not first with its label");
+});
 await step("member marks the item Sold without review", async () => {
   await go(member, "/portal");
   const row = member.locator(`li:has-text("${item} Deluxe")`);

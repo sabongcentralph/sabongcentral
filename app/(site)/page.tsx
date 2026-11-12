@@ -1,4 +1,4 @@
-import { placementLabel, spotlightOf, withFeaturedFirst } from "@/lib/placements";
+import { isPlaced, placementLabel, spotlightOf, withFeaturedFirst } from "@/lib/placements";
 import { getLang } from "@/lib/i18n";
 import { approved } from "@/lib/db";
 import { publicEvents } from "@/lib/content";
@@ -96,7 +96,7 @@ export default async function Home() {
 
         <section className="flex flex-col gap-3">
           <SectionHead title="Latest in the Market" href="/market" />
-          <Row>{goods.slice(0, 4).map((g) => <GoodCard key={g.id} g={g} compact />)}</Row>
+          <Row>{withFeaturedFirst(goods).slice(0, 4).map((g) => <GoodCard key={g.id} g={g} compact tag={isPlaced(g) ? placementLabel(g) : undefined} />)}</Row>
         </section>
 
         <section className="flex flex-col gap-3">

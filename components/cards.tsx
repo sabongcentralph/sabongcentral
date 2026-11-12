@@ -55,7 +55,7 @@ export function AvailBadge({ d, className }: { d: GoodData; className: string })
   return <span className={`rounded-md font-bold text-white ${bg} ${className}`}>{a}</span>;
 }
 
-export function GoodCard({ g, compact = false }: { g: Listing<"good">; compact?: boolean }) {
+export function GoodCard({ g, compact = false, tag }: { g: Listing<"good">; compact?: boolean; tag?: string }) {
   const d: GoodData = g.data;
   return (
     <a href={`/market/${g.slug}`} className={`${cardCls} ${compact ? "w-[170px] flex-none snap-start md:w-auto" : ""}`}>
@@ -64,6 +64,7 @@ export function GoodCard({ g, compact = false }: { g: Listing<"good">; compact?:
         <AvailBadge d={d} className="absolute left-2 top-2 px-2 py-0.5 text-[10.5px]" />
       </div>
       <div className="flex flex-col gap-1 p-3">
+        {tag && <span className={`w-fit rounded-md px-1.5 py-0.5 text-[10.5px] font-extrabold tracking-[1px] ${tag === "Sponsored" ? "bg-[#e2b43a] text-[#3a0a0a]" : "bg-blush text-wine"}`}>{tag.toUpperCase()}</span>}
         <span className="text-[11px] font-semibold text-gold-dark">{d.cat} · {d.sub}</span>
         <h3 className="m-0 text-[14px] font-bold leading-snug">{d.name}</h3>
         <span className="text-[16px] font-bold text-crimson">{d.price}</span>

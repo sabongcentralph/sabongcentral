@@ -14,6 +14,8 @@ export async function POST(req: Request) {
   }
   const add = Number(field(f, "add_id", 12));
   if (add && !slots.some((s) => s.id === add)) slots.push({ id: add, rank: Math.max(1, Number(field(f, "add_rank", 3)) || slots.length + 1), sponsored: f.get("add_sp") === "1", until: field(f, "add_until", 10) });
+  const addGood = Number(field(f, "addg_id", 12));
+  if (addGood && !slots.some((s) => s.id === addGood)) slots.push({ id: addGood, rank: Math.max(1, Number(field(f, "addg_rank", 3)) || 99), sponsored: f.get("addg_sp") === "1", until: field(f, "addg_until", 10) });
   await savePlacements(slots, Number(field(f, "spotlight", 12)) || 0, admin);
   return back(req, "/admin/placements?saved=1");
 }
