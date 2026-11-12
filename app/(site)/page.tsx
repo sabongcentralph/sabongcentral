@@ -36,7 +36,7 @@ export default async function Home() {
             A Philippine gamefowl community directory for farms, education, supplies and lawful event information.
           </p>
           <p className="rise rise-3 m-0 rounded-full border border-gold/50 px-3.5 py-1 text-[12px] font-semibold text-gold-light">
-            Information only · No bets · No payments · No e-sabong · 18+
+            Information only · No bets · No payments · No e-sabong · 21+ · Gamble responsibly
           </p>
         </div>
       </section>

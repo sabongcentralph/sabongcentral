@@ -39,8 +39,8 @@ export const LEGAL: Record<string, LegalDoc> = {
         "Sabong Central does not process purchases, collect payments, arrange deliveries, or act as a seller in transactions between community members."
       ],
       [
-        "Review and 18+",
-        "All listings are submitted by independent contributors and are subject to platform review. Approval or publication does not constitute an endorsement, certification, or guarantee. Sabong Central is intended exclusively for adults aged 18 and above."
+        "Review and 21+",
+        "All listings are submitted by independent contributors and are subject to platform review. Approval or publication does not constitute an endorsement, certification, or guarantee. Sabong Central is intended exclusively for adults aged 21 and above."
       ],
       [
         "Mission",
@@ -63,7 +63,7 @@ export const LEGAL: Record<string, LegalDoc> = {
       ],
       [
         "3. Age Restriction",
-        "For individuals 18 and above. Account applicants must confirm they are at least 18."
+        "For individuals 21 and above only, in line with PAGCOR responsible gaming rules. Visitors must confirm they are 21 or older, and account applicants must confirm they are at least 21."
       ],
       [
         "4. Registration and Accounts",
@@ -133,8 +133,8 @@ export const LEGAL: Record<string, LegalDoc> = {
         "To be informed, access, correct, object, withdraw consent, erase or block, port, and complain to the National Privacy Commission (privacy.gov.ph). To request access, correction or deletion, use the Contact page (topic: Privacy / data request) or email sabongcentralph@gmail.com."
       ],
       [
-        "18+ only",
-        "Minors may not register for management accounts."
+        "21+ only",
+        "The site is for adults 21 and above. Minors and anyone under 21 may not register or use management accounts."
       ]
     ]
   },
@@ -265,7 +265,7 @@ export const LEGAL: Record<string, LegalDoc> = {
   "Disclaimer": {
     "tab": "Disclaimer",
     "title": "Legal Disclaimer",
-    "meta": "Independent community information platform · Adults 18+",
+    "meta": "Independent community information platform · Adults 21+",
     "s": [
       [
         "Independent Platform",
@@ -298,6 +298,37 @@ export const LEGAL: Record<string, LegalDoc> = {
       [
         "Reporting",
         "Report suspected illegal activity, fraud, animal cruelty, or wrong information through the official reporting channel."
+      ]
+    ]
+  },
+  "Responsible": {
+    "tab": "Responsible Gaming",
+    "title": "Responsible Gaming",
+    "meta": "21+ only · Gamble responsibly",
+    "s": [
+      [
+        "21 and over only",
+        "Sabong Central is for adults 21 years old and above. Everyone confirms their age when they first visit. If you are under 21, please leave the site."
+      ],
+      [
+        "We never take bets",
+        "Sabong Central is an information directory. We do not accept bets, wagers or payments, we do not run or stream fights, and we do not link to e-sabong, online sabong or betting apps. Listings that promote betting are removed."
+      ],
+      [
+        "Gamble responsibly",
+        "If you attend a licensed event where betting happens, set a limit before you go and stick to it. Never bet money you need for food, rent, school or your family. Do not chase losses. Gambling is not a way to make money."
+      ],
+      [
+        "Warning signs",
+        "Spending more time or money than you planned, borrowing to gamble, hiding it from family, or feeling restless when you try to stop can be signs of a gambling problem."
+      ],
+      [
+        "Get help (free, 24/7)",
+        "National Problem Gambling Helpline (PAGCOR, with Seagulls Flock Organization): (02) 8248-9568. You can also ask PAGCOR about self-exclusion from licensed gaming venues. If you or someone you know is in crisis, call the NCMH Crisis Hotline 1553."
+      ],
+      [
+        "Legal events only",
+        "Derby listings are shown only with the organizer's stated LGU permit and cockpit license, which admins check before publishing. Online cockfighting (e-sabong) is banned in the Philippines and is never listed."
       ]
     ]
   }

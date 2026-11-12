@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   }
   if (next.length < PW_MIN) return fail(`Please use at least ${PW_MIN} characters.`);
   if (next !== again) return fail("The two new passwords don’t match.");
-  if (!st.terms && (field(f, "adult", 2) !== "1" || field(f, "terms", 2) !== "1")) return fail("Please confirm you are 18+ and agree to the Portal Rules.");
+  if (!st.terms && (field(f, "adult", 2) !== "1" || field(f, "terms", 2) !== "1")) return fail("Please confirm you are 21 or older and agree to the Portal Rules.");
   await setOwnPassword(m.id, next, true);
   return back(req, st.mustChange ? "/portal?welcome=1" : "/portal?tab=account&saved=pw");
 }

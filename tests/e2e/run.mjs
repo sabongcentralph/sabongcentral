@@ -130,7 +130,30 @@ const desk = watch(await (await browser.newContext({ viewport: { width: 1366, he
 const admin = watch(await (await browser.newContext({ viewport: { width: 1366, height: 900 } })).newPage(), "admin");
 const member = watch(await (await browser.newContext({ ...devices["Pixel 7"] })).newPage(), "member");
 
+// Everyone in this test has passed the 21+ age check, except one fresh visitor below.
+for (const p of [phone, desk, admin, member]) await p.context().addCookies([{ name: "sc_21", value: "1", url: B }]);
+
 const PUBLIC = ["/", "/events", "/reels", "/farms", "/education", "/market", "/learn", "/notices", "/suppliers", "/search?q=feeds", "/contact", "/report", "/submit", "/portal", "/settings"];
+
+section("0. Age check (21+)");
+await step("a first-time visitor must confirm they are 21 or older", async () => {
+  const v = watch(await (await browser.newContext({ ...devices["iPhone 13"] })).newPage(), "visitor");
+  await go(v, "/farms");
+  await see(v, "Are you 21 or older?");
+  await v.click("button:has-text('No, I am under 21')");
+  await v.waitForLoadState();
+  await see(v, "this site is for adults 21 and over");
+  await v.context().clearCookies();
+  await go(v, "/farms");
+  await v.click("button:has-text('Yes, I am 21 or older')");
+  await v.waitForURL(/\/farms$/);
+  await notSee(v, "Are you 21 or older?");
+  await see(v, "Gamble responsibly");
+  await go(v, "/legal/responsible-gaming");
+  await see(v, "(02) 8248-9568");
+  await v.context().close();
+  pages.splice(pages.indexOf(v), 1);
+});
 
 section("1. Public pages (visitor, no account)");
 for (const url of PUBLIC) {
@@ -298,6 +321,9 @@ await step("admin publishes a derby straight away", async () => {
   await admin.waitForURL(/done=published/);
   await go(phone, "/events");
   await see(phone, aDerby);
+  await phone.click(`a:has-text("${aDerby}")`);
+  await phone.waitForLoadState();
+  await see(phone, "21+ only · Gamble responsibly");
 });
 await step("admin adds a farm without a phone number, and a reel", async () => {
   await go(admin, "/admin/add?tab=farm");
@@ -394,6 +420,7 @@ await step("creating the same email twice is refused", async () => {
 });
 async function memberLogin(pw) {
   await member.context().clearCookies();
+  await member.context().addCookies([{ name: "sc_21", value: "1", url: B }]);
   await go(member, "/portal");
   await member.fill("input[name=email]", memEmail);
   await member.fill("input[name=password]", pw);
@@ -670,6 +697,7 @@ await step("admin turns on two-step login with an authenticator app", async () =
 });
 async function adminPassword() {
   await admin.context().clearCookies();
+  await admin.context().addCookies([{ name: "sc_21", value: "1", url: B }]);
   await go(admin, "/admin/login");
   await admin.fill("input[name=email]", ADMIN);
   await admin.fill("input[name=password]", ADMIN_PW);
