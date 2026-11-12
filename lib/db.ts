@@ -101,6 +101,22 @@ const SCHEMA = [
     role text not null default 'super',
     created_at text not null default (datetime('now'))
   )`,
+  // Review workflow on top of status: "in_review", "needs_changes" (still pending)
+  // and "archived" (hidden). One row per listing that has left the "New" stage.
+  `create table if not exists review_stage (
+    listing_id integer primary key,
+    stage text not null check (stage in ('in_review','needs_changes','archived')),
+    updated_at text not null default (datetime('now'))
+  )`,
+  // Internal admin notes: never shown publicly.
+  `create table if not exists admin_notes (
+    id integer primary key autoincrement,
+    listing_id integer not null,
+    admin text not null,
+    body text not null,
+    created_at text not null default (datetime('now'))
+  )`,
+  `create index if not exists admin_notes_listing on admin_notes (listing_id)`,
   `create table if not exists sessions (
     token_hash text primary key,
     email text not null,
@@ -256,6 +272,84 @@ export async function setStatus(id: number, status: Status, admin: string, reaso
     db().prepare(`update listings set status = ?, reason = ?, updated_at = datetime('now') where id = ?`).bind(status, reason || null, id),
     db().prepare(`insert into audit_log (admin, action, target, reason) values (?, ?, ?, ?)`).bind(admin, status, `${l.kind}: ${titleOf(l)}`, reason || null),
   ]);
+}
+
+// ---- Review queue (admin) ----
+export const QUEUE = ["New", "In Review", "Needs Changes", "Approved", "Rejected", "Hidden", "Archived"] as const;
+export type QueueStatus = (typeof QUEUE)[number];
+type Stage = "in_review" | "needs_changes" | "archived";
+
+export function queueStatus(status: Status, stage: Stage | null | undefined): QueueStatus {
+  if (status === "pending") return stage === "in_review" ? "In Review" : stage === "needs_changes" ? "Needs Changes" : "New";
+  if (status === "hidden") return stage === "archived" ? "Archived" : "Hidden";
+  return status === "approved" ? "Approved" : "Rejected";
+}
+
+export async function stages(): Promise<Map<number, Stage>> {
+  await ensureDb();
+  const { results } = await db().prepare(`select listing_id, stage from review_stage`).all<{ listing_id: number; stage: Stage }>();
+  return new Map(results.map((r) => [r.listing_id, r.stage]));
+}
+
+// Moves a listing through the review workflow and logs it.
+export async function review(id: number, to: QueueStatus, admin: string, reason: string) {
+  await ensureDb();
+  const l = await byId(id);
+  if (!l) return;
+  const status: Status = to === "Approved" ? "approved" : to === "Rejected" ? "rejected" : to === "Hidden" || to === "Archived" ? "hidden" : "pending";
+  const stage: Stage | null = to === "In Review" ? "in_review" : to === "Needs Changes" ? "needs_changes" : to === "Archived" ? "archived" : null;
+  const d = db();
+  await d.batch([
+    d.prepare(`update listings set status = ?, reason = ?, updated_at = datetime('now') where id = ?`).bind(status, reason || null, id),
+    stage
+      ? d.prepare(`insert into review_stage (listing_id, stage) values (?, ?) on conflict(listing_id) do update set stage = excluded.stage, updated_at = datetime('now')`).bind(id, stage)
+      : d.prepare(`delete from review_stage where listing_id = ?`).bind(id),
+    d.prepare(`insert into audit_log (admin, action, target, reason) values (?, ?, ?, ?)`).bind(admin, to.toLowerCase(), `${l.kind}: ${titleOf(l)}`, reason || null),
+  ]);
+}
+
+export async function addNote(id: number, admin: string, body: string) {
+  await ensureDb();
+  await db().prepare(`insert into admin_notes (listing_id, admin, body) values (?, ?, ?)`).bind(id, admin, body).run();
+}
+
+export async function notesFor(id: number) {
+  await ensureDb();
+  const { results } = await db().prepare(`select * from admin_notes where listing_id = ? order by id desc`).bind(id).all<{ id: number; admin: string; body: string; created_at: string }>();
+  return results;
+}
+
+export async function historyFor(l: Listing) {
+  await ensureDb();
+  const { results } = await db().prepare(`select * from audit_log where target = ? order by id desc limit 50`).bind(`${l.kind}: ${titleOf(l)}`)
+    .all<{ id: number; admin: string; action: string; reason: string | null; created_at: string }>();
+  return results;
+}
+
+export async function reportsAbout(l: Listing) {
+  await ensureDb();
+  const { results } = await db().prepare(`select * from reports where target like ? order by id desc limit 50`).bind(`%${titleOf(l)}%`).all<Report>();
+  return results;
+}
+
+// Words that suggest betting, payments or banned items. A flag only asks the admin to look closer.
+const RISKY = /\b(bet|bets|betting|odds|pustahan|sabong live|e-?sabong|online sabong|live ?stream|gcash|paymaya|send payment|pay ?now|escrow|live birds?|for sale.*(rooster|stag|cock)|gaff|tari|knife|blade|antibiotic|injectable|vaccine for sale)\b/i;
+
+export type Flag = "Permit needed" | "Report received" | "Possible prohibited content";
+export function flagsOf(l: Listing, reportTargets: string[]): Flag[] {
+  const out: Flag[] = [];
+  const d = l.data as unknown as Record<string, unknown>;
+  if (l.kind === "event" && (d.derby || !String(d.permits ?? "").trim()) && l.status !== "approved") out.push("Permit needed");
+  const t = titleOf(l).toLowerCase();
+  if (t.length > 3 && reportTargets.some((r) => r.toLowerCase().includes(t))) out.push("Report received");
+  if (RISKY.test(JSON.stringify(l.data))) out.push("Possible prohibited content");
+  return out;
+}
+
+export async function openReportTargets(): Promise<string[]> {
+  await ensureDb();
+  const { results } = await db().prepare(`select target from reports where status != 'resolved'`).all<{ target: string }>();
+  return results.map((r) => r.target);
 }
 
 export async function submit(kind: Kind, data: object, by: string): Promise<number> {

@@ -1,7 +1,7 @@
 export function AdminNav({ email, at, counts }: { email: string; at: string; counts?: Record<string, number> }) {
   const links = [
-    ["/admin", "Approvals", counts?.pending],
-    ["/admin?status=approved", "Live", undefined],
+    ["/admin", "Review queue", counts?.pending],
+    ["/admin?q=Approved", "Live", undefined],
     ["/admin/reports", "Reports", counts?.reports],
     ["/admin/messages", "Messages", counts?.messages],
     ["/admin/account", "Account", undefined],
