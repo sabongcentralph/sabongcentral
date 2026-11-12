@@ -4,6 +4,7 @@ import { adminSummary, type Row } from "@/lib/adminData";
 import { titleOf, type QueueStatus } from "@/lib/db";
 import { AlertIcon, CalendarIcon, ChevronRight, FarmIcon, MailIcon, Pin, ShieldIcon } from "@/components/icons";
 import { Chip, Page } from "@/components/ui";
+import { PosterThumb } from "@/components/admin/PosterThumb";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Admin dashboard" };
@@ -28,21 +29,11 @@ function Tile({ href, icon, label, n, sub, hot = false }: { href: string; icon: 
   );
 }
 
-function DateBox({ iso }: { iso?: string }) {
-  const d = iso ? new Date(iso + "T00:00:00Z") : null;
-  const ok = d && !isNaN(+d);
-  return (
-    <span className="flex size-14 flex-none flex-col items-center justify-center rounded-xl bg-gradient-to-br from-crimson to-[#4a0d14] text-white">
-      <span className="text-[10.5px] font-bold uppercase tracking-wider text-gold-light">{ok ? d.toLocaleString("en", { month: "short", timeZone: "UTC" }) : "—"}</span>
-      <span className="text-[20px] font-bold leading-none">{ok ? d.getUTCDate() : ""}</span>
-    </span>
-  );
-}
-
 function ReviewRow({ r }: { r: Row }) {
-  const d = r.l.data as { province?: string; city?: string };
+  const d = r.l.data as { province?: string; city?: string; group?: string; poster?: string };
   return (
     <li className="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-3">
+      {r.l.kind === "event" && <PosterThumb title={titleOf(r.l)} group={d.group} poster={d.poster} />}
       <div className="flex min-w-0 flex-1 basis-[220px] flex-col">
         <a href={`/admin/item/${r.l.id}`} className="truncate text-[14.5px] font-semibold text-ink no-underline">{titleOf(r.l)}</a>
         <span className="truncate text-[12px] text-muted">{[[d.city, d.province].filter(Boolean).join(", "), r.l.submittedBy?.replace(/<.*>/, "").trim()].filter(Boolean).join(" · ") || "—"}</span>
@@ -122,14 +113,15 @@ export default async function AdminDashboard() {
           {s.events.length === 0 ? <p className="m-0 px-4 py-6 text-[14px] text-muted">No events yet.</p> : (
             <ul className="m-0 flex list-none flex-col divide-y divide-line p-0">
               {s.events.map((r) => {
-                const d = r.l.data as { date?: string; days?: string; city?: string; province?: string; org?: string };
+                const d = r.l.data as { date?: string; days?: string; city?: string; province?: string; org?: string; group?: string; poster?: string; longDate?: string };
                 return (
                   <li key={r.l.id}>
                     <a href={`/admin/item/${r.l.id}`} className="flex items-center gap-3 px-4 py-3 text-ink no-underline hover:bg-white/[0.03]">
-                      <DateBox iso={d.date} />
+                      <PosterThumb title={titleOf(r.l)} group={d.group} poster={d.poster} />
                       <span className="flex min-w-0 flex-1 flex-col">
                         <span className="truncate text-[14.5px] font-semibold">{titleOf(r.l)}</span>
                         <span className="truncate text-[12.5px] text-muted">{[d.city, d.province].filter(Boolean).join(", ")}{d.org ? ` · ${d.org}` : ""}</span>
+                        <span className="truncate text-[12.5px] text-ink-soft">{d.longDate ?? d.days ?? ""}</span>
                       </span>
                       <Chip tone={tone(r.qs)}>{label(r.qs)}</Chip>
                     </a>

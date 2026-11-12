@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/adminGuard";
 import { AVAILABILITY, EVENT_STATUSES, availOf, byId, counts, flagsOf, historyFor, notesFor, openReportTargets, queueStatus, reportsAbout, stages, titleOf, type GoodData } from "@/lib/db";
 import { one, type Search } from "@/lib/content";
 import { toEmbed } from "@/lib/embed";
+import { PosterThumb } from "@/components/admin/PosterThumb";
 import { Chip, Note, Page, btnGhost, btnPrimary, input, labelCls, statusTone } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
@@ -80,6 +81,7 @@ export default async function ReviewItem({ params, searchParams }: { params: Pro
           ))}
         </dl>
         <div className="flex flex-col gap-4">
+          {l.kind === "event" && <PosterThumb title={titleOf(l)} group={String(data.group ?? "")} poster={String(data.poster ?? "")} className="!h-auto !w-full aspect-[16/9] [&>span:nth-child(2)]:!text-[26px]" />}
           {embed && (
             <div className={`overflow-hidden rounded-2xl bg-black ${embed.vertical ? "mx-auto aspect-[9/16] w-full max-w-[300px]" : "aspect-video"}`}>
               <iframe src={embed.src} title="Preview" className="size-full border-0" loading="lazy" allow="encrypted-media; picture-in-picture" allowFullScreen />
