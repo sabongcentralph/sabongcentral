@@ -8,7 +8,7 @@ import { TABS, isActive } from "./tabs";
 export function TopNav({ lang }: { lang: Lang }) {
   const path = usePathname();
   return (
-    <nav aria-label="Main" className="hidden flex-auto gap-x-5 lg:flex">
+    <nav aria-label="Main" className="hidden flex-auto justify-center gap-x-6 lg:flex">
       {TABS.map((tab) => (
         <a
           key={tab.href}

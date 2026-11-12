@@ -4,7 +4,7 @@ import { publicEvents } from "@/lib/content";
 import { ArticleCard, EventCard, FarmCard, GoodCard, NoticeCard, ReelCard } from "@/components/cards";
 import { BizBadge, Chip, Photo, Row, SampleTag, SectionHead, btnPrimary } from "@/components/ui";
 import { LocationFields } from "@/components/LocationFields";
-import { Pin, SearchIcon } from "@/components/icons";
+import { Pin } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
 
@@ -29,17 +29,11 @@ export default async function Home() {
 
   return (
     <main className="flex flex-col">
-      <section className="relative overflow-hidden bg-crimson-dark px-4 pb-6 pt-6 text-white md:px-6 md:pb-10 md:pt-12 lg:mx-6 lg:mt-6 lg:rounded-3xl">
+      <section className="relative overflow-hidden bg-crimson-dark px-5 pb-8 pt-7 text-white md:px-6 md:pb-12 md:pt-12 lg:mx-6 lg:mt-6 lg:rounded-3xl">
         <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(120%_70%_at_50%_0%,rgba(201,162,74,.28),rgba(67,10,16,0)_60%)]" />
-        <div className="relative mx-auto flex max-w-[1100px] flex-col gap-4">
+        <div className="relative mx-auto flex max-w-[900px] flex-col items-center gap-3 text-center">
           <p className="rise m-0 text-[12px] font-bold tracking-[2px] text-gold-light">{tx.kicker}</p>
-          <h1 className="rise rise-1 m-0 max-w-[760px] font-serif text-[26px] font-semibold leading-[1.15] md:text-[46px]">{tx.title}</h1>
-          <form action="/search" method="get" role="search" className="rise rise-2 flex max-w-[640px] items-center gap-2 rounded-full bg-cream p-1.5 pl-4">
-            <SearchIcon className="flex-none text-muted" />
-            <label htmlFor="home-q" className="sr-only">Search</label>
-            <input id="home-q" name="q" type="search" placeholder={tx.ph} className="min-h-10 min-w-0 flex-1 border-0 bg-transparent text-[15px] text-ink outline-none" />
-            <button type="submit" className="min-h-10 cursor-pointer rounded-full border-0 bg-crimson px-4 text-sm font-semibold text-white">Search</button>
-          </form>
+          <h1 className="rise rise-1 m-0 max-w-[820px] text-balance font-serif text-[27px] font-semibold leading-[1.18] md:text-[44px]">{tx.title}</h1>
         </div>
       </section>
 
