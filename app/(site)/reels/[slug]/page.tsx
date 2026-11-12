@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { ListedBy } from "@/components/ListedBy";
 import { approved, approvedOne } from "@/lib/db";
 import { toEmbed } from "@/lib/embed";
 import { ReelCard } from "@/components/cards";
@@ -45,6 +46,7 @@ export default async function ReelPage({ params }: { params: Promise<{ slug: str
           {d.desc && <p className="m-0 text-[15px] leading-relaxed text-ink-soft">{d.desc}</p>}
           {d.url && <a href={d.url} target="_blank" rel="noopener noreferrer" className="text-[13px] font-semibold text-wine">Watch on {embed?.platform ?? d.platform} ↗</a>}
           <Note>External content: this video is embedded from {embed?.platform ?? d.platform} and is not hosted by Sabong Central. Educational content only: no fight footage, betting, animal cruelty or prohibited products.</Note>
+          <ListedBy data={d} title={d.title} />
           <a href={`/report?target=${encodeURIComponent("Reel: " + d.title)}`} className="flex min-h-11 items-center gap-1.5 text-[14px] font-semibold text-wine no-underline"><Flag size={15} /> Report this reel</a>
         </div>
       </div>

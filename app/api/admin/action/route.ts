@@ -1,5 +1,6 @@
 import { adminFromRequest, sameOrigin } from "@/lib/auth";
-import { addNote, decideEdit, review, setState, setVerified } from "@/lib/db";
+import { addNote, byId, decideEdit, review, setState, setVerified, transferListing } from "@/lib/db";
+import { memberByEmail } from "@/lib/members";
 import { back, field } from "@/lib/forms";
 
 export async function POST(req: Request) {
@@ -25,6 +26,12 @@ export async function POST(req: Request) {
   else if (action === "pending") await review(id, "New", admin, reason);
   else if (action === "edit_approve") await decideEdit(id, true, admin, reason);
   else if (action === "edit_reject") await decideEdit(id, false, admin, reason);
+  else if (action === "transfer") {
+    const l = await byId(id);
+    const m = await memberByEmail(field(f, "member", 200));
+    if (!l || !m) return back(req, `/admin/item/${id}?error=member`);
+    await transferListing(l, m.id, m.name || m.email, admin);
+  }
   else if (action === "set_state") await setState(id, field(f, "state", 20), admin);
   else if (action === "note") {
     const body = field(f, "note", 2000);

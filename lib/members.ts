@@ -241,6 +241,12 @@ export async function members(status?: MemberStatus): Promise<(Member & { listin
   return results.map((r) => ({ ...toMember(r), listings: r.listings }));
 }
 
+export async function memberByEmail(email: string): Promise<Member | null> {
+  await ensureMembers();
+  const r = await db().prepare(`select * from members where email = ?`).bind(email.trim().toLowerCase()).first<MemberRow>();
+  return r ? toMember(r) : null;
+}
+
 export async function memberById(id: number): Promise<Member | null> {
   await ensureMembers();
   const r = await db().prepare(`select * from members where id = ?`).bind(id).first<MemberRow>();

@@ -1,5 +1,5 @@
-import { byId, memberEdit, submit, type Kind } from "@/lib/db";
-import { sameOrigin } from "@/lib/auth";
+import { adminEdit, byId, memberEdit, review, submit, type Kind } from "@/lib/db";
+import { adminFromRequest, sameOrigin } from "@/lib/auth";
 import { back, field, isBot } from "@/lib/forms";
 import { toEmbed } from "@/lib/embed";
 import { isFacebook, toUrl } from "@/lib/links";
@@ -29,16 +29,23 @@ export async function POST(req: Request) {
   const kind = field(f, "kind", 20) as Kind;
   // Articles, reels and announcements come from the public form; farms, events
   // and Market items only through the Portal.
-  const isPublic = kind === "article" || kind === "reel" || kind === "notice";
-  const page = isPublic ? "/submit" : "/portal";
+  // Admin "+ Add listing" (Em, 2026-11-12): admins post farms, derbies, items and reels
+  // themselves while the site fills up; their listings go live at once.
+  const asAdmin = field(f, "admin", 2) === "1";
+  const admin = asAdmin ? await adminFromRequest(req) : null;
+  if (asAdmin && !admin) return new Response("Forbidden", { status: 403 });
+  const isPublic = !admin && (kind === "article" || kind === "reel" || kind === "notice");
+  const page = admin ? "/admin/add" : isPublic ? "/submit" : "/portal";
   if (isBot(f)) return back(req, `${page}?tab=${kind}&sent=1`);
   // A member editing one of their own listings.
   const editId = Number(field(f, "edit", 12)) || 0;
   const fail = (msg: string) => back(req, `${page}?tab=${editId ? `edit&id=${editId}` : kind}&error=${encodeURIComponent(msg)}`);
   const name = field(f, "contactName", 120), email = field(f, "email", 200);
   // Farms, events and Market items need a signed-in Portal member.
-  const member = isPublic ? null : await memberFromRequest(req);
-  if (isPublic) {
+  const member = isPublic || admin ? null : await memberFromRequest(req);
+  if (admin) {
+    if (!["farm", "event", "good", "reel"].includes(kind)) return fail("Admins add farms, events, Market items and reels here.");
+  } else if (isPublic) {
     if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail("Please enter your name and a valid email.");
     if (field(f, "confirm", 2) !== "1") return fail("Please tick the confirmation box.");
   } else if (!member) {
@@ -50,19 +57,20 @@ export async function POST(req: Request) {
   }
   // Verification links (Em, 2026-11-12): a Facebook page is required from every
   // submitter; farms give their farm page. Admin-only, except the farm page.
-  const vfb = member && kind !== "farm" ? member.facebook : toUrl(field(f, kind === "farm" ? "facebook" : "vfb", 300));
+  const vfb = member && kind !== "farm" ? member.facebook : admin ? toUrl(field(f, "vfb", 300)) || toUrl(field(f, "facebook", 300)) : toUrl(field(f, kind === "farm" ? "facebook" : "vfb", 300));
   const vlink = member && !field(f, "vlink", 300) ? member.org_link : toUrl(field(f, "vlink", 300));
-  if (!isFacebook(vfb)) return fail("Please add a Facebook page or profile link (facebook.com/…) so admins can verify you.");
+  if (!admin && !isFacebook(vfb)) return fail("Please add a Facebook page or profile link (facebook.com/…) so admins can verify you.");
   if (field(f, "vlink", 300) && !vlink) return fail("The organization link doesn’t look like a web address.");
   const old = editId ? await byId(editId) : null;
-  if (editId && (!member || !old || old.kind !== kind || !(await ownsListing(member.id, editId)))) return fail("You can only edit your own listings.");
-  const by = isPublic ? `${name} <${email}> (public form)` : `${member!.name || member!.email} <${member!.email}> (member #${member!.id})`;
+  if (editId && !admin && (!member || !old || old.kind !== kind || !(await ownsListing(member.id, editId)))) return fail("You can only edit your own listings.");
+  if (editId && admin && (!old || old.kind !== kind)) return fail("Listing not found.");
+  const by = admin ? "Sabong Central (added by admin)" : isPublic ? `${name} <${email}> (public form)` : `${member!.name || member!.email} <${member!.email}> (member #${member!.id})`;
   const province = field(f, "province", 80), city = field(f, "city", 80);
   let data: object;
 
   if (kind === "farm") {
     const name = field(f, "name", 120);
-    if (!name || !validPlace(province, city) || !field(f, "phone", 40)) return fail("Farm name, location and contact number are required.");
+    if (!name || !validPlace(province, city) || (!admin && !field(f, "phone", 40))) return fail("Farm name, location and contact number are required.");
     data = {
       name, province, city, est: field(f, "est", 4), ownerName: field(f, "ownerName", 120), phone: field(f, "phone", 40),
       facebook: field(f, "facebook", 200), about: field(f, "about", 2000), verified: false,
@@ -90,7 +98,7 @@ export async function POST(req: Request) {
   } else if (kind === "good") {
     const name = field(f, "name", 120), sub = field(f, "sub", 60);
     const cat = Object.entries(GOODS_CATS).find(([, subs]) => subs.includes(sub))?.[0];
-    if (!name || !cat || !validPlace(province, city) || !field(f, "seller", 120) || !field(f, "phone", 40)) return fail("Product name, subcategory, seller name, contact number and location are required.");
+    if (!name || !cat || !validPlace(province, city) || !field(f, "seller", 120) || (!admin && !field(f, "phone", 40))) return fail("Product name, subcategory, seller name, contact number and location are required.");
     data = {
       name, cat, sub, price: pesos(field(f, "price", 20)), seller: field(f, "seller", 120), phone: field(f, "phone", 40),
       province, city, sold: false, sellerVerified: false, desc: field(f, "desc", 2000),
@@ -135,14 +143,23 @@ export async function POST(req: Request) {
   if (old) {
     // Keep photos that weren't replaced, and fields only admins or quick actions change.
     const o = old.data as unknown as Record<string, unknown>;
-    const kept = Object.fromEntries(["profile", "cover", "gallery", "poster", "photos", "verified", "sellerVerified", "status", "renewed"].filter((k) => k in o && !(k in pics)).map((k) => [k, o[k]]));
+    const kept = Object.fromEntries(["profile", "cover", "gallery", "poster", "photos", "verified", "sellerVerified", "status", "renewed", "listedBy"].filter((k) => k in o && !(k in pics)).map((k) => [k, o[k]]));
+    if (admin) {
+      await adminEdit(old, { ...data, ...kept, ...pics, verifyFacebook: vfb, verifyLink: vlink }, admin);
+      return back(req, `/admin/item/${old.id}?done=edited`);
+    }
     const out = await memberEdit(old, { ...data, ...kept, ...pics, verifyFacebook: vfb, verifyLink: vlink }, by);
     return back(req, `/portal?edited=${out}`);
   }
   data = { ...data, ...pics, verifyFacebook: vfb, verifyLink: vlink };
   // An approved, unexpired business document means new farms and Market items start Business Verified.
   if (member && (kind === "farm" || kind === "good") && (await hasValidDoc(member.id))) data = { ...data, [kind === "farm" ? "verified" : "sellerVerified"]: true };
+  if (admin) data = { ...data, listedBy: "admin" };
   const id = await submit(kind, data, by);
+  if (admin && id) {
+    await review(id, "Approved", admin, "Added by Sabong Central");
+    return back(req, `/admin/item/${id}?done=published`);
+  }
   if (member && id) await linkListing(id, member.id);
   return back(req, `${page}?tab=${kind}&sent=1`);
 }

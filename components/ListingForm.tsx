@@ -1,0 +1,139 @@
+import { BLOODLINES, EVENT_CATS, GOODS_CATS, REEL_TOPICS } from "@/lib/sample";
+import { LocationFields } from "@/components/LocationFields";
+import { PhotoPicker } from "@/components/PhotoPicker";
+import { btnPrimary, input, labelCls } from "@/components/ui";
+import type { Listing } from "@/lib/db";
+
+type Who = { name: string; phone: string; facebook: string };
+const Honeypot = () => <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px]" />;
+const box = "flex flex-col gap-4 rounded-2xl border border-line bg-cream p-4 md:grid md:grid-cols-2";
+const full = "md:col-span-2";
+
+function CurrentPhotos({ d, keys }: { d: Record<string, unknown>; keys: string[] }) {
+  const ps = keys.flatMap((k) => (Array.isArray(d[k]) ? (d[k] as string[]) : d[k] ? [String(d[k])] : []));
+  if (!ps.length) return null;
+  return (
+    <div className={`${full} flex flex-col gap-2`}>
+      <span className="text-[13px] font-semibold text-ink-soft">Current photos (kept unless you upload new ones in that spot)</span>
+      <div className="flex flex-wrap gap-2">{ps.map((p) => <img key={p} src={p} alt="" className="size-20 rounded-lg border border-line object-cover" />)}</div>
+    </div>
+  );
+}
+
+// Farm, event, Market item (and, for admins, reel) form. Members submit for review;
+// admins (admin) post directly and their listings go live at once.
+export function ListingForm({ tab, up, who, l, admin = false }: { tab: "farm" | "event" | "good" | "reel"; up: boolean; who: Who; l?: Listing; admin?: boolean }) {
+  const m = who;
+  // When editing, every field starts with the listing's current value.
+  const d = (l?.data ?? {}) as unknown as Record<string, unknown>;
+  const v = (k: string, dflt = "") => (l ? String(d[k] ?? "") : dflt);
+  const lines = l ? ((d.bloodlines as { name: string }[] | undefined) ?? []).map((b) => b.name) : [];
+  const price = v("price").replace(/^₱\s?/, "").replace(/^quote$/, "");
+  return (
+  <form action="/api/submit" method="post" encType="multipart/form-data" className={box}>
+    <input type="hidden" name="kind" value={tab} />
+    {admin && <input type="hidden" name="admin" value="1" />}
+    {l && <input type="hidden" name="edit" value={l.id} />}
+    <Honeypot />
+    {l && <CurrentPhotos d={d} keys={["profile", "cover", "gallery", "poster", "photos"]} />}
+    {tab === "farm" && (
+      <>
+        <label className={`${labelCls} ${full}`}>Farm name *<input name="name" required defaultValue={v("name")} className={input} placeholder="e.g. Bukid Malaya Gamefarm" /></label>
+        <LocationFields required idPrefix="pf" province={v("province")} city={v("city")} />
+        <label className={labelCls}>Owner name<input name="ownerName" defaultValue={v("ownerName")} className={input} /></label>
+        <label className={labelCls}>Contact number{admin ? " (public number only)" : " *"}<input name="phone" required={!admin} inputMode="tel" placeholder="09XX XXX XXXX" defaultValue={v("phone", m.phone)} className={input} /></label>
+        <label className={labelCls}>Year established<input name="est" inputMode="numeric" maxLength={4} defaultValue={v("est")} className={input} /></label>
+        <label className={labelCls}>Farm Facebook page *<input name="facebook" required maxLength={300} defaultValue={v("facebook", m.facebook)} placeholder="https://www.facebook.com/yourfarm" className={input} /></label>
+        <label className={`${labelCls} ${full}`}>About the farm<textarea name="about" rows={4} defaultValue={v("about")} className={`${input} py-2.5`} /></label>
+        {up && <PhotoPicker name="profile" label="Profile photo (logo or farm sign)" />}
+        {up && <PhotoPicker name="cover" label="Cover photo" />}
+        {up && <div className={full}><PhotoPicker name="gallery" label="Farm photos" max={6} /></div>}
+        <label className={labelCls}>Visit policy<input name="visit" defaultValue={v("visit")} placeholder="e.g. By appointment only" className={input} /></label>
+        <label className={labelCls}>Exact address (private, admin only)<input name="address" defaultValue={v("address")} className={input} /></label>
+        <fieldset className={`m-0 border-0 p-0 ${full}`}>
+          <legend className="mb-1.5 text-[13px] font-semibold text-ink-soft">Bloodlines</legend>
+          <div className="grid grid-cols-2 gap-x-3 sm:grid-cols-3">
+            {BLOODLINES.map((b) => <label key={b} className="flex min-h-9 items-center gap-2 text-[14px]"><input type="checkbox" name="line" value={b} defaultChecked={lines.includes(b)} className="size-[17px] accent-crimson" /> {b}</label>)}
+          </div>
+        </fieldset>
+        <div className={`${full} flex flex-col gap-2 rounded-xl border border-dashed border-gold p-3`}>
+          <span className="text-[14px] font-bold">Business registration (for the Business Verified badge)</span>
+          <span className="text-[12.5px] text-muted">DTI, SEC or Mayor’s permit. Upload a photo of it under <a href="/portal?tab=docs" className="font-semibold text-wine">Documents</a>. Private, seen by admins only.</span>
+          <label className="flex min-h-9 items-center gap-2 text-[14px]"><input type="checkbox" name="docs" value="yes" defaultChecked={!!d.docs} className="size-[17px] accent-crimson" /> I have business registration I can submit</label>
+        </div>
+      </>
+    )}
+    {tab === "event" && (
+      <>
+        <label className={`${labelCls} ${full}`}>Event title *<input name="title" required defaultValue={v("title")} className={input} /></label>
+        <label className={labelCls}>Event type *
+          <select name="sub" required className={input} defaultValue={v("sub")}>
+            <option value="">Select</option>
+            {EVENT_CATS.map(([cat, , , subs]) => <optgroup key={cat} label={cat}>{subs.map((s) => <option key={s}>{s}</option>)}</optgroup>)}
+          </select>
+        </label>
+        <label className={labelCls}>Organizer name<input name="org" defaultValue={v("org", m.name)} className={input} /></label>
+        <label className={labelCls}>Start date *<input name="date" type="date" required defaultValue={v("date")} className={input} /></label>
+        <label className={labelCls}>End date (if multi-day)<input name="endDate" type="date" defaultValue={v("endDate")} className={input} /></label>
+        <label className={labelCls}>Start time<input name="start" type="time" defaultValue={v("startTime")} className={input} /></label>
+        <label className={labelCls}>End time<input name="end" type="time" defaultValue={v("endTime")} className={input} /></label>
+        <label className={`${full} flex min-h-9 items-center gap-2 text-[14px] font-semibold text-ink-soft`}><input type="checkbox" name="online" value="1" defaultChecked={!!d.online} className="size-[17px] accent-crimson" /> Online event (webinar)</label>
+        <label className={`${labelCls} ${full}`}>Online link (webinars only)<input name="link" type="url" defaultValue={v("link")} placeholder="Zoom, Facebook Live or Google Meet link" className={input} /></label>
+        <LocationFields idPrefix="pe" province={d.online ? "" : v("province")} city={d.online ? "" : v("city")} />
+        <label className={`${labelCls} ${full}`}>Venue<input name="venue" defaultValue={v("venue")} placeholder="Hall, farm, cockpit or arena" className={input} /></label>
+        <label className={`${labelCls} ${full}`}>Description<textarea name="desc" rows={4} defaultValue={v("desc")} className={`${input} py-2.5`} /></label>
+        <label className={labelCls}>Topics<input name="topics" defaultValue={v("topics")} className={input} /></label>
+        <label className={labelCls}>Speakers<input name="speakers" defaultValue={v("speakers")} className={input} /></label>
+        <label className={labelCls}>Fee<input name="fee" defaultValue={v("fee")} placeholder="Free or ₱500" className={input} /></label>
+        <label className={labelCls}>Registration / contact<input name="reg" defaultValue={v("reg")} className={input} /></label>
+        {up && <div className={full}><PhotoPicker name="poster" label="Event poster" hint="One poster image. No betting odds or fight photos." /></div>}
+        <label className={`${labelCls} ${full}`}>Permits<input name="permits" defaultValue={v("permits")} placeholder="e.g. LGU event permit no., cockpit license (required for derbies)" className={input} /></label>
+        <p className={`m-0 text-[12.5px] text-muted ${full}`}>Derby listings need a verified cockpit license and LGU permit before they are published.</p>
+      </>
+    )}
+    {tab === "reel" && (
+      <>
+        <label className={`${labelCls} ${full}`}>Video link * (Facebook, YouTube or TikTok)<input name="url" type="url" required defaultValue={v("url")} className={input} /></label>
+        <label className={labelCls}>Title *<input name="title" required maxLength={160} defaultValue={v("title")} className={input} /></label>
+        <label className={labelCls}>Topic *<select name="topic" required defaultValue={v("topic")} className={input}>{REEL_TOPICS.map((t) => <option key={t}>{t}</option>)}</select></label>
+        <label className={`${labelCls} ${full}`}>Creator or farm name<input name="farm" defaultValue={v("farm")} className={input} /></label>
+        <label className={`${labelCls} ${full}`}>Short description<textarea name="desc" rows={3} maxLength={600} defaultValue={v("desc")} className={`${input} py-2.5`} /></label>
+      </>
+    )}
+    {tab === "good" && (
+      <>
+        <label className={`${labelCls} ${full}`}>Product name *<input name="name" required defaultValue={v("name")} className={input} /></label>
+        <label className={labelCls}>Subcategory *
+          <select name="sub" required className={input} defaultValue={v("sub")}>
+            <option value="">Select</option>
+            {Object.entries(GOODS_CATS).map(([cat, subs]) => <optgroup key={cat} label={cat}>{subs.map((s) => <option key={s}>{s}</option>)}</optgroup>)}
+          </select>
+        </label>
+        <label className={labelCls}>Price (₱)<input name="price" inputMode="decimal" defaultValue={price} placeholder="850 (blank = ask for quote)" className={input} /></label>
+        <label className={labelCls}>Availability<select name="avail" className={input} defaultValue={v("avail", "Available")}>{["Available", "Reserved", "Sold"].map((a) => <option key={a}>{a}</option>)}</select></label>
+        <label className={labelCls}>Condition<select name="condition" className={input} defaultValue={v("condition", "New")}>{["New", "Used", "Not applicable (service)"].map((a) => <option key={a}>{a}</option>)}</select></label>
+        <label className={`${labelCls} ${full}`}>Pickup or delivery info<input name="pickup" defaultValue={v("pickup")} placeholder="e.g. Pickup in Lipa City, or seller arranges delivery" className={input} /></label>
+        <label className={labelCls}>Seller name *<input name="seller" required defaultValue={v("seller", m.name)} className={input} /></label>
+        <label className={labelCls}>Contact number{admin ? " (public number only)" : " *"}<input name="phone" required={!admin} inputMode="tel" defaultValue={v("phone", m.phone)} className={input} /></label>
+        <LocationFields required idPrefix="pg" province={v("province")} city={v("city")} />
+        {up && <div className={full}><PhotoPicker name="photos" label="Product photos" max={3} /></div>}
+        <label className={`${labelCls} ${full}`}>Description<textarea name="desc" rows={4} defaultValue={v("desc")} className={`${input} py-2.5`} /></label>
+        <p className={`m-0 text-[12.5px] text-muted ${full}`}>Not allowed: live birds, fighting weapons, regulated veterinary medicines, and anything gambling-related. No payments, checkout or delivery booking through Sabong Central.</p>
+      </>
+    )}
+    {admin && (
+      <label className={`${labelCls} ${full}`}>Source link (their Facebook page or post; admin only){tab === "farm" ? "" : " *"}
+        <input name="vfb" required={tab !== "farm"} maxLength={300} defaultValue={v("verifyFacebook")} placeholder="https://www.facebook.com/…" className={input} />
+      </label>
+    )}
+    {admin ? <input type="hidden" name="confirm" value="1" /> : (
+    <label className={`${full} flex items-start gap-2 text-[13.5px] text-ink-soft`}>
+      <input type="checkbox" name="confirm" value="1" required className="mt-0.5 size-[17px] flex-none accent-crimson" />
+      I confirm the information is accurate, and I agree to the <a href="/legal/rules" className="font-semibold text-wine">Portal Rules</a>{tab === "good" ? <> and <a href="/legal/market" className="font-semibold text-wine">Market Notice</a></> : null}.
+    </label>
+    )}
+    <button type="submit" className={`${btnPrimary} ${full}`}>{admin ? (l ? "Save changes (live now)" : "Publish now") : l ? (l.status === "approved" ? "Send changes for review" : "Save and resubmit") : "Submit for review"}</button>
+  </form>
+  );
+}
+

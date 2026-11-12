@@ -105,6 +105,20 @@ export default async function ReviewItem({ params, searchParams }: { params: Pro
           </form>
         </section>
       )}
+      {(data.listedBy === "admin" || ["farm", "event", "good", "reel"].includes(l.kind)) && (
+        <div className="flex flex-wrap items-start gap-3 rounded-2xl border border-line bg-cream p-4">
+          {["farm", "event", "good", "reel"].includes(l.kind) && <a href={`/admin/add?edit=${l.id}`} className={btnGhost}>Edit listing</a>}
+          {data.listedBy === "admin" && (
+            <form action="/api/admin/action" method="post" className="flex min-w-[260px] flex-1 flex-wrap items-end gap-2">
+              <input type="hidden" name="id" value={l.id} />
+              <label className={`${labelCls} min-w-[220px] flex-1`}>Move to the owner’s Portal account (their email)<input name="member" type="email" required className={input} /></label>
+              {act("transfer", "Move to member", btnGhost)}
+              <span className="w-full text-[12px] text-muted">Listed by Sabong Central. Create their account in Members first; after moving, they can edit it themselves.</span>
+            </form>
+          )}
+        </div>
+      )}
+      {err === "member" && <Note tone="red">No Portal account with that email. Create it in Members first.</Note>}
       {isDerby && <Note tone="red">Derby listing: verify the cockpit license and LGU event permit before approving. Permits stated: <strong>{show(data.permits) || "none"}</strong></Note>}
       {l.kind === "farm" && <Note>Business registration stated by submitter: <strong>{data.docs ? "Yes (request a copy)" : "Not yet"}</strong>. Only give the “Business Verified” badge after reviewing the papers.</Note>}
 
