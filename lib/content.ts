@@ -29,3 +29,10 @@ export const many = (v: string | string[] | undefined) => (v === undefined ? [] 
 export type Search = Record<string, string | string[] | undefined>;
 
 export const matches = (text: string, q: string) => !q || text.toLowerCase().includes(q.toLowerCase());
+
+// Links derbies to Venues & Organizers profiles by name (the event form suggests the exact names).
+const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+export const sameName = (text: string, name: string) => {
+  const t = norm(text ?? ""), n = norm(name ?? "");
+  return !!n && (t === n || (n.length >= 8 && t.includes(n)));
+};

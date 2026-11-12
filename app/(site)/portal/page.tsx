@@ -7,12 +7,12 @@ import { uploadsOn } from "@/lib/media";
 import { Chip, Note, Page, PageHead, btnGhost, btnPrimary, input, labelCls } from "@/components/ui";
 import { DOC_TYPES, MAX_DOC_PAGES, docLabel, docsOf, daysToExpiry, isValid, type Doc } from "@/lib/docs";
 import { ROLES, STATUS_LABEL, canSubmit, currentMember, listingsOf, passwordState, testMode, type Member } from "@/lib/members";
-import { AVAILABILITY, EVENT_STATUSES, MARKET_DAYS, UNPUBLISHED_BY_OWNER, availOf, byId, daysLeft, editIds, titleOf, type GoodData, type Listing, type QueueStatus } from "@/lib/db";
+import { AVAILABILITY, EVENT_STATUSES, MARKET_DAYS, UNPUBLISHED_BY_OWNER, approved, availOf, byId, daysLeft, editIds, titleOf, type GoodData, type Listing, type QueueStatus } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Portal" };
 
-const TABS = [["home", "My listings"], ["farm", "+ Farm"], ["event", "+ Event or seminar"], ["good", "+ Market item"], ["docs", "Documents"], ["account", "Account"]] as const;
+const TABS = [["home", "My listings"], ["farm", "+ Farm"], ["event", "+ Event or seminar"], ["venue", "+ Venue / organizer"], ["good", "+ Market item"], ["docs", "Documents"], ["account", "Account"]] as const;
 type Tab = (typeof TABS)[number][0];
 
 const Honeypot = () => <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px]" />;
@@ -21,7 +21,7 @@ const Honeypot = () => <input type="text" name="website" tabIndex={-1} autoCompl
 const box = "flex flex-col gap-4 rounded-2xl border border-line bg-cream p-4 md:grid md:grid-cols-2";
 const full = "md:col-span-2";
 const tone = (q: QueueStatus) => (q === "Approved" ? "green" : q === "Rejected" || q === "Hidden" ? "red" : q === "Needs Changes" || q === "In Review" ? "gold" : "plain") as "green" | "red" | "gold" | "plain";
-const PATH = { farm: "farms", event: "events", good: "market", reel: "reels", article: "learn", notice: "notices", supplier: "suppliers" } as const;
+const PATH = { farm: "farms", event: "events", good: "market", reel: "reels", article: "learn", notice: "notices", supplier: "suppliers", venue: "venues" } as const;
 
 // Sign in with email and password. Accounts are created by Sabong Central for now;
 // email codes come back once email sending is set up (EMAIL_ENABLED).
@@ -139,7 +139,7 @@ function ListingRow({ l, qs, editing, blocked }: { l: Listing; qs: QueueStatus; 
     <li id={`l${l.id}`} className="flex flex-col gap-2 px-4 py-3">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span className="min-w-0 flex-1 text-[14.5px] font-semibold">{titleOf(l)}</span>
-        <Chip tone="plain">{l.kind === "good" ? "Market" : l.kind === "event" ? "Event" : "Farm"}</Chip>
+        <Chip tone="plain">{l.kind === "good" ? "Market" : l.kind === "event" ? "Event" : l.kind === "venue" ? "Venue / organizer" : "Farm"}</Chip>
         <Chip tone={expired ? "red" : mine ? "plain" : draft ? "gold" : tone(qs)}>{label}</Chip>
         {editing && <Chip tone="gold">Edit waiting for review</Chip>}
       </div>
@@ -260,6 +260,7 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
   const editId = Number(one(sp.id)) || 0;
   const editing = tab === "edit" && mine.some(({ l }) => l.id === editId) ? await byId(editId) : null;
   const edited = one(sp.edited), done = one(sp.done);
+  const venues = tab === "event" || editing?.kind === "event" ? (await approved("venue")).map((v) => ({ name: v.data.name, roles: v.data.roles })) : [];
 
   return (
     <Page>
@@ -300,7 +301,7 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
             {mine.length === 0 ? (
               <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-sand p-6">
                 <p className="m-0 text-[15px] font-semibold">No listings yet.</p>
-                {!blocked && <div className="flex flex-wrap gap-2"><a href="/portal?tab=farm" className={btnGhost}>+ Farm</a><a href="/portal?tab=event" className={btnGhost}>+ Event or seminar</a><a href="/portal?tab=good" className={btnGhost}>+ Market item</a></div>}
+                {!blocked && <div className="flex flex-wrap gap-2"><a href="/portal?tab=farm" className={btnGhost}>+ Farm</a><a href="/portal?tab=event" className={btnGhost}>+ Event or seminar</a><a href="/portal?tab=venue" className={btnGhost}>+ Venue / organizer</a><a href="/portal?tab=good" className={btnGhost}>+ Market item</a></div>}
               </div>
             ) : (
               <ul className="m-0 flex list-none flex-col divide-y divide-line rounded-2xl border border-line bg-cream p-0">
@@ -311,16 +312,16 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
           </>
         )}
 
-        {(tab === "farm" || tab === "event" || tab === "good") && !blocked && <ListingForm tab={tab} up={up} who={m} />}
+        {(tab === "farm" || tab === "event" || tab === "good" || tab === "venue") && !blocked && <ListingForm tab={tab} up={up} who={m} venues={venues} />}
 
-        {tab === "edit" && (editing && (editing.kind === "farm" || editing.kind === "event" || editing.kind === "good") && !blocked ? (
+        {tab === "edit" && (editing && (editing.kind === "farm" || editing.kind === "event" || editing.kind === "good" || editing.kind === "venue") && !blocked ? (
           <>
             <div className="flex flex-col gap-1">
               <a href="/portal" className="text-[13.5px] font-semibold text-wine">← My listings</a>
               <h2 className="m-0 font-serif text-[22px] font-semibold">Edit: {titleOf(editing)}</h2>
               <p className="m-0 text-[13.5px] text-ink-soft">{editing.status === "approved" ? "Your listing stays live as it is now. The changes go public after an admin checks them." : "Save it as a draft to finish later, or submit it for review."}</p>
             </div>
-            <ListingForm tab={editing.kind} up={up} who={m} l={editing} />
+            <ListingForm tab={editing.kind} up={up} who={m} l={editing} venues={venues} />
           </>
         ) : <Note tone="red">{blocked ? "Your account can’t edit listings right now." : "Listing not found."}</Note>)}
 

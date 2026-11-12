@@ -7,7 +7,7 @@ import { canSubmit, linkListing, memberFromRequest, ownsListing } from "@/lib/me
 import { badPhoto, photoFiles, savePhotos } from "@/lib/media";
 import { hasValidDoc } from "@/lib/docs";
 import { ARTICLE_TOPICS, EVENT_CATS, GOODS_CATS, NOTICE_KINDS, REEL_TOPICS, SUPPLIER_KINDS } from "@/lib/sample";
-import { AVAILABILITY } from "@/lib/db";
+import { AVAILABILITY, VENUE_ROLES } from "@/lib/db";
 import { AREAS } from "@/lib/locations";
 
 const validPlace = (p: string, c: string) => !!AREAS.find((a) => a.p === p)?.c.includes(c);
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
   // Farms, events and Market items need a signed-in Portal member.
   const member = isPublic || admin ? null : await memberFromRequest(req);
   if (admin) {
-    if (!["farm", "event", "good", "reel", "article", "notice", "supplier"].includes(kind)) return fail("Unknown listing type.");
+    if (!["farm", "event", "good", "reel", "article", "notice", "supplier", "venue"].includes(kind)) return fail("Unknown listing type.");
   } else if (isPublic) {
     if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail("Please enter your name and a valid email.");
     if (field(f, "confirm", 2) !== "1") return fail("Please tick the confirmation box.");
@@ -59,7 +59,7 @@ export async function POST(req: Request) {
   }
   // Verification links (Em, 2026-11-12): a Facebook page is required from every
   // submitter; farms give their farm page. Admin-only, except the farm page.
-  const vfb = member && kind !== "farm" ? member.facebook : admin ? toUrl(field(f, "vfb", 300)) || toUrl(field(f, "facebook", 300)) : toUrl(field(f, kind === "farm" ? "facebook" : "vfb", 300));
+  const vfb = member && kind !== "farm" && kind !== "venue" ? member.facebook : admin ? toUrl(field(f, "vfb", 300)) || toUrl(field(f, "facebook", 300)) : toUrl(field(f, kind === "farm" || kind === "venue" ? "facebook" : "vfb", 300));
   const vlink = member && !field(f, "vlink", 300) ? member.org_link : toUrl(field(f, "vlink", 300));
   if (!admin && !isFacebook(vfb)) return fail("Please add a Facebook page or profile link (facebook.com/…) so admins can verify you.");
   if (field(f, "vlink", 300) && !vlink) return fail("The organization link doesn’t look like a web address.");
@@ -80,6 +80,17 @@ export async function POST(req: Request) {
       facebook: field(f, "facebook", 200), messenger, about: field(f, "about", 2000), verified: false,
       bloodlines: f.getAll("line").map(String).slice(0, 12).map((n) => ({ name: n.slice(0, 40) })),
       docs: field(f, "docs", 10) === "yes", visit: field(f, "visit", 300), address: field(f, "address", 300),
+    };
+  } else if (kind === "venue") {
+    const name = field(f, "name", 120);
+    const roles = f.getAll("role").map(String).filter((r) => (VENUE_ROLES as readonly string[]).includes(r));
+    if (!name || !roles.length || !validPlace(province, city) || (!admin && !field(f, "phone", 40))) return fail("Name, Venue or Organizer, location and contact number are required.");
+    const messenger = toUrl(field(f, "messenger", 300));
+    if (messenger && !isMessenger(messenger)) return fail("The Messenger link should look like m.me/yourpage.");
+    data = {
+      name, roles, province, city, place: field(f, "place", 200), about: field(f, "about", 2000), phone: field(f, "phone", 40),
+      facebook: toUrl(field(f, "facebook", 300)), messenger, permits: field(f, "permits", 300), verified: false,
+      ...(admin ? { operator: field(f, "operator", 200) } : {}),
     };
   } else if (kind === "event") {
     const title = field(f, "title", 160), sub = field(f, "sub", 60), date = field(f, "date", 10), online = field(f, "online", 5) === "1";
@@ -146,7 +157,7 @@ export async function POST(req: Request) {
   }
 
   // Photos (only Portal listings): checked before saving anything.
-  const groups = kind === "farm" ? { profile: photoFiles(f, "profile", 1), cover: photoFiles(f, "cover", 1), gallery: photoFiles(f, "gallery", 6) }
+  const groups = kind === "venue" ? { profile: photoFiles(f, "profile", 1), cover: photoFiles(f, "cover", 1) } : kind === "farm" ? { profile: photoFiles(f, "profile", 1), cover: photoFiles(f, "cover", 1), gallery: photoFiles(f, "gallery", 6) }
     : kind === "event" ? { poster: photoFiles(f, "poster", 1) } : kind === "good" ? { photos: photoFiles(f, "photos", 3) } : {};
   const bad = badPhoto(Object.values(groups).flat());
   if (bad) return fail(bad);
@@ -158,7 +169,7 @@ export async function POST(req: Request) {
   if (old) {
     // Keep photos that weren't replaced, and fields only admins or quick actions change.
     const o = old.data as unknown as Record<string, unknown>;
-    const kept = Object.fromEntries(["profile", "cover", "gallery", "poster", "photos", "verified", "sellerVerified", "status", "renewed", "listedBy"].filter((k) => k in o && !(k in pics)).map((k) => [k, o[k]]));
+    const kept = Object.fromEntries(["profile", "cover", "gallery", "poster", "photos", "verified", "sellerVerified", "status", "renewed", "listedBy", ...(admin ? [] : ["operator"])].filter((k) => k in o && !(k in pics)).map((k) => [k, o[k]]));
     if (admin) {
       await adminEdit(old, { ...data, ...kept, ...pics, verifyFacebook: vfb, verifyLink: vlink }, admin);
       const wasDraft = old.reason === DRAFT;
@@ -170,7 +181,7 @@ export async function POST(req: Request) {
   }
   data = { ...data, ...pics, verifyFacebook: vfb, verifyLink: vlink };
   // An approved, unexpired business document means new farms and Market items start Business Verified.
-  if (member && (kind === "farm" || kind === "good") && (await hasValidDoc(member.id))) data = { ...data, [kind === "farm" ? "verified" : "sellerVerified"]: true };
+  if (member && (kind === "farm" || kind === "good" || kind === "venue") && (await hasValidDoc(member.id))) data = { ...data, [kind === "good" ? "sellerVerified" : "verified"]: true };
   if (admin) data = { ...data, listedBy: "admin" };
   const id = await submit(kind, data, by);
   if (admin && id && asDraft) {

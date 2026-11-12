@@ -1,4 +1,4 @@
-import type { ArticleData, EventData, FarmData, GoodData, Listing, NoticeData, ReelData, SupplierData } from "@/lib/db";
+import type { ArticleData, EventData, FarmData, GoodData, Listing, NoticeData, ReelData, SupplierData, VenueData } from "@/lib/db";
 import { availOf } from "@/lib/db";
 import { BizBadge, Chip, Photo, SampleTag } from "./ui";
 import { Pin, Play } from "./icons";
@@ -141,5 +141,19 @@ export function SupplierCard({ s }: { s: Listing<"supplier"> }) {
         <a href={`/report?target=${encodeURIComponent("Supplier: " + d.name)}`} className="self-start text-[12px] font-semibold text-muted">Report</a>
       </div>
     </article>
+  );
+}
+
+export function VenueCard({ v }: { v: Listing<"venue"> }) {
+  const d: VenueData = v.data;
+  return (
+    <a href={`/venues/${v.slug}`} className={cardCls}>
+      <div className="overflow-hidden"><Photo className="h-[130px]" label="Venue photo" src={d.cover ?? d.profile} /></div>
+      <div className="flex flex-col gap-1.5 p-3.5">
+        <div className="flex flex-wrap gap-1">{d.roles.map((r) => <Chip key={r} tone={r === "Venue" ? "red" : "gold"}>{r}</Chip>)}{d.verified && <BizBadge small />}</div>
+        <h3 className="m-0 text-[16px] font-bold leading-snug">{d.name}</h3>
+        <p className="m-0 flex items-center gap-1 text-[13px] text-muted"><Pin size={13} />{d.city}, {d.province}</p>
+      </div>
+    </a>
   );
 }

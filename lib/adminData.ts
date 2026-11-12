@@ -3,9 +3,9 @@ import { docCounts } from "./docs";
 import { audit, byStatus, counts, editIds, flagsOf, openReportTargets, queueStatus, stages, type Flag, type Listing, type QueueStatus } from "./db";
 
 // Queue types: events are split into derbies and seminars/training.
-export const TYPES = ["Farm", "Event", "Seminar/Training", "Market", "Supplier", "Reel", "Article", "Announcement"] as const;
+export const TYPES = ["Farm", "Event", "Seminar/Training", "Venue/Organizer", "Market", "Supplier", "Reel", "Article", "Announcement"] as const;
 export type QType = (typeof TYPES)[number];
-const KIND_TYPE = { farm: "Farm", good: "Market", supplier: "Supplier", reel: "Reel", article: "Article", notice: "Announcement", event: "Event" } as const;
+const KIND_TYPE = { farm: "Farm", good: "Market", supplier: "Supplier", reel: "Reel", article: "Article", notice: "Announcement", event: "Event", venue: "Venue/Organizer" } as const;
 export function typeOf(l: Listing): QType {
   if (l.kind === "event") return (l.data as { derby?: boolean }).derby ? "Event" : "Seminar/Training";
   return KIND_TYPE[l.kind];

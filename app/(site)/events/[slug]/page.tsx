@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ListedBy } from "@/components/ListedBy";
-import { approvedOne } from "@/lib/db";
+import { approved, approvedOne } from "@/lib/db";
+import { sameName } from "@/lib/content";
 import { derbyEnabled } from "@/lib/health";
 import { BizBadge, Chip, Note, Page, Photo, SampleTag } from "@/components/ui";
 import { CalendarIcon, Flag, Pin } from "@/components/icons";
@@ -18,6 +19,9 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
   if (!ev || (ev.data.derby && !derbyEnabled())) notFound();
   const d = ev.data;
   const status = d.status ?? "Upcoming";
+  const profiles = await approved("venue");
+  const venueP = profiles.find((p) => p.data.roles.includes("Venue") && sameName(d.venue, p.data.name));
+  const orgP = profiles.find((p) => p.data.roles.includes("Organizer") && sameName(d.org, p.data.name));
   // Permit numbers and documents stay private; the public only sees whether they were checked.
   const permit = d.derby ? "Cockpit license and LGU event permit verified by admin" : d.permits ? "Permits reviewed by admin" : "Organizer's proof of legitimacy reviewed by admin";
   const facts: [string, string][] = [
@@ -37,7 +41,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
         </div>
         <h1 className="m-0 font-serif text-[28px] font-semibold leading-tight md:text-[38px]">{d.title}</h1>
         <p className="m-0 flex items-center gap-1.5 text-[14px] text-ink-soft"><CalendarIcon size={16} /> {d.longDate} · {d.time}</p>
-        <p className="m-0 flex items-center gap-1.5 text-[14px] text-ink-soft"><Pin size={16} /> {d.venue}</p>
+        <p className="m-0 flex items-center gap-1.5 text-[14px] text-ink-soft"><Pin size={16} /> {venueP ? <a href={`/venues/${venueP.slug}`} className="font-semibold text-wine">{d.venue}</a> : d.venue}</p>
       </div>
       {(status === "Cancelled" || status === "Postponed") && <Note tone="red">This event is <strong>{status.toLowerCase()}</strong>. Check with the organizer for updates.</Note>}
       {ev.isSample && <Note tone="red">This is a sample event to show how the site looks. It is not a real event.</Note>}
@@ -55,7 +59,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
         <aside className="flex flex-col gap-3">
           <div className="flex flex-col gap-2 rounded-2xl border border-line bg-cream p-4">
             <h2 className="m-0 text-[16px] font-bold">About the Organizer</h2>
-            <span className="text-[15px] font-semibold">{d.org}</span>
+            {orgP ? <a href={`/venues/${orgP.slug}`} className="text-[15px] font-semibold text-wine">{d.org} ›</a> : <span className="text-[15px] font-semibold">{d.org}</span>}
             <BizBadge small />
             <span className="text-[12px] text-muted">An admin reviewed this organizer's business registration or proof of legitimacy. This is not a guarantee of the event or any transaction.</span>
           </div>

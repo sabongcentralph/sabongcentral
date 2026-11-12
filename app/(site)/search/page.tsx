@@ -1,22 +1,22 @@
 import type { Metadata } from "next";
 import { approved } from "@/lib/db";
 import { matches, one, publicEvents, type Search } from "@/lib/content";
-import { ArticleCard, EventCard, FarmCard, GoodCard, NoticeCard, ReelCard, SupplierCard } from "@/components/cards";
+import { ArticleCard, EventCard, FarmCard, GoodCard, NoticeCard, ReelCard, SupplierCard, VenueCard } from "@/components/cards";
 import { LocationFields } from "@/components/LocationFields";
 import { Empty, Page, PageHead, SectionHead, input, labelCls } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Search" };
 
-const TYPES = ["Farms", "Events", "Seminars & Training", "Market", "Suppliers", "Articles", "Reels", "Notices"];
+const TYPES = ["Farms", "Events", "Venues & Organizers", "Seminars & Training", "Market", "Suppliers", "Articles", "Reels", "Notices"];
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams;
   const q = one(sp.q), province = one(sp.province), city = one(sp.city), type = one(sp.type), topic = one(sp.topic);
   const want = (t: string) => !type || type === t;
   const at = (p: string, c: string) => (!province || p === province) && (!city || c === city);
-  const [farms, events, goods, reels, articles, suppliers, notices] = await Promise.all([
-    approved("farm"), publicEvents(), approved("good"), approved("reel"), approved("article"), approved("supplier"), approved("notice"),
+  const [farms, events, goods, reels, articles, suppliers, notices, venues] = await Promise.all([
+    approved("farm"), publicEvents(), approved("good"), approved("reel"), approved("article"), approved("supplier"), approved("notice"), approved("venue"),
   ]);
   const tq = (t: string) => !topic || t.toLowerCase().includes(topic.toLowerCase());
   const f = !want("Farms") ? [] : farms.filter((x) => at(x.data.province, x.data.city) && matches(`${x.data.name} ${x.data.city} ${x.data.bloodlines.map((b) => b.name).join(" ")}`, q));
@@ -28,7 +28,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const a = province || city || !want("Articles") ? [] : articles.filter((x) => matches(`${x.data.title} ${x.data.topic} ${x.data.body.join(" ")}`, q) && tq(x.data.topic));
   const n = province || city || !want("Notices") ? [] : notices.filter((x) => matches(`${x.data.title} ${x.data.text} ${x.data.kind}`, q) && tq(x.data.kind));
   const s = !want("Suppliers") ? [] : suppliers.filter((x) => (!province || x.data.place.endsWith(province)) && (!city || x.data.place.startsWith(city)) && matches(`${x.data.name} ${x.data.about}`, q));
-  const total = f.length + e.length + sem.length + g.length + r.length + a.length + s.length + n.length;
+  const vn = !want("Venues & Organizers") ? [] : venues.filter((x) => at(x.data.province, x.data.city) && matches(`${x.data.name} ${x.data.city} ${x.data.province} ${x.data.roles.join(" ")}`, q));
+  const total = vn.length + f.length + e.length + sem.length + g.length + r.length + a.length + s.length + n.length;
   const place = [city, province].filter(Boolean).join(", ");
 
   return (
@@ -55,6 +56,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       )}
       {f.length > 0 && <section className="flex flex-col gap-3"><SectionHead title={`Farms (${f.length})`} href="/farms" /><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{f.slice(0, 6).map((x) => <FarmCard key={x.id} f={x} />)}</div></section>}
       {e.length > 0 && <section className="flex flex-col gap-3"><SectionHead title={`Events (${e.length})`} href="/events" /><div className="grid gap-3 md:grid-cols-2">{e.slice(0, 6).map((x) => <EventCard key={x.id} e={x} />)}</div></section>}
+      {vn.length > 0 && <section className="flex flex-col gap-3"><SectionHead title={`Venues & Organizers (${vn.length})`} href="/venues" /><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{vn.slice(0, 6).map((x) => <VenueCard key={x.id} v={x} />)}</div></section>}
       {sem.length > 0 && <section className="flex flex-col gap-3"><SectionHead title={`Seminars & Training (${sem.length})`} href="/education" /><div className="grid gap-3 md:grid-cols-2">{sem.slice(0, 6).map((x) => <EventCard key={x.id} e={x} />)}</div></section>}
       {g.length > 0 && <section className="flex flex-col gap-3"><SectionHead title={`Market (${g.length})`} href="/market" /><div className="grid grid-cols-2 gap-3 md:grid-cols-4">{g.slice(0, 8).map((x) => <GoodCard key={x.id} g={x} />)}</div></section>}
       {s.length > 0 && <section className="flex flex-col gap-3"><SectionHead title={`Suppliers (${s.length})`} href="/suppliers" /><div className="grid gap-3 md:grid-cols-2">{s.map((x) => <SupplierCard key={x.id} s={x} />)}</div></section>}

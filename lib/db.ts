@@ -4,7 +4,7 @@ import { ARTICLES, EVENTS, FARMS, GOODS, NOTICES, REELS, SUPPLIERS, type Bloodli
 // Everything people can see on the site is a "listing": farms, events, goods,
 // reels, articles, community notices and suppliers. Nothing is public until an
 // admin approves it (status = 'approved').
-export const KINDS = ["farm", "event", "good", "reel", "article", "notice", "supplier"] as const;
+export const KINDS = ["farm", "event", "good", "reel", "article", "notice", "supplier", "venue"] as const;
 export type Kind = (typeof KINDS)[number];
 export type Status = "pending" | "approved" | "rejected" | "hidden";
 
@@ -42,9 +42,17 @@ export type NoticeData = {
   issuer?: string; scope?: string; url?: string; expires?: string;
 };
 export type SupplierData = { kind: string; name: string; place: string; about: string; phone: string };
+// Venues & Organizers (Em, 2026-11-12): cockpit arenas and event organizers; one profile can be both.
+export const VENUE_ROLES = ["Venue", "Organizer"] as const;
+export type VenueData = {
+  name: string; roles: string[]; province: string; city: string; place: string; about: string;
+  phone: string; facebook: string; messenger?: string; permits: string; verified: boolean;
+  operator?: string; // private, admin only
+  profile?: string; cover?: string;
+};
 
 type DataOf = {
-  farm: FarmData; event: EventData; good: GoodData; reel: ReelData; article: ArticleData; notice: NoticeData; supplier: SupplierData;
+  farm: FarmData; event: EventData; good: GoodData; reel: ReelData; article: ArticleData; notice: NoticeData; supplier: SupplierData; venue: VenueData;
 };
 
 export type Listing<K extends Kind = Kind> = {
@@ -422,7 +430,7 @@ export async function logAction(admin: string, action: string, target: string, r
 export async function setVerified(id: number, on: boolean, admin: string) {
   const l = await byId(id);
   if (!l) return;
-  const key = l.kind === "good" ? "sellerVerified" : l.kind === "farm" ? "verified" : null;
+  const key = l.kind === "good" ? "sellerVerified" : l.kind === "farm" || l.kind === "venue" ? "verified" : null;
   if (!key) return;
   const data = { ...(l.data as object), [key]: on };
   await db().batch([

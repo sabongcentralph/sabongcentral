@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/adminGuard";
 import { one, type Search } from "@/lib/content";
-import { byId, titleOf } from "@/lib/db";
+import { approved, byId, titleOf } from "@/lib/db";
 import { uploadsOn } from "@/lib/media";
 import { ListingForm } from "@/components/ListingForm";
 import { Note, Page } from "@/components/ui";
@@ -9,7 +9,7 @@ import { Note, Page } from "@/components/ui";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Add listing" };
 
-const TABS = [["event", "Derby or event"], ["farm", "Gamefarm"], ["good", "Market item"], ["reel", "Reel"], ["article", "Article"], ["notice", "Notice or advisory"], ["supplier", "Supplier"]] as const;
+const TABS = [["event", "Derby or event"], ["venue", "Venue or organizer"], ["farm", "Gamefarm"], ["good", "Market item"], ["reel", "Reel"], ["article", "Article"], ["notice", "Notice or advisory"], ["supplier", "Supplier"]] as const;
 type T = (typeof TABS)[number][0];
 const ME = { name: "", phone: "", facebook: "" };
 
@@ -20,6 +20,7 @@ export default async function AdminAdd({ searchParams }: { searchParams: Promise
   const tab = (editing?.kind ?? TABS.find(([k]) => k === one(sp.tab))?.[0] ?? "event") as T;
   const up = await uploadsOn();
   const error = one(sp.error);
+  const venues = tab === "event" ? (await approved("venue")).map((v) => ({ name: v.data.name, roles: v.data.roles })) : [];
   return (
     <Page>
       <div className="flex flex-col gap-1">
@@ -41,7 +42,7 @@ export default async function AdminAdd({ searchParams }: { searchParams: Promise
         </div>
       )}
       {editing && !TABS.some(([k]) => k === editing.kind) ? <Note tone="red">This kind of listing can’t be edited here.</Note>
-        : <ListingForm tab={tab} up={up} who={ME} l={editing ?? undefined} admin />}
+        : <ListingForm tab={tab} up={up} who={ME} l={editing ?? undefined} admin venues={venues} />}
     </Page>
   );
 }
