@@ -30,7 +30,9 @@ export default async function FarmPage({ params, searchParams }: { params: Promi
   const others = farms.filter((f) => f.id !== farm.id && score(f) > 0).sort((a, b) => score(b) - score(a)).slice(0, 3);
   const myReels = reels.filter((r) => r.data.farmSlug === slug || r.data.farm === d.name);
   const myNotices = notices.filter((n) => n.data.title.startsWith(d.name));
-  const msg = d.facebook ? messengerHref(d.facebook) : null;
+  // Message → the farm's Messenger link; if they gave none, Messenger for their Facebook page.
+  const msg = (d.messenger && messengerHref(d.messenger)) || (d.facebook ? messengerHref(d.facebook) : null);
+  const fbPage = d.facebook && /(^|\.|\/)(facebook\.com|fb\.com)/.test(d.facebook) ? (d.facebook.startsWith("http") ? d.facebook : `https://${d.facebook}`) : null;
 
   return (
     <Page>
@@ -50,7 +52,7 @@ export default async function FarmPage({ params, searchParams }: { params: Promi
           {msg && <a href={msg} target="_blank" rel="noopener noreferrer" className={`${btnPrimary} gap-2`}><Chat size={17} /> Message</a>}
           {d.phone && <a href={telHref(d.phone)} className={`${btnGhost} gap-2`}><Phone size={16} /> {d.phone}</a>}
           {d.phone && <a href={smsHref(d.phone)} className={`${btnGhost} gap-2`}><Chat size={16} /> Text</a>}
-          {!msg && d.facebook && /facebook\.com|fb\.com/.test(d.facebook) && <a href={d.facebook.startsWith("http") ? d.facebook : `https://${d.facebook}`} target="_blank" rel="noopener noreferrer" className={`${btnGhost} gap-2`}>Facebook page ↗</a>}
+          {fbPage && <a href={fbPage} target="_blank" rel="noopener noreferrer" className={`${btnGhost} gap-2`}>Facebook page ↗</a>}
         </div>
       </div>
 

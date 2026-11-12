@@ -2,7 +2,7 @@ import { DRAFT, adminEdit, byId, makeDraft, memberEdit, review, submit, type Kin
 import { adminFromRequest, sameOrigin } from "@/lib/auth";
 import { back, field, isBot } from "@/lib/forms";
 import { toEmbed } from "@/lib/embed";
-import { isFacebook, toUrl } from "@/lib/links";
+import { isFacebook, isMessenger, toUrl } from "@/lib/links";
 import { canSubmit, linkListing, memberFromRequest, ownsListing } from "@/lib/members";
 import { badPhoto, photoFiles, savePhotos } from "@/lib/media";
 import { hasValidDoc } from "@/lib/docs";
@@ -73,9 +73,11 @@ export async function POST(req: Request) {
   if (kind === "farm") {
     const name = field(f, "name", 120);
     if (!name || !validPlace(province, city) || (!admin && !field(f, "phone", 40))) return fail("Farm name, location and contact number are required.");
+    const messenger = toUrl(field(f, "messenger", 300));
+    if (messenger && !isMessenger(messenger)) return fail("The Messenger link should look like m.me/yourfarm (copy it from your page’s Messenger).");
     data = {
       name, province, city, est: field(f, "est", 4), ownerName: field(f, "ownerName", 120), phone: field(f, "phone", 40),
-      facebook: field(f, "facebook", 200), about: field(f, "about", 2000), verified: false,
+      facebook: field(f, "facebook", 200), messenger, about: field(f, "about", 2000), verified: false,
       bloodlines: f.getAll("line").map(String).slice(0, 12).map((n) => ({ name: n.slice(0, 40) })),
       docs: field(f, "docs", 10) === "yes", visit: field(f, "visit", 300), address: field(f, "address", 300),
     };
