@@ -5,7 +5,7 @@ import { Pin, Play } from "./icons";
 
 const cardCls = "card flex flex-col overflow-hidden rounded-2xl border border-line bg-cream text-ink no-underline";
 
-export function FarmCard({ f, compact = false }: { f: Listing<"farm">; compact?: boolean }) {
+export function FarmCard({ f, compact = false, tag }: { f: Listing<"farm">; compact?: boolean; tag?: string }) {
   const d: FarmData = f.data;
   return (
     <a href={`/farms/${f.slug}`} className={`${cardCls} ${compact ? "w-[220px] flex-none snap-start md:w-auto" : ""}`}>
@@ -15,6 +15,7 @@ export function FarmCard({ f, compact = false }: { f: Listing<"farm">; compact?:
           <h3 className="m-0 flex-1 text-[16px] font-bold leading-snug">{d.name}</h3>
           {f.isSample && <SampleTag />}
         </div>
+        {tag && <span className={`w-fit rounded-md px-1.5 py-0.5 text-[10.5px] font-extrabold tracking-[1px] ${tag === "Sponsored" ? "bg-[#e2b43a] text-[#3a0a0a]" : "bg-blush text-wine"}`}>{tag.toUpperCase()}</span>}
         {d.verified && <BizBadge small />}
         <p className="m-0 flex items-center gap-1 text-[13px] text-muted"><Pin size={13} />{d.city}, {d.province}</p>
         <div className="flex flex-wrap gap-1">

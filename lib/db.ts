@@ -14,6 +14,7 @@ export type FarmData = {
   visit?: string; address?: string; // address is private: never shown publicly
   profile?: string; cover?: string; gallery?: string[]; // /media/p/... photo paths
   featured?: boolean; spotlight?: boolean; // set by admin: home page "Featured Gamefarms" and "Farm Spotlight"
+  featuredRank?: number; sponsored?: boolean; promoUntil?: string; // Placements: slot order, paid label, end date (YYYY-MM-DD)
 };
 export type EventData = {
   title: string; cat: string; sub: string; group: string; derby: boolean; date: string; days: string; longDate: string;
@@ -548,7 +549,7 @@ export async function decideEdit(id: number, approve: boolean, admin: string, re
   if (!l || !e) return;
   const d = db();
   // Admin-controlled fields always come from the live listing.
-  const keep = Object.fromEntries(["verified", "sellerVerified", "featured", "spotlight"].filter((k) => k in (l.data as object)).map((k) => [k, (l.data as Record<string, unknown>)[k]]));
+  const keep = Object.fromEntries(["verified", "sellerVerified", "featured", "spotlight", "featuredRank", "sponsored", "promoUntil"].filter((k) => k in (l.data as object)).map((k) => [k, (l.data as Record<string, unknown>)[k]]));
   await d.batch([
     ...(approve ? [d.prepare(`update listings set data = ?, reason = null, updated_at = datetime('now') where id = ?`).bind(JSON.stringify({ ...e.data, ...keep }), id)] : []),
     ...(!approve && reason ? [d.prepare(`update listings set reason = ? where id = ?`).bind(reason, id)] : []),

@@ -1,3 +1,4 @@
+import { placementLabel, spotlightOf, withFeaturedFirst } from "@/lib/placements";
 import { getLang } from "@/lib/i18n";
 import { approved } from "@/lib/db";
 import { publicEvents } from "@/lib/content";
@@ -21,8 +22,8 @@ export default async function Home() {
     approved("farm"), publicEvents(), approved("good"), approved("reel"), approved("article"), approved("notice"),
   ]);
   // Admin picks first: the Spotlight farm, then Featured farms; otherwise verified, then newest.
-  const spot = farms.find((f) => f.data.spotlight) ?? farms.find((f) => f.data.featured) ?? farms.find((f) => f.data.verified) ?? farms[0];
-  const featured = [...farms.filter((f) => f.data.featured), ...farms.filter((f) => !f.data.featured)];
+  const spot = spotlightOf(farms);
+  const featured = withFeaturedFirst(farms);
 
   const derbies = events.filter((e) => e.data.derby);
   const classes = events.filter((e) => !e.data.derby);
@@ -69,7 +70,7 @@ export default async function Home() {
             <a href={`/farms/${spot.slug}`} className="card overflow-hidden rounded-2xl border-2 border-gold bg-cream text-ink no-underline md:flex">
               <div className="relative overflow-hidden md:w-1/2">
                 <Photo className="h-[170px] md:h-full md:min-h-[220px]" label="Farm photo" src={spot.data.cover ?? spot.data.gallery?.[0] ?? spot.data.profile} />
-                <span className="absolute left-3 top-3 rounded-md bg-[#e2b43a] px-2 py-1 text-[11px] font-extrabold tracking-[1.2px] text-[#3a0a0a]">FEATURED THIS WEEK</span>
+                <span className="absolute left-3 top-3 rounded-md bg-[#e2b43a] px-2 py-1 text-[11px] font-extrabold tracking-[1.2px] text-[#3a0a0a]">{spot.data.sponsored ? "SPONSORED" : "FEATURED THIS WEEK"}</span>
               </div>
               <div className="flex flex-col gap-2 p-4 md:p-6">
                 <div className="flex items-center gap-2"><h3 className="m-0 flex-1 font-serif text-[22px] font-semibold">{spot.data.name}</h3>{spot.isSample && <SampleTag />}</div>
@@ -77,7 +78,7 @@ export default async function Home() {
                 <span className="text-[13px] text-ink-soft">📍 {spot.data.city}, {spot.data.province}{spot.data.est ? ` · Est. ${spot.data.est}` : ""}</span>
                 <p className="m-0 text-[14px] leading-relaxed text-ink-soft">{spot.data.about}</p>
                 <div className="flex flex-wrap gap-1">{spot.data.bloodlines.map((b) => <Chip key={b.name}>{b.name}</Chip>)}</div>
-                <span className="text-[11px] text-muted">Featured for free. Paid features will be labeled &quot;Sponsored&quot;.</span>
+                <span className="text-[11px] text-muted">{spot.data.sponsored ? "Sponsored placement. Sabong Central does not endorse any farm or sale." : <>Featured for free. Paid features will be labeled &quot;Sponsored&quot;.</>}</span>
               </div>
             </a>
           </section>
@@ -85,7 +86,7 @@ export default async function Home() {
 
         <section className="flex flex-col gap-3">
           <SectionHead title="Featured Gamefarms" href="/farms" />
-          <Row>{featured.slice(0, 4).map((f) => <FarmCard key={f.id} f={f} compact />)}</Row>
+          <Row>{featured.slice(0, 4).map((f) => <FarmCard key={f.id} f={f} compact tag={f.data.featured ? placementLabel(f) : undefined} />)}</Row>
         </section>
 
         <section className="flex flex-col gap-3">
