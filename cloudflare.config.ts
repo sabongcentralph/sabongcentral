@@ -17,8 +17,9 @@ export default defineConfig({
       // "sabongcentral-db". Bound by its id so deploys match the dashboard
       // settings (a name-only binding makes `cf deploy` stop with a conflict).
       DB: bindings.d1({ id: "3a9f50a6-70e3-436c-968c-8a28edfa0e1f" }),
-      // Photos (R2 bucket "sabongcentral-photos", binding PHOTOS) are added in
-      // Phase 2 with photo upload. R2 must be enabled in the dashboard first.
+      // Photos: R2 bucket "sabongcentral-photos". Only /media/p/... paths are
+      // stored in D1; photos are shrunk in the browser to ~300 KB first.
+      PHOTOS: bindings.r2({ name: "sabongcentral-photos" }),
       // Derby listings: ON (Em, 2026-11-11). Each derby still needs verified permits.
       // Set to "false" to hide every derby listing at once.
       DERBY_ENABLED: bindings.text("true"),
