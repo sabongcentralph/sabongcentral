@@ -1,13 +1,16 @@
-import { isPlaced, placementLabel, spotlightOf, withFeaturedFirst } from "@/lib/placements";
+import { buildFeed } from "@/lib/feed";
 import { getLang } from "@/lib/i18n";
 import { approved } from "@/lib/db";
 import { publicEvents } from "@/lib/content";
-import { ArticleCard, EventCard, FarmCard, GoodCard, NoticeCard, ReelCard } from "@/components/cards";
-import { BizBadge, Chip, Photo, Row, SampleTag, SectionHead, btnPrimary } from "@/components/ui";
+import { FeedPost } from "@/components/FeedPost";
+import { FeedMore } from "@/components/FeedMore";
+import { btnPrimary } from "@/components/ui";
 import { LocationFields } from "@/components/LocationFields";
 import { Pin } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
+
+const FIRST_POSTS = 12;
 
 const TX = {
   tl: { kicker: "WELCOME!", title: "Your Hub for Gamefarms, Events, Supplies, and Education", ph: "Search farms, events, market, articles…" },
@@ -21,12 +24,8 @@ export default async function Home() {
   const [farms, events, goods, reels, articles, notices] = await Promise.all([
     approved("farm"), publicEvents(), approved("good"), approved("reel"), approved("article"), approved("notice"),
   ]);
-  // Admin picks first: the Spotlight farm, then Featured farms; otherwise verified, then newest.
-  const spot = spotlightOf(farms);
-  const featured = withFeaturedFirst(farms);
-
-  const derbies = events.filter((e) => e.data.derby);
-  const classes = events.filter((e) => !e.data.derby);
+  // One mixed feed, newest first; Sponsored / Featured placements lead, then one every few posts.
+  const feed = buildFeed({ farms, events, goods, reels, articles, notices });
 
   return (
     <main className="flex flex-col">
@@ -47,7 +46,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-8 px-4 pb-10 pt-6 md:px-6">
+      <div className="mx-auto flex w-full max-w-[680px] flex-col gap-6 px-4 pb-10 pt-6 md:px-6">
         <section className="flex flex-col gap-3 rounded-2xl border border-line bg-cream p-4">
           <h2 className="m-0 flex items-center gap-2 font-serif text-[21px] font-semibold"><Pin size={18} className="text-crimson" /> Near you</h2>
           <p className="m-0 text-[13px] text-muted">Pick a province and city to see farms, events, market listings and suppliers in your area.</p>
@@ -57,64 +56,15 @@ export default async function Home() {
           </form>
         </section>
 
-        <section className="flex flex-col gap-3">
-          <SectionHead title="Upcoming Derbies" href="/events" live />
-          {derbies.length ? <Row>{derbies.slice(0, 4).map((e) => <EventCard key={e.id} e={e} compact />)}</Row> : <p className="m-0 text-[14px] text-muted">No derbies scheduled yet.</p>}
-        </section>
-
-        <section className="flex flex-col gap-3">
-          <SectionHead title="Seminars, Training & Expos" href="/education" />
-          <Row>{classes.slice(0, 4).map((e) => <EventCard key={e.id} e={e} compact />)}</Row>
-        </section>
-
-        {spot && (
-          <section className="flex flex-col gap-3">
-            <SectionHead title="Farm Spotlight" />
-            <a href={`/farms/${spot.slug}`} className="card overflow-hidden rounded-2xl border-2 border-gold bg-cream text-ink no-underline md:flex">
-              <div className="relative overflow-hidden md:w-1/2">
-                <Photo className="h-[170px] md:h-full md:min-h-[220px]" label="Farm photo" src={spot.data.cover ?? spot.data.gallery?.[0] ?? spot.data.profile} />
-                <span className="absolute left-3 top-3 rounded-md bg-crimson px-2 py-1 text-[11px] font-extrabold tracking-[1.2px] text-white">{spot.data.sponsored ? "SPONSORED" : "FEATURED THIS WEEK"}</span>
-              </div>
-              <div className="flex flex-col gap-2 p-4 md:p-6">
-                <div className="flex items-center gap-2"><h3 className="m-0 flex-1 font-serif text-[22px] font-semibold">{spot.data.name}</h3>{spot.isSample && <SampleTag />}</div>
-                {spot.data.verified && <BizBadge />}
-                <span className="text-[13px] text-ink-soft">📍 {spot.data.city}, {spot.data.province}{spot.data.est ? ` · Est. ${spot.data.est}` : ""}</span>
-                <p className="m-0 text-[14px] leading-relaxed text-ink-soft">{spot.data.about}</p>
-                <div className="flex flex-wrap gap-1">{spot.data.bloodlines.map((b) => <Chip key={b.name}>{b.name}</Chip>)}</div>
-                <span className="text-[11px] text-muted">{spot.data.sponsored ? "Sponsored placement. Sabong Central does not endorse any farm or sale." : <>Featured for free. Paid features will be labeled &quot;Sponsored&quot;.</>}</span>
-              </div>
-            </a>
-          </section>
-        )}
-
-        <section className="flex flex-col gap-3">
-          <SectionHead title="Featured Gamefarms" href="/farms" />
-          <Row>{featured.slice(0, 4).map((f) => <FarmCard key={f.id} f={f} compact tag={f.data.featured ? placementLabel(f) : undefined} />)}</Row>
-        </section>
-
-        <section className="flex flex-col gap-3">
-          <SectionHead title="Educational Reels" href="/reels" />
-          <Row cols={6}>{reels.slice(0, 6).map((r) => <ReelCard key={r.id} r={r} compact />)}</Row>
-        </section>
-
-        <section className="flex flex-col gap-3">
-          <SectionHead title="Latest in the Market" href="/market" />
-          <Row>{withFeaturedFirst(goods).slice(0, 4).map((g) => <GoodCard key={g.id} g={g} compact tag={isPlaced(g) ? placementLabel(g) : undefined} />)}</Row>
-        </section>
-
-        <section className="flex flex-col gap-3">
-          <SectionHead title="Learning Hub · Latest Articles" href="/learn" />
-          <div className="grid gap-3 md:grid-cols-2">{articles.slice(0, 4).map((a) => <ArticleCard key={a.id} a={a} />)}</div>
-        </section>
-
-        <section className="flex flex-col gap-3">
-          <SectionHead title="Advisories & Community Notices" href="/notices" />
-          <div className="grid gap-3 md:grid-cols-3">{notices.slice(0, 3).map((n) => <NoticeCard key={n.id} n={n} />)}</div>
+        <section id="feed" aria-label="Latest posts" className="flex flex-col gap-4">
+          {feed.length ? feed.map((item, i) => <FeedPost key={item.l.id} item={item} later={i >= FIRST_POSTS} />)
+            : <p className="m-0 rounded-2xl border border-dashed border-sand p-8 text-center text-muted">No posts yet. Approved farms, derbies, market items and articles will show here.</p>}
+          {feed.length > FIRST_POSTS && <FeedMore />}
         </section>
 
         <section aria-labelledby="how" className="flex flex-col gap-3">
           <h2 id="how" className="m-0 font-serif text-[22px] font-semibold">How it works</h2>
-          <ol className="m-0 grid list-none gap-3 p-0 md:grid-cols-3">
+          <ol className="m-0 grid list-none gap-3 p-0">
             {[
               ["1", "Submit", "Farms, organizers and sellers use their Portal account. Anyone can send an article, reel or announcement through the public form."],
               ["2", "Admin review", "An admin checks every listing and, where needed, business registration or permits. Nothing goes public automatically."],
