@@ -6,6 +6,7 @@ import { one, type Search } from "@/lib/content";
 import { toEmbed } from "@/lib/embed";
 import { STATUS_LABEL, memberByListing } from "@/lib/members";
 import { PosterThumb } from "@/components/admin/PosterThumb";
+import { ConfirmButton } from "@/components/ConfirmButton";
 import { Chip, Note, Page, btnGhost, btnPrimary, input, labelCls, statusTone } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
@@ -48,7 +49,7 @@ export default async function ReviewItem({ params, searchParams }: { params: Pro
   const sp = await searchParams;
   const done = one(sp.done), err = one(sp.error);
   const [c, st, notes, history, reps, targets] = await Promise.all([counts(), stages(), notesFor(l.id), historyFor(l), reportsAbout(l), openReportTargets()]);
-  const qs = queueStatus(l.status, st.get(l.id));
+  const qs = queueStatus(l.status, st.get(l.id), l.reason);
   const flags = flagsOf(l, targets);
   const data = l.data as unknown as Record<string, unknown>;
   const member = await memberByListing(l.id);
@@ -67,10 +68,11 @@ export default async function ReviewItem({ params, searchParams }: { params: Pro
   return (
     <Page>
       <a href="/admin/queue" className="text-[14px] font-semibold text-wine">← Review queue</a>
-      {done && <Note tone="green">Done: <strong>{done.replace("_", " + ")}</strong>. Recorded in the activity log.</Note>}
+      {qs === "Draft" && <Note>This is a draft. It isn’t public and isn’t in the review queue until you publish it.</Note>}
+      {done === "draft_saved" ? <Note tone="green">Draft saved. It stays private until you publish it.</Note> : done && <Note tone="green">Done: <strong>{done.replace("_", " + ")}</strong>. Recorded in the activity log.</Note>}
       {err === "reason" && <Note tone="red">A reason is required to reject or request changes. The submitter will see it.</Note>}
       <div className="flex flex-wrap items-center gap-2">
-        <Chip tone="plain">{l.kind}</Chip><Chip tone={statusTone(l.status)}>{qs}</Chip>{flags.map((f) => <Chip key={f} tone="red">{f}</Chip>)}{l.isSample && <Chip tone="plain">sample</Chip>}
+        <Chip tone="plain">{l.kind}</Chip><Chip tone={qs === "Draft" ? "gold" : statusTone(l.status)}>{qs}</Chip>{flags.map((f) => <Chip key={f} tone="red">{f}</Chip>)}{l.isSample && <Chip tone="plain">sample</Chip>}
       </div>
       <h1 className="m-0 font-serif text-[28px] font-semibold leading-tight">{titleOf(l)}</h1>
       {member && <a href={`/admin/members/${member.id}`} className="w-fit rounded-full border border-line bg-cream px-3 py-1.5 text-[13px] font-semibold text-ink no-underline">Member: {member.name || member.email} · {STATUS_LABEL[member.status]} ›</a>}
@@ -107,7 +109,11 @@ export default async function ReviewItem({ params, searchParams }: { params: Pro
       )}
       {(
         <div className="flex flex-wrap items-start gap-3 rounded-2xl border border-line bg-cream p-4">
-          {<a href={`/admin/add?edit=${l.id}`} className={btnGhost}>Edit listing</a>}
+          {qs === "Draft" && <form action="/api/admin/action" method="post"><input type="hidden" name="id" value={l.id} />{act("approve", "Publish now", btnPrimary)}</form>}
+          {<a href={`/admin/add?edit=${l.id}`} className={btnGhost}>{qs === "Draft" ? "Edit draft" : "Edit listing"}</a>}
+          <form action="/api/admin/action" method="post"><input type="hidden" name="id" value={l.id} />
+            <ConfirmButton name="action" value="delete" label="Delete" question={`Delete “${titleOf(l)}” for good? This can’t be undone.`} className={`${btnGhost} text-wine`} />
+          </form>
           {data.listedBy === "admin" && (
             <form action="/api/admin/action" method="post" className="flex min-w-[260px] flex-1 flex-wrap items-end gap-2">
               <input type="hidden" name="id" value={l.id} />

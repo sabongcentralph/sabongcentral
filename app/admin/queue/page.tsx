@@ -3,13 +3,13 @@ import { requireAdmin } from "@/lib/adminGuard";
 import { QUEUE, titleOf, type Listing, type QueueStatus } from "@/lib/db";
 import { TYPES, queueRows } from "@/lib/adminData";
 import { one, type Search } from "@/lib/content";
-import { Chip, Empty, Page, btnGhost, input, labelCls } from "@/components/ui";
+import { Chip, Empty, Note, Page, btnGhost, input, labelCls } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Review queue" };
 
 const RISKS = ["Permit needed", "Report received", "Possible prohibited content"] as const;
-const tone = (q: QueueStatus) => (q === "Approved" ? "green" : q === "Rejected" || q === "Hidden" ? "red" : q === "Needs Changes" || q === "In Review" ? "gold" : "plain") as "green" | "red" | "gold" | "plain";
+const tone = (q: QueueStatus) => (q === "Approved" ? "green" : q === "Rejected" || q === "Hidden" ? "red" : q === "Needs Changes" || q === "In Review" || q === "Draft" ? "gold" : "plain") as "green" | "red" | "gold" | "plain";
 
 export default async function AdminHome({ searchParams }: { searchParams: Promise<Search> }) {
   await requireAdmin();
@@ -34,11 +34,12 @@ export default async function AdminHome({ searchParams }: { searchParams: Promis
     <Page>
       <section className="flex flex-col gap-3">
         <h1 className="m-0 font-serif text-[26px] font-semibold">Review queue{type ? `: ${type}` : ""}</h1>
+        {one(sp.deleted) && <Note tone="green">Deleted “{one(sp.deleted)}”. It’s gone from the site; the activity log keeps a record.</Note>}
         <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 md:mx-0 md:px-0">
           {["New", "Edits", ...QUEUE.slice(1), "All"].map((s) => (
             <a key={s} href={link({ q: s })} aria-current={s === q ? "page" : undefined}
               className={`flex min-h-9 flex-none items-center gap-1.5 rounded-full px-3.5 text-[13px] font-semibold no-underline ${s === q ? "bg-crimson text-white" : "border border-line bg-cream text-ink-soft"}`}>
-              {s === "Edits" ? "Edits waiting" : s}{s !== "All" && <span className="opacity-70">{tally(s)}</span>}
+              {s === "Edits" ? "Edits waiting" : s === "Draft" ? "Drafts" : s}{s !== "All" && <span className="opacity-70">{tally(s)}</span>}
             </a>
           ))}
         </div>

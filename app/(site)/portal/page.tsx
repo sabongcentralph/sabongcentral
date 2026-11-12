@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { one, type Search } from "@/lib/content";
 import { ListingForm } from "@/components/ListingForm";
+import { ConfirmButton } from "@/components/ConfirmButton";
 import { PhotoPicker } from "@/components/PhotoPicker";
 import { uploadsOn } from "@/lib/media";
 import { Chip, Note, Page, PageHead, btnGhost, btnPrimary, input, labelCls } from "@/components/ui";
@@ -116,6 +117,8 @@ const DONE: Record<string, string> = {
   state: "Status updated.", renew: `Renewed. It stays listed for another ${MARKET_DAYS} days.`, unpublish: "Unpublished. It is no longer on the public site.",
   uploaded: "Document received. An admin will check it.", deleted: "Document deleted.",
   republish: "Sent back for review. It goes live again after an admin approves it.", cancel_edit: "Your waiting edit was withdrawn.",
+  draft: "Draft saved. It stays private until you submit it for review.", submit_draft: "Submitted. Your listing goes live after an admin approves it.",
+  delete: "Listing deleted.",
 };
 
 const small = "inline-flex min-h-9 cursor-pointer items-center rounded-full border border-sand bg-ivory px-3.5 text-[13px] font-semibold text-crimson no-underline";
@@ -128,6 +131,7 @@ function ListingRow({ l, qs, editing, blocked }: { l: Listing; qs: QueueStatus; 
   const left = l.kind === "good" ? daysLeft(l) : null;
   const expired = live && left !== null && left <= 0;
   const label = expired ? "Expired" : mine ? "Unpublished" : qs === "New" ? "Pending review" : live ? "Live" : qs;
+  const draft = qs === "Draft";
   const hidden = { id: <input type="hidden" name="id" value={l.id} /> };
   const states = l.kind === "event" ? EVENT_STATUSES : l.kind === "good" ? AVAILABILITY : null;
   const current = l.kind === "event" ? String(d.status ?? "Upcoming") : l.kind === "good" ? availOf(l.data as GoodData) : "";
@@ -136,7 +140,7 @@ function ListingRow({ l, qs, editing, blocked }: { l: Listing; qs: QueueStatus; 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span className="min-w-0 flex-1 text-[14.5px] font-semibold">{titleOf(l)}</span>
         <Chip tone="plain">{l.kind === "good" ? "Market" : l.kind === "event" ? "Event" : "Farm"}</Chip>
-        <Chip tone={expired ? "red" : mine ? "plain" : tone(qs)}>{label}</Chip>
+        <Chip tone={expired ? "red" : mine ? "plain" : draft ? "gold" : tone(qs)}>{label}</Chip>
         {editing && <Chip tone="gold">Edit waiting for review</Chip>}
       </div>
       {l.reason && !mine && (qs === "Needs Changes" || qs === "Rejected" || qs === "Hidden" || qs === "Approved") && <p className="m-0 text-[13px] text-wine">Admin note: “{l.reason}”</p>}
@@ -161,6 +165,12 @@ function ListingRow({ l, qs, editing, blocked }: { l: Listing; qs: QueueStatus; 
           <form action="/api/member/listing" method="post">{hidden.id}<button name="action" value="unpublish" className={`${small} text-muted`}>Unpublish</button></form>
         )}
         {mine && !blocked && <form action="/api/member/listing" method="post">{hidden.id}<button name="action" value="republish" className={small}>Publish again (goes to review)</button></form>}
+        {draft && !blocked && <form action="/api/member/listing" method="post">{hidden.id}<button name="action" value="submit_draft" className={small}>Submit for review</button></form>}
+        {!blocked && (
+          <form action="/api/member/listing" method="post">{hidden.id}
+            <ConfirmButton name="action" value="delete" label="Delete" question={`Delete “${titleOf(l)}” for good? This can’t be undone.`} className={`${small} text-wine`} />
+          </form>
+        )}
       </div>
     </li>
   );
@@ -265,6 +275,7 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
         {blocked && <Note tone="red">Your account is {STATUS_LABEL[m.status].toLowerCase()}, so you can’t submit listings. Please <a href="/contact" className="font-semibold">contact us</a>.</Note>}
         {sent && <Note tone="green"><strong>Received!</strong> Your listing is pending review. You can follow it under My listings.</Note>}
         {edited === "waiting" && <Note tone="green"><strong>Changes sent.</strong> Your listing stays live as it was until an admin approves the edit.</Note>}
+        {edited === "draft" && <Note tone="green"><strong>Draft saved.</strong> It stays private until you submit it for review.</Note>}
         {edited === "resubmitted" && <Note tone="green"><strong>Saved.</strong> Your listing is back in the review queue.</Note>}
         {tab !== "docs" && docs.some((d) => d.status === "approved" && (daysToExpiry(d) ?? 999) <= 30) && <Note tone="red">A business document is expiring or has expired. <a href="/portal?tab=docs" className="font-semibold">Upload the renewed one</a> to keep your Business Verified badge.</Note>}
         {done && <Note tone="green">{DONE[done] ?? "Done."}</Note>}
@@ -281,8 +292,8 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
 
         {tab === "home" && (
           <>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {([["Pending", count((q) => q === "New" || q === "In Review")], ["Needs changes", count((q) => q === "Needs Changes")], ["Live", count((q) => q === "Approved")], ["Not published", count((q) => q === "Rejected" || q === "Hidden" || q === "Archived")]] as const).map(([l, n]) => (
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+              {([["Drafts", count((q) => q === "Draft")], ["Pending", count((q) => q === "New" || q === "In Review")], ["Needs changes", count((q) => q === "Needs Changes")], ["Live", count((q) => q === "Approved")], ["Not published", count((q) => q === "Rejected" || q === "Hidden" || q === "Archived")]] as const).map(([l, n]) => (
                 <div key={l} className="rounded-2xl border border-line bg-cream p-3"><div className="font-serif text-[26px] font-semibold text-crimson">{n}</div><div className="text-[13px] text-muted">{l}</div></div>
               ))}
             </div>
@@ -307,7 +318,7 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
             <div className="flex flex-col gap-1">
               <a href="/portal" className="text-[13.5px] font-semibold text-wine">← My listings</a>
               <h2 className="m-0 font-serif text-[22px] font-semibold">Edit: {titleOf(editing)}</h2>
-              <p className="m-0 text-[13.5px] text-ink-soft">{editing.status === "approved" ? "Your listing stays live as it is now. The changes go public after an admin checks them." : "Saving sends this listing back to the review queue."}</p>
+              <p className="m-0 text-[13.5px] text-ink-soft">{editing.status === "approved" ? "Your listing stays live as it is now. The changes go public after an admin checks them." : "Save it as a draft to finish later, or submit it for review."}</p>
             </div>
             <ListingForm tab={editing.kind} up={up} who={m} l={editing} />
           </>

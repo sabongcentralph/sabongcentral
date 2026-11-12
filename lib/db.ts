@@ -305,11 +305,16 @@ export async function setStatus(id: number, status: Status, admin: string, reaso
 }
 
 // ---- Review queue (admin) ----
-export const QUEUE = ["New", "In Review", "Needs Changes", "Approved", "Rejected", "Hidden", "Archived"] as const;
+export const QUEUE = ["New", "In Review", "Needs Changes", "Approved", "Rejected", "Hidden", "Archived", "Draft"] as const;
 export type QueueStatus = (typeof QUEUE)[number];
 type Stage = "in_review" | "needs_changes" | "archived";
 
-export function queueStatus(status: Status, stage: Stage | null | undefined): QueueStatus {
+// Drafts (Em, 2026-11-12): saved but never sent for review or published. Stored as
+// hidden with this reason, so they never show on the public site.
+export const DRAFT = "Draft (not published yet)";
+
+export function queueStatus(status: Status, stage: Stage | null | undefined, reason?: string | null): QueueStatus {
+  if (status === "hidden" && reason === DRAFT) return "Draft";
   if (status === "pending") return stage === "in_review" ? "In Review" : stage === "needs_changes" ? "Needs Changes" : "New";
   if (status === "hidden") return stage === "archived" ? "Archived" : "Hidden";
   return status === "approved" ? "Approved" : "Rejected";
@@ -501,9 +506,17 @@ export async function editIds(): Promise<number[]> {
 }
 
 // Live listing: the edit waits for review. Anything else: replace it and send it back to review.
-export async function memberEdit(l: Listing, data: object, who: string): Promise<"waiting" | "resubmitted"> {
+export async function memberEdit(l: Listing, data: object, who: string, draft = false): Promise<"waiting" | "resubmitted" | "draft"> {
   const d = db();
   const target = `${l.kind}: ${titleOf(l)}`;
+  if (draft && l.status !== "approved") {
+    await d.batch([
+      d.prepare(`update listings set data = ?, status = 'hidden', reason = ?, updated_at = datetime('now') where id = ?`).bind(JSON.stringify(data), DRAFT, l.id),
+      d.prepare(`delete from review_stage where listing_id = ?`).bind(l.id),
+      d.prepare(`insert into audit_log (admin, action, target) values (?, 'draft saved', ?)`).bind(who, target),
+    ]);
+    return "draft";
+  }
   if (l.status === "approved") {
     await d.batch([
       d.prepare(`insert into listing_edits (listing_id, data, by) values (?, ?, ?) on conflict(listing_id) do update set data = excluded.data, by = excluded.by, created_at = datetime('now')`).bind(l.id, JSON.stringify(data), who),
@@ -533,6 +546,36 @@ export async function decideEdit(id: number, approve: boolean, admin: string, re
     d.prepare(`delete from listing_edits where listing_id = ?`).bind(id),
     d.prepare(`insert into audit_log (admin, action, target, reason) values (?, ?, ?, ?)`).bind(admin, approve ? "edit approved" : "edit rejected", `${l.kind}: ${titleOf(l)}`, reason || null),
   ]);
+}
+
+// Keeps a listing as a draft: not public and not in the review queue.
+export async function makeDraft(id: number, who: string) {
+  const l = await byId(id);
+  if (!l) return;
+  const d = db();
+  await d.batch([
+    d.prepare(`update listings set status = 'hidden', reason = ?, updated_at = datetime('now') where id = ?`).bind(DRAFT, id),
+    d.prepare(`delete from review_stage where listing_id = ?`).bind(id),
+    d.prepare(`insert into audit_log (admin, action, target) values (?, 'saved as draft', ?)`).bind(who, `${l.kind}: ${titleOf(l)}`),
+  ]);
+}
+
+// Deletes a listing for good, with its notes, waiting edit and photos. The audit log keeps a record.
+export async function deleteListing(l: Listing, who: string) {
+  const d = db();
+  const edit = await pendingEdit(l.id);
+  const photos = [l.data as unknown as Record<string, unknown>, edit?.data ?? {}].flatMap((x) =>
+    ["profile", "cover", "gallery", "poster", "photos"].flatMap((k) => (Array.isArray(x[k]) ? (x[k] as unknown[]) : x[k] ? [x[k]] : [])).map(String));
+  await d.batch([
+    d.prepare(`delete from listings where id = ?`).bind(l.id),
+    d.prepare(`delete from review_stage where listing_id = ?`).bind(l.id),
+    d.prepare(`delete from listing_edits where listing_id = ?`).bind(l.id),
+    d.prepare(`delete from admin_notes where listing_id = ?`).bind(l.id),
+    d.prepare(`insert into audit_log (admin, action, target) values (?, 'deleted', ?)`).bind(who, `${l.kind}: ${titleOf(l)}`),
+  ]);
+  await d.prepare(`delete from member_listings where listing_id = ?`).bind(l.id).run().catch(() => {}); // table exists once members are on
+  const { deletePhotos } = await import("./media");
+  await deletePhotos(photos);
 }
 
 // Admin edits apply at once (the admin is the reviewer).
@@ -592,6 +635,18 @@ export async function ownerAction(l: Listing, action: string, value: string, who
       d.prepare(`delete from review_stage where listing_id = ?`).bind(l.id),
       log("republish requested"),
     ]);
+    return null;
+  }
+  if (action === "submit_draft") {
+    if (l.reason !== DRAFT) return "This listing isn’t a draft.";
+    await d.batch([
+      d.prepare(`update listings set status = 'pending', reason = null, updated_at = datetime('now') where id = ?`).bind(l.id),
+      log("submitted for review"),
+    ]);
+    return null;
+  }
+  if (action === "delete") {
+    await deleteListing(l, who);
     return null;
   }
   if (action === "cancel_edit") {

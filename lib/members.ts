@@ -227,7 +227,7 @@ export async function listingsOf(memberId: number): Promise<{ l: Listing; qs: Qu
   const out: { l: Listing; qs: QueueStatus }[] = [];
   for (const r of results) {
     const l = await byId(r.listing_id);
-    if (l) out.push({ l, qs: queueStatus(l.status, st.get(l.id)) });
+    if (l) out.push({ l, qs: queueStatus(l.status, st.get(l.id), l.reason) });
   }
   return out;
 }

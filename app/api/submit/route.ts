@@ -1,4 +1,4 @@
-import { adminEdit, byId, memberEdit, review, submit, type Kind } from "@/lib/db";
+import { DRAFT, adminEdit, byId, makeDraft, memberEdit, review, submit, type Kind } from "@/lib/db";
 import { adminFromRequest, sameOrigin } from "@/lib/auth";
 import { back, field, isBot } from "@/lib/forms";
 import { toEmbed } from "@/lib/embed";
@@ -39,6 +39,8 @@ export async function POST(req: Request) {
   if (isBot(f)) return back(req, `${page}?tab=${kind}&sent=1`);
   // A member editing one of their own listings.
   const editId = Number(field(f, "edit", 12)) || 0;
+  // "Save as draft" button: kept private, not sent for review or published.
+  const asDraft = field(f, "go", 10) === "draft";
   const fail = (msg: string) => back(req, `${page}?tab=${editId ? `edit&id=${editId}` : kind}&error=${encodeURIComponent(msg)}`);
   const name = field(f, "contactName", 120), email = field(f, "email", 200);
   // Farms, events and Market items need a signed-in Portal member.
@@ -157,9 +159,11 @@ export async function POST(req: Request) {
     const kept = Object.fromEntries(["profile", "cover", "gallery", "poster", "photos", "verified", "sellerVerified", "status", "renewed", "listedBy"].filter((k) => k in o && !(k in pics)).map((k) => [k, o[k]]));
     if (admin) {
       await adminEdit(old, { ...data, ...kept, ...pics, verifyFacebook: vfb, verifyLink: vlink }, admin);
-      return back(req, `/admin/item/${old.id}?done=edited`);
+      const wasDraft = old.reason === DRAFT;
+      if (wasDraft && !asDraft) await review(old.id, "Approved", admin, "Published by Sabong Central");
+      return back(req, `/admin/item/${old.id}?done=${wasDraft ? (asDraft ? "draft_saved" : "published") : "edited"}`);
     }
-    const out = await memberEdit(old, { ...data, ...kept, ...pics, verifyFacebook: vfb, verifyLink: vlink }, by);
+    const out = await memberEdit(old, { ...data, ...kept, ...pics, verifyFacebook: vfb, verifyLink: vlink }, by, asDraft);
     return back(req, `/portal?edited=${out}`);
   }
   data = { ...data, ...pics, verifyFacebook: vfb, verifyLink: vlink };
@@ -167,10 +171,18 @@ export async function POST(req: Request) {
   if (member && (kind === "farm" || kind === "good") && (await hasValidDoc(member.id))) data = { ...data, [kind === "farm" ? "verified" : "sellerVerified"]: true };
   if (admin) data = { ...data, listedBy: "admin" };
   const id = await submit(kind, data, by);
+  if (admin && id && asDraft) {
+    await makeDraft(id, admin);
+    return back(req, `/admin/item/${id}?done=draft_saved`);
+  }
   if (admin && id) {
     await review(id, "Approved", admin, "Added by Sabong Central");
     return back(req, `/admin/item/${id}?done=published`);
   }
   if (member && id) await linkListing(id, member.id);
+  if (member && id && asDraft) {
+    await makeDraft(id, by);
+    return back(req, `/portal?done=draft#l${id}`);
+  }
   return back(req, `${page}?tab=${kind}&sent=1`);
 }

@@ -16,7 +16,7 @@ export type Row = { l: Listing; qs: QueueStatus; type: QType; flags: Flag[]; edi
 export async function queueRows(): Promise<Row[]> {
   const [all, st, targets, ed] = await Promise.all([byStatus("all"), stages(), openReportTargets(), editIds()]);
   const edits = new Set(ed);
-  return all.map((l) => ({ l, qs: queueStatus(l.status, st.get(l.id)), type: typeOf(l), flags: flagsOf(l, targets), edit: edits.has(l.id) }));
+  return all.map((l) => ({ l, qs: queueStatus(l.status, st.get(l.id), l.reason), type: typeOf(l), flags: flagsOf(l, targets), edit: edits.has(l.id) }));
 }
 
 // Everything the admin header bell and the dashboard need, in one pass.
