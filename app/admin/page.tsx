@@ -8,7 +8,7 @@ import { Chip, Empty, Page, statusTone } from "@/components/ui";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Admin" };
 
-const LABEL: Record<Kind, string> = { farm: "Farm", event: "Event", good: "Goods", reel: "Reel", article: "Article", notice: "Notice", supplier: "Supplier" };
+const LABEL: Record<Kind, string> = { farm: "Farm", event: "Event", good: "Market item", reel: "Reel", article: "Article", notice: "Notice", supplier: "Supplier" };
 const STATUSES = ["pending", "approved", "rejected", "hidden", "all"] as const;
 
 export default async function AdminHome({ searchParams }: { searchParams: Promise<Search> }) {

@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Portal" };
 
 const TABS = [
-  ["farm", "Farm"], ["event", "Event"], ["good", "Goods"], ["reel", "Reel"], ["notice", "Announcement"],
+  ["farm", "Farm"], ["event", "Event"], ["good", "Market item"], ["reel", "Reel"], ["notice", "Announcement"],
 ] as const;
 const TOPICS = ["Feeding", "Poultry Health", "Breeding", "Farm Management", "Housing", "Incubation"];
 

@@ -120,4 +120,9 @@ export const TruckIcon = (p: P) => <Icon {...p} d="M3 6h11v10H3zM14 9h4l3 3v4h-7
 export const AlertIcon = (p: P) => <Icon {...p} d="M12 3l9 16H3zM12 10v4M12 17h.01" />;
 export const DownloadIcon = (p: P) => <Icon {...p} d="M12 4v11M7 10l5 5 5-5M5 20h14" />;
 export const MailIcon = (p: P) => <Icon {...p} d="M3 6h18v12H3zM3 7l9 6 9-6" />;
+export const MenuIcon = (p: P) => <Icon {...p} d="M4 6h16M4 12h16M4 18h16" />;
+export const CloseIcon = (p: P) => <Icon {...p} d="M6 6l12 12M18 6L6 18" />;
+export const GearIcon = (p: P) => <Icon {...p} d="M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z" />;
+export const InfoIcon = (p: P) => <Icon {...p} d="M12 21a9 9 0 100-18 9 9 0 000 18zM12 11v6M12 7.5h.01" />;
+export const ShieldIcon = (p: P) => <Icon {...p} d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" />;
 export const GradIcon = (p: P) => <Icon {...p} d="M2 9l10-5 10 5-10 5zM6 11v5c3 2 9 2 12 0v-5" />;

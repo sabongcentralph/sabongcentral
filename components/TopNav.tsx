@@ -4,11 +4,11 @@ import { usePathname } from "next/navigation";
 import type { Lang } from "@/lib/i18n";
 import { TABS, isActive } from "./tabs";
 
-// Desktop: the five main sections sit in the header. Phones use the bottom tab bar.
+// Desktop: the six main sections sit in the header. Phones and tablets use the bottom tab bar.
 export function TopNav({ lang }: { lang: Lang }) {
   const path = usePathname();
   return (
-    <nav aria-label="Main" className="hidden flex-auto gap-x-6 md:flex">
+    <nav aria-label="Main" className="hidden flex-auto gap-x-5 lg:flex">
       {TABS.map((tab) => (
         <a
           key={tab.href}

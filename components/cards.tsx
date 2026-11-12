@@ -31,7 +31,7 @@ export function EventCard({ e, compact = false }: { e: Listing<"event">; compact
   const [y, m, day] = d.date.split("-");
   const mon = new Date(Number(y), Number(m) - 1, 1).toLocaleString("en", { month: "short" }).toUpperCase();
   return (
-    <a href={`/events/${e.slug}`} className={`${cardCls} flex-row gap-3 p-3 ${compact ? "w-[290px] flex-none snap-start md:w-auto" : ""}`}>
+    <a href={`/${d.derby ? "events" : "education"}/${e.slug}`} className={`${cardCls} flex-row gap-3 p-3 ${compact ? "w-[290px] flex-none snap-start md:w-auto" : ""}`}>
       <div className="flex w-14 flex-none flex-col items-center justify-center rounded-xl bg-crimson py-2 text-white">
         <span className="text-[11px] font-bold tracking-wider text-gold-light">{mon}</span>
         <span className="font-serif text-[24px] font-semibold leading-none">{day}</span>
@@ -49,7 +49,7 @@ export function EventCard({ e, compact = false }: { e: Listing<"event">; compact
 export function GoodCard({ g, compact = false }: { g: Listing<"good">; compact?: boolean }) {
   const d: GoodData = g.data;
   return (
-    <a href={`/goods/${g.slug}`} className={`${cardCls} ${compact ? "w-[170px] flex-none snap-start md:w-auto" : ""}`}>
+    <a href={`/market/${g.slug}`} className={`${cardCls} ${compact ? "w-[170px] flex-none snap-start md:w-auto" : ""}`}>
       <div className="relative overflow-hidden">
         <Photo className="aspect-square" label="Product photo" />
         <span className={`absolute left-2 top-2 rounded-md px-2 py-0.5 text-[10.5px] font-bold ${d.sold ? "bg-ink-soft text-white" : "bg-[#2f5b3a] text-white"}`}>{d.sold ? "Sold" : "Available"}</span>

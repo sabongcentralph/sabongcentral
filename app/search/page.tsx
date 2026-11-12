@@ -34,7 +34,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       </form>
       {place && (
         <div className="grid grid-cols-4 gap-2 text-center">
-          {[["Farms", f.length], ["Events", e.length], ["Goods", g.length], ["Suppliers", s.length]].map(([k, n]) => (
+          {[["Farms", f.length], ["Events", e.length], ["Market", g.length], ["Suppliers", s.length]].map(([k, n]) => (
             <div key={k} className="rounded-xl border border-line bg-cream py-3"><div className="font-serif text-[22px] font-semibold text-crimson">{n}</div><div className="text-[12px] text-muted">{k}</div></div>
           ))}
         </div>
@@ -44,7 +44,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       )}
       {f.length > 0 && <section className="flex flex-col gap-3"><SectionHead title={`Farms (${f.length})`} href="/farms" /><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{f.slice(0, 6).map((x) => <FarmCard key={x.id} f={x} />)}</div></section>}
       {e.length > 0 && <section className="flex flex-col gap-3"><SectionHead title={`Events (${e.length})`} href="/events" /><div className="grid gap-3 md:grid-cols-2">{e.slice(0, 6).map((x) => <EventCard key={x.id} e={x} />)}</div></section>}
-      {g.length > 0 && <section className="flex flex-col gap-3"><SectionHead title={`Goods (${g.length})`} href="/goods" /><div className="grid grid-cols-2 gap-3 md:grid-cols-4">{g.slice(0, 8).map((x) => <GoodCard key={x.id} g={x} />)}</div></section>}
+      {g.length > 0 && <section className="flex flex-col gap-3"><SectionHead title={`Market (${g.length})`} href="/market" /><div className="grid grid-cols-2 gap-3 md:grid-cols-4">{g.slice(0, 8).map((x) => <GoodCard key={x.id} g={x} />)}</div></section>}
       {s.length > 0 && <section className="flex flex-col gap-3"><SectionHead title={`Suppliers (${s.length})`} href="/suppliers" /><div className="grid gap-3 md:grid-cols-2">{s.map((x) => <SupplierCard key={x.id} s={x} />)}</div></section>}
       {r.length > 0 && <section className="flex flex-col gap-3"><SectionHead title={`Reels (${r.length})`} href="/reels" /><div className="grid grid-cols-2 gap-3 md:grid-cols-5">{r.map((x) => <ReelCard key={x.id} r={x} />)}</div></section>}
       {a.length > 0 && <section className="flex flex-col gap-3"><SectionHead title={`Articles (${a.length})`} href="/learn" /><div className="grid gap-3 md:grid-cols-2">{a.map((x) => <ArticleCard key={x.id} a={x} />)}</div></section>}
