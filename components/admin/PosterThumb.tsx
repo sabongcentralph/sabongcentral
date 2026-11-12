@@ -1,7 +1,7 @@
 // Event poster thumbnail. Shows the uploaded poster when there is one (photo
 // upload comes with R2); until then a poster-style title card.
 const TONES: Record<string, string> = {
-  "Derbies & Events": "from-[#7a0f1a] via-[#3a0a0f] to-[#0e0808] text-white",
+  "Derbies & Events": "from-[#e81e25] via-[#5a1010] to-[#0e0e10] text-white",
   "Education & Training": "from-[#123a6b] via-[#0d2240] to-[#070d18] text-white",
   "Expos & Community": "from-[#8a6417] via-[#4a320a] to-[#140d04] text-[#ffe7a8]",
 };

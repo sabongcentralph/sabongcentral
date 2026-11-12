@@ -1,7 +1,7 @@
 // Shown until the visitor confirms they are 21 or older. A plain form, so it works without JavaScript.
 export function AgeGate({ under }: { under: boolean }) {
   return (
-    <div role="dialog" aria-modal="true" aria-labelledby="age-title" className="fixed inset-0 z-[100] flex items-center justify-center bg-[#2a0a0e]/95 p-4 backdrop-blur">
+    <div role="dialog" aria-modal="true" aria-labelledby="age-title" className="fixed inset-0 z-[100] flex items-center justify-center bg-noir/95 p-4 backdrop-blur">
       <div className="flex w-full max-w-[420px] flex-col gap-4 rounded-2xl border-2 border-gold bg-cream p-6 text-center">
         <span className="font-serif text-[22px] font-semibold text-crimson">Sabong Central</span>
         {under ? (

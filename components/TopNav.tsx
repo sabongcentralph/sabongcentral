@@ -14,7 +14,7 @@ export function TopNav({ lang }: { lang: Lang }) {
           key={tab.href}
           href={tab.href}
           aria-current={isActive(path, tab.href) ? "page" : undefined}
-          className="nav-link py-3 text-[15px] font-medium text-[#f7e9e6] no-underline"
+          className="nav-link py-3 text-[15px] font-medium text-white/80 no-underline"
         >
           {tab.label[lang]}
         </a>

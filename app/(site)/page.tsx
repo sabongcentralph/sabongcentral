@@ -30,12 +30,15 @@ export default async function Home() {
 
   return (
     <main className="flex flex-col">
-      <section className="relative overflow-hidden bg-crimson-dark px-5 pb-8 pt-7 text-white md:px-6 md:pb-12 md:pt-12 lg:mx-6 lg:mt-6 lg:rounded-3xl">
-        <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(120%_70%_at_50%_0%,rgba(201,162,74,.28),rgba(67,10,16,0)_60%)]" />
+      <section className="relative overflow-hidden bg-noir px-5 pb-8 pt-7 text-white md:px-6 md:pb-12 md:pt-12 lg:mx-6 lg:mt-6 lg:rounded-3xl">
+        <div aria-hidden="true" className="hero-slash pointer-events-none absolute -right-20 -top-10 h-[150%] w-24 rotate-[24deg] bg-crimson md:-right-24 md:w-56" />
+        <div aria-hidden="true" className="hero-slash hero-slash-2 pointer-events-none absolute -right-1 -top-10 h-[150%] w-2 rotate-[24deg] bg-gold md:right-36 md:w-4" />
+        <div aria-hidden="true" className="hero-slash pointer-events-none absolute -bottom-14 -left-24 h-24 w-52 rotate-[24deg] bg-crimson md:-bottom-16 md:-left-16 md:h-40 md:w-72" />
+        <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-[3px] overflow-hidden bg-crimson/40"><div className="hero-streak h-full w-1/2 bg-gradient-to-r from-transparent via-gold to-transparent" /></div>
         <div className="relative mx-auto flex max-w-[900px] flex-col items-center gap-3 text-center">
           <p className="rise m-0 text-[12px] font-bold tracking-[2px] text-gold-light">{tx.kicker}</p>
           <h1 className="rise rise-1 m-0 max-w-[820px] text-balance font-serif text-[27px] font-semibold leading-[1.18] md:text-[44px]">{tx.title}</h1>
-          <p className="rise rise-2 m-0 max-w-[640px] text-balance text-[14.5px] leading-relaxed text-[#f1dcd8] md:text-[16px]">
+          <p className="rise rise-2 m-0 max-w-[640px] text-balance text-[14.5px] leading-relaxed text-white/80 md:text-[16px]">
             A Philippine gamefowl community directory for farms, education, supplies and lawful event information.
           </p>
           <p className="rise rise-3 m-0 rounded-full border border-gold/50 px-3.5 py-1 text-[12px] font-semibold text-gold-light">
@@ -55,7 +58,7 @@ export default async function Home() {
         </section>
 
         <section className="flex flex-col gap-3">
-          <SectionHead title="Upcoming Derbies" href="/events" />
+          <SectionHead title="Upcoming Derbies" href="/events" live />
           {derbies.length ? <Row>{derbies.slice(0, 4).map((e) => <EventCard key={e.id} e={e} compact />)}</Row> : <p className="m-0 text-[14px] text-muted">No derbies scheduled yet.</p>}
         </section>
 
@@ -70,7 +73,7 @@ export default async function Home() {
             <a href={`/farms/${spot.slug}`} className="card overflow-hidden rounded-2xl border-2 border-gold bg-cream text-ink no-underline md:flex">
               <div className="relative overflow-hidden md:w-1/2">
                 <Photo className="h-[170px] md:h-full md:min-h-[220px]" label="Farm photo" src={spot.data.cover ?? spot.data.gallery?.[0] ?? spot.data.profile} />
-                <span className="absolute left-3 top-3 rounded-md bg-[#e2b43a] px-2 py-1 text-[11px] font-extrabold tracking-[1.2px] text-[#3a0a0a]">{spot.data.sponsored ? "SPONSORED" : "FEATURED THIS WEEK"}</span>
+                <span className="absolute left-3 top-3 rounded-md bg-crimson px-2 py-1 text-[11px] font-extrabold tracking-[1.2px] text-white">{spot.data.sponsored ? "SPONSORED" : "FEATURED THIS WEEK"}</span>
               </div>
               <div className="flex flex-col gap-2 p-4 md:p-6">
                 <div className="flex items-center gap-2"><h3 className="m-0 flex-1 font-serif text-[22px] font-semibold">{spot.data.name}</h3>{spot.isSample && <SampleTag />}</div>
@@ -118,20 +121,21 @@ export default async function Home() {
               ["3", "Public listing", "Approved content appears on the site. Anyone can report a listing that breaks the rules."],
             ].map(([n, t, d]) => (
               <li key={n} className="flex gap-3 rounded-2xl border border-line bg-cream p-4">
-                <span className="flex size-9 flex-none items-center justify-center rounded-full bg-crimson font-serif text-[17px] font-semibold text-gold-light">{n}</span>
+                <span className="flex size-9 flex-none items-center justify-center rounded-full bg-noir font-serif text-[17px] font-semibold text-gold-light ring-2 ring-crimson">{n}</span>
                 <span className="flex flex-col gap-1"><strong className="text-[15px]">{t}</strong><span className="text-[13.5px] leading-relaxed text-ink-soft">{d}</span></span>
               </li>
             ))}
           </ol>
         </section>
 
-        <section className="flex flex-col items-start gap-3 rounded-2xl bg-crimson p-5 text-white md:flex-row md:items-center md:justify-between">
+        <section className="flex flex-col items-start gap-3 relative overflow-hidden rounded-2xl bg-noir p-5 text-white md:flex-row md:p-6 md:items-center md:justify-between">
+          <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1.5 bg-crimson" />
           <div>
             <h2 className="m-0 font-serif text-[22px] font-semibold">Have a farm, event or product?</h2>
-            <p className="m-0 mt-1 text-[14px] text-rose">Listing is free. An admin reviews everything before it goes public.</p>
+            <p className="m-0 mt-1 text-[14px] text-white/70">Listing is free. An admin reviews everything before it goes public.</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <a href="/portal" className="lift rounded-full bg-gold px-5 py-3 text-[15px] font-semibold text-[#3a0a0a] no-underline">Go to the Portal</a>
+            <a href="/portal" className="lift rounded-full bg-crimson px-5 py-3 text-[15px] font-semibold text-white no-underline">Go to the Portal</a>
             <a href="/submit" className="rounded-full border border-gold/70 px-5 py-3 text-[15px] font-semibold text-gold-light no-underline">Share an article or reel</a>
           </div>
         </section>

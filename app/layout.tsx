@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false }, // test site: keep out of search engines until launch
 };
 
-export const viewport: Viewport = { themeColor: "#6B0F1A", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: "#121215", width: "device-width", initialScale: 1 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const lang = await getLang();

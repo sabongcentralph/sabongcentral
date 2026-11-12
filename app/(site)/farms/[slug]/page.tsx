@@ -40,7 +40,7 @@ export default async function FarmPage({ params, searchParams }: { params: Promi
         <Photo className="h-[170px] md:h-[300px] md:rounded-2xl" label="Cover photo" src={d.cover} />
       </div>
       <div className="-mt-14 flex flex-col gap-2 md:-mt-16 md:px-6">
-        {d.profile ? <img src={d.profile} alt="Profile photo" className="block size-[88px] rounded-full border-[3px] border-gold object-cover shadow-[0_0_0_3px_#f6eedf]" /> : <span className="ph block size-[88px] rounded-full border-[3px] border-gold shadow-[0_0_0_3px_#f6eedf]" role="img" aria-label="Profile photo" />}
+        {d.profile ? <img src={d.profile} alt="Profile photo" className="block size-[88px] rounded-full border-[3px] border-gold object-cover shadow-[0_0_0_3px_#f5f4f2]" /> : <span className="ph block size-[88px] rounded-full border-[3px] border-gold shadow-[0_0_0_3px_#f5f4f2]" role="img" aria-label="Profile photo" />}
         <div className="flex flex-wrap items-center gap-2">
           <h1 className="m-0 font-serif text-[28px] font-semibold leading-tight md:text-[38px]">{d.name}</h1>
           {farm.isSample && <SampleTag />}

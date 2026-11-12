@@ -44,9 +44,12 @@ TL / EN switch). Page content is in simple Taglish.
 
 ## Look
 
-Warm ivory, deep red and touches of gold. Colors and fonts (Fraunces for
-headings, Inter for text) are theme tokens in `app/globals.css`, along with
-the small animations, which turn off for visitors who prefer reduced motion.
+Bold bright red (#E81E25), black (#121215) and white, with a touch of gold
+(#C8A44D). No maroon. Colors and fonts (Fraunces for headings, Inter for text)
+are theme tokens in `app/globals.css`, along with the motion (hero slashes,
+red tab sweep, card lift, button shine, fade-up on scroll via
+`components/Reveal.tsx`), all of which turn off for reduced motion.
+Dark mode follows the visitor's phone or computer setting (`prefers-color-scheme`).
 Phone-first: five bottom tabs on phones, top navigation on desktop.
 
 ## End-to-end test

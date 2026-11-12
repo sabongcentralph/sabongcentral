@@ -24,7 +24,7 @@ export function Bell({ alerts, log }: { alerts: Alert[]; log: Log[] }) {
             {alerts.map((a) => (
               <li key={a.label}>
                 <a href={a.href} className="flex min-h-11 items-center gap-3 rounded-xl px-2.5 text-[14px] text-ink no-underline hover:bg-white/5">
-                  <span className={`min-w-7 rounded-full px-1.5 text-center text-[12.5px] font-bold leading-7 ${a.tone === "red" ? "bg-crimson text-white" : "bg-gold text-[#2a1d05]"}`}>{a.n}</span>
+                  <span className={`min-w-7 rounded-full px-1.5 text-center text-[12.5px] font-bold leading-7 ${a.tone === "red" ? "bg-crimson text-white" : "bg-gold text-noir"}`}>{a.n}</span>
                   <span className="flex-1">{a.label}</span>
                   <span className="text-muted">›</span>
                 </a>
