@@ -30,6 +30,7 @@ export type GoodData = {
   sold: boolean; sellerVerified: boolean; desc?: string;
   avail?: Availability; condition?: string; pickup?: string; photos?: string[];
   renewed?: string; // ISO time the seller last renewed it
+  featured?: boolean; featuredRank?: number; sponsored?: boolean; promoUntil?: string; // Placements (admin)
 };
 export const AVAILABILITY = ["Available", "Reserved", "Sold", "Removed"] as const;
 export type Availability = (typeof AVAILABILITY)[number];

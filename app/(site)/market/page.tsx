@@ -3,6 +3,7 @@ import { approved, availOf } from "@/lib/db";
 import { matches, one, type Search } from "@/lib/content";
 import { GOODS_CATS } from "@/lib/sample";
 import { GoodCard } from "@/components/cards";
+import { isPlaced, placementLabel, withFeaturedFirst } from "@/lib/placements";
 import { FilterPanel } from "@/components/FilterPanel";
 import { LocationFields } from "@/components/LocationFields";
 import { Empty, Note, Page, PageHead, input, labelCls } from "@/components/ui";
@@ -16,7 +17,7 @@ export default async function GoodsPage({ searchParams }: { searchParams: Promis
   const sp = await searchParams;
   const q = one(sp.q), cat = one(sp.cat), sub = one(sp.sub), province = one(sp.province), city = one(sp.city);
   const min = Number(one(sp.min)) || 0, max = Number(one(sp.max)) || 0, avail = one(sp.avail) || "Available";
-  const all = await approved("good");
+  const all = withFeaturedFirst(await approved("good"));
   const shown = all.filter((g) => {
     const d = g.data, p = peso(d.price);
     return matches(`${d.name} ${d.seller} ${d.sub}`, q) && (!cat || d.cat === cat) && (!sub || d.sub === sub) &&
@@ -62,7 +63,7 @@ export default async function GoodsPage({ searchParams }: { searchParams: Promis
       </div>
       <p className="m-0 text-[14px] text-ink-soft"><strong>{shown.length}</strong> listings</p>
       {shown.length === 0 ? <Empty>No listings match.</Empty> : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{shown.map((g) => <GoodCard key={g.id} g={g} />)}</div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{shown.map((g) => <GoodCard key={g.id} g={g} tag={isPlaced(g) ? placementLabel(g) : undefined} />)}</div>
       )}
     </Page>
   );
