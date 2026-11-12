@@ -901,10 +901,10 @@ await step("admin signs out", async () => {
 });
 
 section("10. Detail pages and search with real listings");
-for (const [list, label] of [["/farms", "farm"], ["/education", "seminar"], ["/market", "Market item"], ["/learn", "article"]]) {
+for (const [list, label] of [["/farms", "farm"], ["/education", "seminar"], ["/market?avail=All", "Market item"], ["/learn", "article"]]) {
 await step(`opens a ${label} detail page from ${list}`, async () => {
     await go(desk, list);
-    const prefix = `${list}/`;
+    const prefix = `${list.split("?")[0]}/`; // Market shows only Available items unless "All" is picked; the test item was marked Sold
     const href = await desk.$$eval(`main a[href^='${prefix}']`, (as) => as.map((a) => a.getAttribute("href")).find((h) => h.split("/").length === 3));
     if (!href) fail(`no ${label} cards on ${list}`);
     await go(desk, href);
