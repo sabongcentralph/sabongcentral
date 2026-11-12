@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/adminGuard";
+import { twoFactorOf } from "@/lib/totp";
 import { adminSummary, type Row } from "@/lib/adminData";
 import { titleOf, type QueueStatus } from "@/lib/db";
 import { AlertIcon, CalendarIcon, ChevronRight, UserIcon, MailIcon, Pin, ShieldIcon } from "@/components/icons";
@@ -59,8 +60,8 @@ function Card({ title, href, more, children }: { title: string; href?: string; m
 }
 
 export default async function AdminDashboard() {
-  await requireAdmin();
-  const s = await adminSummary();
+  const email = await requireAdmin();
+  const [s, tf] = await Promise.all([adminSummary(), twoFactorOf(email)]);
   const review = s.waiting.slice(0, 6);
   return (
     <Page>
@@ -68,6 +69,7 @@ export default async function AdminDashboard() {
         <h1 className="m-0 font-serif text-[28px] font-semibold md:text-[32px]">Admin Dashboard</h1>
         <p className="m-0 text-[14px] text-muted">Review listings, permits, reports and community content before they go public.</p>
       </div>
+      {!tf?.enabled && <a href="/admin/account#twostep" className="rounded-2xl border border-wine bg-cream p-3 text-[14px] font-semibold text-wine no-underline">⚠ Two-step login is off. Turn it on in Account (takes 1 minute) ›</a>}
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Tile hot href="/admin/queue" icon={<ShieldIcon size={24} />} label="Waiting for review" n={s.waiting.length} sub={s.needsChanges ? `${s.needsChanges} waiting on submitter changes` : "New and in-review submissions"} />
