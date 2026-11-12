@@ -23,7 +23,11 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
   const venueP = profiles.find((p) => p.data.roles.includes("Venue") && sameName(d.venue, p.data.name));
   const orgP = profiles.find((p) => p.data.roles.includes("Organizer") && sameName(d.org, p.data.name));
   // Permit numbers and documents stay private; the public only sees whether they were checked.
-  const permit = d.derby ? "Cockpit license and LGU event permit verified by admin" : d.permits ? "Permits reviewed by admin" : "Organizer's proof of legitimacy reviewed by admin";
+  // Admin-added listings were not checked against documents, so they never claim a verified permit.
+  const unchecked = (d as { listedBy?: string }).listedBy === "admin" || /^not yet verified/i.test(d.permits ?? "");
+  const verifiedProfile = !!(orgP?.data.verified || venueP?.data.verified);
+  const showBadge = verifiedProfile || !unchecked;
+  const permit = unchecked && !verifiedProfile ? "Permit not yet verified by Sabong Central" : d.derby ? "Cockpit license and LGU event permit verified by admin" : d.permits ? "Permits reviewed by admin" : "Organizer's proof of legitimacy reviewed by admin";
   const facts: [string, string][] = [
     ["Status", status], ["Date", d.longDate], ["Time", d.time], ["Venue", d.venue], ["Location", d.online ? "Online" : `${d.city}, ${d.province}`],
     ["Organizer", d.org], ["Fee", d.fee ? `${d.fee}${/\d/.test(d.fee) ? " (paid directly to the organizer)" : ""}` : ""], ["Registration", d.reg],
@@ -60,8 +64,10 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
           <div className="flex flex-col gap-2 rounded-2xl border border-line bg-cream p-4">
             <h2 className="m-0 text-[16px] font-bold">About the Organizer</h2>
             {orgP ? <a href={`/venues/${orgP.slug}`} className="text-[15px] font-semibold text-wine">{d.org} ›</a> : <span className="text-[15px] font-semibold">{d.org}</span>}
-            <BizBadge small />
-            <span className="text-[12px] text-muted">An admin reviewed this organizer's business registration or proof of legitimacy. This is not a guarantee of the event or any transaction.</span>
+            {showBadge ? <>
+              <BizBadge small />
+              <span className="text-[12px] text-muted">An admin reviewed {verifiedProfile && unchecked ? `${orgP?.data.verified ? "this organizer" : "this venue"}'s` : "this organizer's"} business registration or proof of legitimacy. This is not a guarantee of the event or any transaction.</span>
+            </> : <span className="w-fit rounded-full border border-sand px-3 py-1 text-[12.5px] font-semibold text-muted">Permit not yet verified by Sabong Central</span>}
           </div>
           <Note tone={d.derby ? "red" : "gold"}>Information only. Sabong Central does not organize events, accept bets, livestream fights, or receive event payments. Any fee is paid directly to the organizer.</Note>
           <ListedBy data={d} title={d.title} />
