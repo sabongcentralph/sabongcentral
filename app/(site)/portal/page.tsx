@@ -5,13 +5,14 @@ import { LocationFields } from "@/components/LocationFields";
 import { PhotoPicker } from "@/components/PhotoPicker";
 import { uploadsOn } from "@/lib/media";
 import { Chip, Note, Page, PageHead, btnGhost, btnPrimary, input, labelCls } from "@/components/ui";
+import { DOC_TYPES, MAX_DOC_PAGES, docLabel, docsOf, daysToExpiry, isValid, type Doc } from "@/lib/docs";
 import { ROLES, STATUS_LABEL, canSubmit, currentMember, listingsOf, testMode, type Member } from "@/lib/members";
 import { AVAILABILITY, EVENT_STATUSES, MARKET_DAYS, UNPUBLISHED_BY_OWNER, availOf, byId, daysLeft, editIds, titleOf, type GoodData, type Listing, type QueueStatus } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Portal" };
 
-const TABS = [["home", "My listings"], ["farm", "+ Farm"], ["event", "+ Event or seminar"], ["good", "+ Market item"], ["account", "Account"]] as const;
+const TABS = [["home", "My listings"], ["farm", "+ Farm"], ["event", "+ Event or seminar"], ["good", "+ Market item"], ["docs", "Documents"], ["account", "Account"]] as const;
 type Tab = (typeof TABS)[number][0];
 
 const Honeypot = () => <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px]" />;
@@ -67,7 +68,7 @@ function SubmitForm({ tab, up, m, l }: { tab: "farm" | "event" | "good"; up: boo
         </fieldset>
         <div className={`${full} flex flex-col gap-2 rounded-xl border border-dashed border-gold p-3`}>
           <span className="text-[14px] font-bold">Business registration (for the Business Verified badge)</span>
-          <span className="text-[12.5px] text-muted">DTI, SEC or Mayor’s permit. Private, seen by admins only. Document upload is coming soon.</span>
+          <span className="text-[12.5px] text-muted">DTI, SEC or Mayor’s permit. Upload a photo of it under <a href="/portal?tab=docs" className="font-semibold text-wine">Documents</a>. Private, seen by admins only.</span>
           <label className="flex min-h-9 items-center gap-2 text-[14px]"><input type="checkbox" name="docs" value="yes" defaultChecked={!!d.docs} className="size-[17px] accent-crimson" /> I have business registration I can submit</label>
         </div>
       </>
@@ -189,6 +190,7 @@ function ProfileForm({ m, first }: { m: Member; first: boolean }) {
 
 const DONE: Record<string, string> = {
   state: "Status updated.", renew: `Renewed. It stays listed for another ${MARKET_DAYS} days.`, unpublish: "Unpublished. It is no longer on the public site.",
+  uploaded: "Document received. An admin will check it.", deleted: "Document deleted.",
   republish: "Sent back for review. It goes live again after an admin approves it.", cancel_edit: "Your waiting edit was withdrawn.",
 };
 
@@ -240,6 +242,50 @@ function ListingRow({ l, qs, editing, blocked }: { l: Listing; qs: QueueStatus; 
   );
 }
 
+const docTone = (s: string) => (s === "approved" ? "green" : s === "rejected" ? "red" : "gold") as "green" | "red" | "gold";
+
+// Business papers for the Business Verified badge: photos only, private to admins.
+function Docs({ docs, up, blocked }: { docs: Doc[]; up: boolean; blocked: boolean }) {
+  const verified = docs.some(isValid);
+  return (
+    <>
+      <div className="flex flex-col gap-1">
+        <h2 className="m-0 font-serif text-[22px] font-semibold">Business documents</h2>
+        <p className="m-0 text-[14px] text-ink-soft">Upload a clear photo of your DTI, SEC, Mayor’s permit or other business paper. Once an admin approves it, your farm and Market listings get the <strong>Business Verified</strong> badge. Optional for sellers.</p>
+        <p className="m-0 text-[12.5px] text-muted">Private: only Sabong Central admins can see these, and every view is logged. Photos only (no PDF). Never upload government IDs.</p>
+      </div>
+      {verified && <Note tone="green"><strong>Business Verified.</strong> You have an approved document on file.</Note>}
+      {docs.length > 0 && (
+        <ul className="m-0 flex list-none flex-col divide-y divide-line rounded-2xl border border-line bg-cream p-0">
+          {docs.map((d) => {
+            const left = daysToExpiry(d);
+            return (
+              <li key={d.id} className="flex flex-col gap-1.5 px-4 py-3">
+                <div className="flex flex-wrap items-center gap-2"><span className="flex-1 text-[14.5px] font-semibold">{d.type}</span><Chip tone={docTone(d.status)}>{docLabel(d.status)}</Chip></div>
+                <span className={`text-[12.5px] ${left !== null && left <= 30 ? "font-semibold text-wine" : "text-muted"}`}>
+                  Uploaded {d.created_at.slice(0, 10)} · {left === null ? "no expiry date" : left <= 0 ? `expired ${d.expires}` : `expires ${d.expires}${left <= 30 ? ` (${left} days left)` : ""}`}
+                </span>
+                {d.status === "rejected" && d.note && <p className="m-0 text-[13px] text-wine">Admin note: “{d.note}”</p>}
+                <form action="/api/member/doc" method="post"><input type="hidden" name="id" value={d.id} /><button name="action" value="delete" className={`${small} text-muted`}>Delete</button></form>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {!blocked && (up ? (
+        <form action="/api/member/doc" method="post" encType="multipart/form-data" className={box}>
+          <label className={labelCls}>Document type *
+            <select name="type" required defaultValue="" className={input}><option value="">Select</option>{DOC_TYPES.map((t) => <option key={t}>{t}</option>)}</select>
+          </label>
+          <label className={labelCls}>Expiry date (if it has one)<input name="expires" type="date" className={input} /></label>
+          <div className={full}><PhotoPicker name="doc" label="Photo of the document *" max={MAX_DOC_PAGES} doc required hint={`Up to ${MAX_DOC_PAGES} photos (e.g. front and back). Make sure the name and number are readable.`} /></div>
+          <button type="submit" className={`${btnPrimary} ${full}`}>Upload for review</button>
+        </form>
+      ) : <Note>Document upload isn’t available right now.</Note>)}
+    </>
+  );
+}
+
 export default async function PortalPage({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams;
   const m = await currentMember();
@@ -263,6 +309,7 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
   const count = (f: (q: QueueStatus) => boolean) => mine.filter((x) => f(x.qs)).length;
   const blocked = !canSubmit(m);
   const edits = new Set(await editIds());
+  const docs = await docsOf(m.id);
   const editId = Number(one(sp.id)) || 0;
   const editing = tab === "edit" && mine.some(({ l }) => l.id === editId) ? await byId(editId) : null;
   const edited = one(sp.edited), done = one(sp.done);
@@ -282,11 +329,12 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
         {sent && <Note tone="green"><strong>Received!</strong> Your listing is pending review. You can follow it under My listings.</Note>}
         {edited === "waiting" && <Note tone="green"><strong>Changes sent.</strong> Your listing stays live as it was until an admin approves the edit.</Note>}
         {edited === "resubmitted" && <Note tone="green"><strong>Saved.</strong> Your listing is back in the review queue.</Note>}
+        {tab !== "docs" && docs.some((d) => d.status === "approved" && (daysToExpiry(d) ?? 999) <= 30) && <Note tone="red">A business document is expiring or has expired. <a href="/portal?tab=docs" className="font-semibold">Upload the renewed one</a> to keep your Business Verified badge.</Note>}
         {done && <Note tone="green">{DONE[done] ?? "Done."}</Note>}
         {error && <Note tone="red">{error}</Note>}
 
         <nav aria-label="Portal" className="-mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0">
-          {TABS.filter(([k]) => !blocked || k === "home" || k === "account").map(([k, label]) => (
+          {TABS.filter(([k]) => !blocked || k === "home" || k === "docs" || k === "account").map(([k, label]) => (
             <a key={k} href={`/portal?tab=${k}`} aria-current={k === tab ? "page" : undefined}
               className={`flex min-h-10 flex-none items-center rounded-full px-4 text-[13.5px] font-semibold no-underline ${k === tab ? "bg-crimson text-white" : "border border-line bg-cream text-ink-soft"}`}>
               {label}
@@ -327,6 +375,8 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
             <SubmitForm tab={editing.kind} up={up} m={m} l={editing} />
           </>
         ) : <Note tone="red">{blocked ? "Your account can’t edit listings right now." : "Listing not found."}</Note>)}
+
+        {tab === "docs" && <Docs docs={docs} up={up} blocked={m.status === "suspended" || m.status === "closed"} />}
 
         {tab === "account" && (
           <>

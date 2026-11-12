@@ -4,6 +4,8 @@ import { requireAdmin } from "@/lib/adminGuard";
 import { one, type Search } from "@/lib/content";
 import { titleOf } from "@/lib/db";
 import { ROLES, STATUS_LABEL, listingsOf, memberById, memberTone } from "@/lib/members";
+import { docsOf } from "@/lib/docs";
+import { AdminDocCard } from "@/components/admin/DocCard";
 import { Chip, Note, Page, btnGhost, btnPrimary, input, labelCls } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +18,8 @@ export default async function AdminMember({ params, searchParams }: { params: Pr
   const m = await memberById(Number((await params).id));
   if (!m) notFound();
   const sp = await searchParams;
-  const mine = await listingsOf(m.id);
+  const [mine, docs] = await Promise.all([listingsOf(m.id), docsOf(m.id)]);
+  const open = Number(one(sp.open)) || 0;
   const act = (a: string, label: string, cls: string) => <button type="submit" name="action" value={a} className={cls}>{label}</button>;
   const fb = safe(m.facebook), org = safe(m.org_link);
   return (
@@ -37,8 +40,13 @@ export default async function AdminMember({ params, searchParams }: { params: Pr
             <strong>Verification links</strong>
             <span>Facebook: {fb ? <a href={fb} target="_blank" rel="noopener noreferrer nofollow" className="break-all font-semibold text-wine">{m.facebook}</a> : <span className="text-muted">none</span>}</span>
             <span>Organization link: {org ? <a href={org} target="_blank" rel="noopener noreferrer nofollow" className="break-all font-semibold text-wine">{m.org_link}</a> : <span className="text-muted">none</span>}</span>
-            <span className="text-[12.5px] text-muted">Check that the page is real, active and matches the name. Business papers upload comes next.</span>
+            <span className="text-[12.5px] text-muted">Check that the page is real, active and matches the name.</span>
           </div>
+          <section className="flex flex-col gap-2">
+            <h2 className="m-0 text-[17px] font-bold">Business documents ({docs.length})</h2>
+            {one(sp.error) === "note" && <Note tone="red">Please write a note so the member knows why it wasn’t accepted.</Note>}
+            {docs.length === 0 ? <p className="m-0 text-[14px] text-muted">None uploaded.</p> : docs.map((d) => <AdminDocCard key={d.id} d={d} open={open === d.id} next={`/admin/members/${m.id}`} />)}
+          </section>
           <section className="flex flex-col gap-2">
             <h2 className="m-0 text-[17px] font-bold">Listings ({mine.length})</h2>
             {mine.length === 0 ? <p className="m-0 text-[14px] text-muted">No listings yet.</p> : (

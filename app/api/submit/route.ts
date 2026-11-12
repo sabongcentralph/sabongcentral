@@ -5,6 +5,7 @@ import { toEmbed } from "@/lib/embed";
 import { isFacebook, toUrl } from "@/lib/links";
 import { canSubmit, linkListing, memberFromRequest, ownsListing } from "@/lib/members";
 import { badPhoto, photoFiles, savePhotos } from "@/lib/media";
+import { hasValidDoc } from "@/lib/docs";
 import { ARTICLE_TOPICS, EVENT_CATS, GOODS_CATS, REEL_TOPICS } from "@/lib/sample";
 import { AVAILABILITY } from "@/lib/db";
 import { AREAS } from "@/lib/locations";
@@ -139,6 +140,8 @@ export async function POST(req: Request) {
     return back(req, `/portal?edited=${out}`);
   }
   data = { ...data, ...pics, verifyFacebook: vfb, verifyLink: vlink };
+  // An approved, unexpired business document means new farms and Market items start Business Verified.
+  if (member && (kind === "farm" || kind === "good") && (await hasValidDoc(member.id))) data = { ...data, [kind === "farm" ? "verified" : "sellerVerified"]: true };
   const id = await submit(kind, data, by);
   if (member && id) await linkListing(id, member.id);
   return back(req, `${page}?tab=${kind}&sent=1`);
