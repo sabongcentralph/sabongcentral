@@ -169,7 +169,7 @@ export async function POST(req: Request) {
   if (old) {
     // Keep photos that weren't replaced, and fields only admins or quick actions change.
     const o = old.data as unknown as Record<string, unknown>;
-    const kept = Object.fromEntries(["profile", "cover", "gallery", "poster", "photos", "verified", "sellerVerified", "status", "renewed", "listedBy", ...(admin ? [] : ["operator"])].filter((k) => k in o && !(k in pics)).map((k) => [k, o[k]]));
+    const kept = Object.fromEntries(["profile", "cover", "gallery", "poster", "photos", "verified", "sellerVerified", "status", "renewed", "listedBy", "featured", "spotlight", ...(admin ? [] : ["operator"])].filter((k) => k in o && !(k in pics)).map((k) => [k, o[k]]));
     if (admin) {
       await adminEdit(old, { ...data, ...kept, ...pics, verifyFacebook: vfb, verifyLink: vlink }, admin);
       const wasDraft = old.reason === DRAFT;

@@ -1,5 +1,5 @@
 import { adminFromRequest, sameOrigin } from "@/lib/auth";
-import { addNote, byId, deleteListing, titleOf, decideEdit, review, setState, setVerified, transferListing } from "@/lib/db";
+import { addNote, byId, deleteListing, setHomePick, titleOf, decideEdit, review, setState, setVerified, transferListing } from "@/lib/db";
 import { memberByEmail } from "@/lib/members";
 import { back, field } from "@/lib/forms";
 
@@ -37,6 +37,8 @@ export async function POST(req: Request) {
     if (!l || !m) return back(req, `/admin/item/${id}?error=member`);
     await transferListing(l, m.id, m.name || m.email, admin);
   }
+  else if (action === "feature" || action === "unfeature") await setHomePick(id, "featured", action === "feature", admin);
+  else if (action === "spotlight" || action === "unspotlight") await setHomePick(id, "spotlight", action === "spotlight", admin);
   else if (action === "set_state") await setState(id, field(f, "state", 20), admin);
   else if (action === "note") {
     const body = field(f, "note", 2000);
