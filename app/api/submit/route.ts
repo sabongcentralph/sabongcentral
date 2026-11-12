@@ -6,7 +6,7 @@ import { isFacebook, toUrl } from "@/lib/links";
 import { canSubmit, linkListing, memberFromRequest, ownsListing } from "@/lib/members";
 import { badPhoto, photoFiles, savePhotos } from "@/lib/media";
 import { hasValidDoc } from "@/lib/docs";
-import { ARTICLE_TOPICS, EVENT_CATS, GOODS_CATS, REEL_TOPICS } from "@/lib/sample";
+import { ARTICLE_TOPICS, EVENT_CATS, GOODS_CATS, NOTICE_KINDS, REEL_TOPICS, SUPPLIER_KINDS } from "@/lib/sample";
 import { AVAILABILITY } from "@/lib/db";
 import { AREAS } from "@/lib/locations";
 
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
   // Farms, events and Market items need a signed-in Portal member.
   const member = isPublic || admin ? null : await memberFromRequest(req);
   if (admin) {
-    if (!["farm", "event", "good", "reel"].includes(kind)) return fail("Admins add farms, events, Market items and reels here.");
+    if (!["farm", "event", "good", "reel", "article", "notice", "supplier"].includes(kind)) return fail("Unknown listing type.");
   } else if (isPublic) {
     if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail("Please enter your name and a valid email.");
     if (field(f, "confirm", 2) !== "1") return fail("Please tick the confirmation box.");
@@ -117,11 +117,22 @@ export async function POST(req: Request) {
     const paras = body.split(/\n\s*\n/).map((p) => p.replace(/\s+/g, " ").trim()).filter(Boolean).slice(0, 80);
     const words = body.split(/\s+/).length;
     data = {
-      title, topic, body: paras, summary: field(f, "summary", 300), org: field(f, "org", 120), by: name,
+      title, topic, body: paras, summary: field(f, "summary", 300), org: field(f, "org", 120), by: admin ? field(f, "by", 120) || "Sabong Central" : name,
       refs: field(f, "refs", 2000).split("\n").map((r) => r.trim()).filter(Boolean).slice(0, 15),
       date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Manila" }),
       read: `${Math.max(1, Math.round(words / 200))} min read`,
     };
+  } else if (kind === "notice" && admin) {
+    const title = field(f, "title", 160), text = field(f, "text", 1500), nkind = field(f, "nkind", 40);
+    const issuer = field(f, "issuer", 120), url = toUrl(field(f, "url", 500)), expires = field(f, "expires", 10);
+    if (!title || !text || !NOTICE_KINDS.includes(nkind)) return fail("Type, title and details are required.");
+    if (nkind === "Official Advisories" && (!issuer || !url)) return fail("Official advisories need who issued it and the official source link.");
+    const today = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Manila" });
+    data = { kind: nkind, title, text, meta: `${issuer || "Sabong Central"} · ${today}`, source: "", issuer, scope: field(f, "scope", 160), url, expires: /^\d{4}-\d\d-\d\d$/.test(expires) ? expires : "" };
+  } else if (kind === "supplier" && admin) {
+    const name = field(f, "name", 120), skind = field(f, "skind", 60), place = field(f, "place", 120);
+    if (!name || !SUPPLIER_KINDS.includes(skind) || !place) return fail("Name, type and location are required.");
+    data = { kind: skind, name, place, about: field(f, "about", 600), phone: field(f, "phone", 40), verified: false };
   } else if (kind === "notice") {
     const title = field(f, "title", 160), text = field(f, "text", 1500), farm = field(f, "farm", 120);
     if (!title || !text) return fail("Title and details are required.");

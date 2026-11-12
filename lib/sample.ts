@@ -687,3 +687,6 @@ export const BLOODLINES = ["Albany", "Bates Black", "Boston Roundhead", "Cardina
 // Topics used by the public submission form and the Learning Hub filters.
 export const ARTICLE_TOPICS = ["Breeding", "Nutrition", "Biosecurity", "Incubation", "Poultry Health", "Farm Management"];
 export const REEL_TOPICS = ["Feeding", "Poultry Health", "Breeding", "Farm Management", "Housing", "Incubation"];
+
+export const NOTICE_KINDS = ["Official Advisories", "Safety Warnings", "Farm Announcements"];
+export const SUPPLIER_KINDS = ["Feed Manufacturers", "Equipment Providers", "Agricultural Supply Stores"];

@@ -9,14 +9,15 @@ import { Note, Page } from "@/components/ui";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Add listing" };
 
-const TABS = [["event", "Derby or event"], ["farm", "Gamefarm"], ["good", "Market item"], ["reel", "Reel"]] as const;
+const TABS = [["event", "Derby or event"], ["farm", "Gamefarm"], ["good", "Market item"], ["reel", "Reel"], ["article", "Article"], ["notice", "Notice or advisory"], ["supplier", "Supplier"]] as const;
+type T = (typeof TABS)[number][0];
 const ME = { name: "", phone: "", facebook: "" };
 
 export default async function AdminAdd({ searchParams }: { searchParams: Promise<Search> }) {
   await requireAdmin();
   const sp = await searchParams;
   const editing = Number(one(sp.edit)) ? await byId(Number(one(sp.edit))) : null;
-  const tab = (editing?.kind ?? TABS.find(([k]) => k === one(sp.tab))?.[0] ?? "event") as "event" | "farm" | "good" | "reel";
+  const tab = (editing?.kind ?? TABS.find(([k]) => k === one(sp.tab))?.[0] ?? "event") as T;
   const up = await uploadsOn();
   const error = one(sp.error);
   return (
@@ -39,7 +40,7 @@ export default async function AdminAdd({ searchParams }: { searchParams: Promise
           ))}
         </div>
       )}
-      {editing && !["farm", "event", "good", "reel"].includes(editing.kind) ? <Note tone="red">This kind of listing can’t be edited here.</Note>
+      {editing && !TABS.some(([k]) => k === editing.kind) ? <Note tone="red">This kind of listing can’t be edited here.</Note>
         : <ListingForm tab={tab} up={up} who={ME} l={editing ?? undefined} admin />}
     </Page>
   );

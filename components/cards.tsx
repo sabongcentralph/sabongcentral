@@ -132,11 +132,12 @@ export function SupplierCard({ s }: { s: Listing<"supplier"> }) {
     <article className="flex gap-3 rounded-2xl border border-line bg-cream p-3.5">
       <Photo className="size-16 flex-none rounded-xl" label="Supplier logo" />
       <div className="flex min-w-0 flex-col gap-1">
-        <div className="flex flex-wrap items-center gap-1.5"><Chip tone="blue">{d.kind}</Chip><BizBadge small />{s.isSample && <SampleTag />}</div>
+        <div className="flex flex-wrap items-center gap-1.5"><Chip tone="blue">{d.kind}</Chip>{(d as { verified?: boolean }).verified && <BizBadge small />}{s.isSample && <SampleTag />}</div>
         <h3 className="m-0 text-[15px] font-bold">{d.name}</h3>
         <span className="text-[12.5px] text-muted">{d.place}</span>
         <span className="text-[13px] text-ink-soft">{d.about}</span>
-        <span className="text-[13px] font-semibold">📞 {d.phone}</span>
+        {d.phone && <span className="text-[13px] font-semibold">📞 {d.phone}</span>}
+        {(d as { listedBy?: string }).listedBy === "admin" && <a href={`/contact?topic=${encodeURIComponent("Claim or correct a listing")}&about=${encodeURIComponent(d.name)}`} className="self-start text-[12px] font-semibold text-wine">Listed by Sabong Central · Is this yours?</a>}
         <a href={`/report?target=${encodeURIComponent("Supplier: " + d.name)}`} className="self-start text-[12px] font-semibold text-muted">Report</a>
       </div>
     </article>

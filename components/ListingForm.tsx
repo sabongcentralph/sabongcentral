@@ -1,4 +1,4 @@
-import { BLOODLINES, EVENT_CATS, GOODS_CATS, REEL_TOPICS } from "@/lib/sample";
+import { ARTICLE_TOPICS, BLOODLINES, EVENT_CATS, GOODS_CATS, NOTICE_KINDS, REEL_TOPICS, SUPPLIER_KINDS } from "@/lib/sample";
 import { LocationFields } from "@/components/LocationFields";
 import { PhotoPicker } from "@/components/PhotoPicker";
 import { btnPrimary, input, labelCls } from "@/components/ui";
@@ -22,7 +22,7 @@ function CurrentPhotos({ d, keys }: { d: Record<string, unknown>; keys: string[]
 
 // Farm, event, Market item (and, for admins, reel) form. Members submit for review;
 // admins (admin) post directly and their listings go live at once.
-export function ListingForm({ tab, up, who, l, admin = false }: { tab: "farm" | "event" | "good" | "reel"; up: boolean; who: Who; l?: Listing; admin?: boolean }) {
+export function ListingForm({ tab, up, who, l, admin = false }: { tab: "farm" | "event" | "good" | "reel" | "article" | "notice" | "supplier"; up: boolean; who: Who; l?: Listing; admin?: boolean }) {
   const m = who;
   // When editing, every field starts with the listing's current value.
   const d = (l?.data ?? {}) as unknown as Record<string, unknown>;
@@ -100,6 +100,38 @@ export function ListingForm({ tab, up, who, l, admin = false }: { tab: "farm" | 
         <label className={`${labelCls} ${full}`}>Short description<textarea name="desc" rows={3} maxLength={600} defaultValue={v("desc")} className={`${input} py-2.5`} /></label>
       </>
     )}
+    {tab === "article" && (
+      <>
+        <label className={`${labelCls} ${full}`}>Title *<input name="title" required maxLength={160} defaultValue={v("title")} className={input} /></label>
+        <label className={labelCls}>Topic *<select name="topic" required defaultValue={v("topic")} className={input}>{ARTICLE_TOPICS.map((t) => <option key={t}>{t}</option>)}</select></label>
+        <label className={labelCls}>Author or source *<input name="by" required maxLength={120} defaultValue={v("by", "Sabong Central")} className={input} /></label>
+        <label className={`${labelCls} ${full}`}>Organization (optional)<input name="org" maxLength={120} defaultValue={v("org")} className={input} /></label>
+        <label className={`${labelCls} ${full}`}>Short summary<input name="summary" maxLength={300} defaultValue={v("summary")} className={input} /></label>
+        <label className={`${labelCls} ${full}`}>Article * (blank line between paragraphs)<textarea name="body" required rows={12} defaultValue={l ? ((d.body as string[] | undefined) ?? []).join("\n\n") : ""} className={`${input} py-2.5`} /></label>
+        <label className={`${labelCls} ${full}`}>Sources / references (one per line)<textarea name="refs" rows={3} defaultValue={l ? ((d.refs as string[] | undefined) ?? []).join("\n") : ""} className={`${input} py-2.5`} /></label>
+      </>
+    )}
+    {tab === "notice" && (
+      <>
+        <label className={labelCls}>Type *<select name="nkind" required defaultValue={v("kind", "Official Advisories")} className={input}>{NOTICE_KINDS.map((t) => <option key={t}>{t}</option>)}</select></label>
+        <label className={labelCls}>Title *<input name="title" required maxLength={160} defaultValue={v("title")} className={input} /></label>
+        <label className={`${labelCls} ${full}`}>Details *<textarea name="text" required rows={5} maxLength={1500} defaultValue={v("text")} className={`${input} py-2.5`} /></label>
+        <label className={labelCls}>Issued by (for official advisories)<input name="issuer" placeholder="e.g. DA, BAI, Batangas Provincial Vet Office" defaultValue={v("issuer")} className={input} /></label>
+        <label className={labelCls}>Applies to (area)<input name="scope" placeholder="e.g. Region IV-A, Batangas" defaultValue={v("scope")} className={input} /></label>
+        <label className={labelCls}>Official source link<input name="url" type="url" placeholder="https://…" defaultValue={v("url")} className={input} /></label>
+        <label className={labelCls}>Valid until<input name="expires" type="date" defaultValue={v("expires")} className={input} /></label>
+        <p className={`m-0 text-[12.5px] text-muted ${full}`}>Official advisories need the issuer and the official source link.</p>
+      </>
+    )}
+    {tab === "supplier" && (
+      <>
+        <label className={`${labelCls} ${full}`}>Supplier name *<input name="name" required maxLength={120} defaultValue={v("name")} className={input} /></label>
+        <label className={labelCls}>Type *<select name="skind" required defaultValue={v("kind")} className={input}>{SUPPLIER_KINDS.map((t) => <option key={t}>{t}</option>)}</select></label>
+        <label className={labelCls}>Location *<input name="place" required maxLength={120} placeholder="e.g. Lipa City, Batangas" defaultValue={v("place")} className={input} /></label>
+        <label className={labelCls}>Public contact number<input name="phone" inputMode="tel" defaultValue={v("phone")} className={input} /></label>
+        <label className={`${labelCls} ${full}`}>About<textarea name="about" rows={3} maxLength={600} defaultValue={v("about")} className={`${input} py-2.5`} /></label>
+      </>
+    )}
     {tab === "good" && (
       <>
         <label className={`${labelCls} ${full}`}>Product name *<input name="name" required defaultValue={v("name")} className={input} /></label>
@@ -122,8 +154,8 @@ export function ListingForm({ tab, up, who, l, admin = false }: { tab: "farm" | 
       </>
     )}
     {admin && (
-      <label className={`${labelCls} ${full}`}>Source link (their Facebook page or post; admin only){tab === "farm" ? "" : " *"}
-        <input name="vfb" required={tab !== "farm"} maxLength={300} defaultValue={v("verifyFacebook")} placeholder="https://www.facebook.com/…" className={input} />
+      <label className={`${labelCls} ${full}`}>Source link (their Facebook page or post; admin only){["farm", "article", "notice", "supplier"].includes(tab) ? "" : " *"}
+        <input name="vfb" required={!["farm", "article", "notice", "supplier"].includes(tab)} maxLength={300} defaultValue={v("verifyFacebook")} placeholder="https://www.facebook.com/…" className={input} />
       </label>
     )}
     {admin ? <input type="hidden" name="confirm" value="1" /> : (

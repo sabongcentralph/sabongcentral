@@ -23,7 +23,7 @@ export default async function NoticesPage({ searchParams }: { searchParams: Prom
           </a>
         ))}
       </nav>
-      <Note tone="red">Official advisories come only from government sources such as the DA, BAI or a provincial vet office, and are posted by admins with a link to the source. The advisories on this test site are SAMPLES.</Note>
+      <Note tone="red">Official advisories come only from government sources such as the DA, BAI or a provincial vet office, and are posted by admins with a link to the source.</Note>
       {shown.length === 0 ? <Empty>No notices.</Empty> : <div className="grid gap-3 md:grid-cols-2">{shown.map((n) => <NoticeCard key={n.id} n={n} />)}</div>}
       <p className="m-0 text-[13px] text-muted">Have a farm or community announcement? <a href="/submit?tab=notice" className="font-semibold text-wine">Submit it here</a> (no account needed) or through your Portal. Only admins post official advisories, always with the issuer, date, area and official source.</p>
     </Page>
