@@ -29,6 +29,7 @@ const ITEMS: Item[] = [
     ["/admin/queue?type=Article&q=All", "Articles & Guides"],
     ["/admin/queue?type=Announcement&q=All", "Announcements"],
   ] },
+  { href: "/admin/placements", label: "Placements", icon: HomeIcon },
   { href: "/admin/members", label: "Members", icon: UserIcon, badge: "members" },
   { href: "/admin/documents", label: "Documents", icon: BookIcon, badge: "docs" },
   { href: "/admin/reports", label: "Reports", icon: AlertIcon, badge: "reports" },

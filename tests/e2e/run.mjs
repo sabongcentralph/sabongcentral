@@ -404,6 +404,28 @@ await step("admin makes the farm the Farm Spotlight and Featured", async () => {
   const feat = await phone.locator("section:has(h2:has-text('Featured Gamefarms'))").innerText();
   if (!feat.includes(aFarm)) fail("farm is not featured");
 });
+await step("admin marks the slot Sponsored on Placements; label shows, then ends", async () => {
+  await go(admin, "/admin/placements");
+  const row = admin.locator("li", { hasText: aFarm });
+  await row.locator("input[type=checkbox][name^=sp_]").check();
+  await admin.click("button:has-text('Save placements')");
+  await admin.waitForURL(/saved=1/);
+  await go(phone, "/");
+  if (!(await phone.locator("section:has(h2:has-text('Featured Gamefarms'))").innerText()).toUpperCase().includes("SPONSORED")) fail("no Sponsored label");
+  await go(phone, "/farms");
+  if (!(await phone.locator("main").innerText()).toUpperCase().includes("SPONSORED")) fail("farms page has no Sponsored label at top");
+  await go(admin, "/admin/placements");
+  await admin.locator("li", { hasText: aFarm }).locator("input[type=date]").fill("2020-01-01");
+  await admin.click("button:has-text('Save placements')");
+  await admin.waitForURL(/saved=1/);
+  await go(phone, "/farms");
+  if ((await phone.locator("main").innerText()).toUpperCase().includes("SPONSORED")) fail("ended sponsorship still shows");
+  await go(admin, "/admin/placements");
+  await admin.locator("li", { hasText: aFarm }).locator("input[type=date]").fill("");
+  await admin.locator("li", { hasText: aFarm }).locator("input[type=checkbox][name^=sp_]").uncheck();
+  await admin.click("button:has-text('Save placements')");
+  await admin.waitForURL(/saved=1/);
+});
 await step("admin edits its own listing and it changes at once", async () => {
   await openInQueue(aFarm, "?q=Approved");
   await admin.click("a:has-text('Edit listing')");

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { approved } from "@/lib/db";
-import { many, matches, one, type Search } from "@/lib/content";
+import { placementLabel, withFeaturedFirst } from "@/lib/placements";
+import { many, matches, one, todayPH, type Search } from "@/lib/content";
 import { BLOODLINES } from "@/lib/sample";
 import { FarmCard } from "@/components/cards";
 import { FilterPanel } from "@/components/FilterPanel";
@@ -13,7 +14,7 @@ export const metadata: Metadata = { title: "Farms" };
 export default async function FarmsPage({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams;
   const q = one(sp.q), province = one(sp.province), city = one(sp.city), lines = many(sp.line), ver = one(sp.verified) === "1";
-  const all = await approved("farm");
+  const all = withFeaturedFirst(await approved("farm"));
   const farms = all.filter((f) => {
     const d = f.data;
     return (
@@ -22,6 +23,7 @@ export default async function FarmsPage({ searchParams }: { searchParams: Promis
       (!lines.length || d.bloodlines.some((b) => lines.includes(b.name))) && (!ver || d.verified)
     );
   });
+  const today = todayPH();
   const active = [q, province, city, ver ? "1" : ""].filter(Boolean).length + lines.length;
 
   return (
@@ -48,7 +50,7 @@ export default async function FarmsPage({ searchParams }: { searchParams: Promis
       <p className="m-0 text-[14px] text-ink-soft"><strong>{farms.length}</strong> farms</p>
       {farms.length === 0 ? <Empty>No farms match. Try different filters.</Empty> : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {farms.map((f) => <FarmCard key={f.id} f={f} />)}
+          {farms.map((f) => <FarmCard key={f.id} f={f} tag={f.data.featured && (!f.data.promoUntil || f.data.promoUntil >= today) ? placementLabel(f) : undefined} />)}
         </div>
       )}
     </Page>
