@@ -392,6 +392,18 @@ await step("the farm page says Listed by Sabong Central, and Claim opens Contact
   if ((await phone.inputValue("select[name=topic]")) !== "Claim or correct a listing") fail("topic not preselected");
   if (!(await phone.inputValue("textarea[name=body]")).includes(aFarm)) fail("listing name not filled in");
 });
+await step("admin makes the farm the Farm Spotlight and Featured", async () => {
+  await openInQueue(aFarm, "?q=Approved");
+  await admin.click("button:has-text('Make Farm Spotlight')");
+  await admin.waitForURL(/done=spotlight/);
+  await admin.click("button:has-text('Feature on home page')");
+  await admin.waitForURL(/done=feature/);
+  await go(phone, "/");
+  const spot = await phone.locator("section:has(h2:has-text('Farm Spotlight'))").innerText();
+  if (!spot.includes(aFarm)) fail("farm is not the spotlight");
+  const feat = await phone.locator("section:has(h2:has-text('Featured Gamefarms'))").innerText();
+  if (!feat.includes(aFarm)) fail("farm is not featured");
+});
 await step("admin edits its own listing and it changes at once", async () => {
   await openInQueue(aFarm, "?q=Approved");
   await admin.click("a:has-text('Edit listing')");

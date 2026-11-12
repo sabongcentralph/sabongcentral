@@ -20,7 +20,9 @@ export default async function Home() {
   const [farms, events, goods, reels, articles, notices] = await Promise.all([
     approved("farm"), publicEvents(), approved("good"), approved("reel"), approved("article"), approved("notice"),
   ]);
-  const spot = farms.find((f) => f.data.verified) ?? farms[0];
+  // Admin picks first: the Spotlight farm, then Featured farms; otherwise verified, then newest.
+  const spot = farms.find((f) => f.data.spotlight) ?? farms.find((f) => f.data.featured) ?? farms.find((f) => f.data.verified) ?? farms[0];
+  const featured = [...farms.filter((f) => f.data.featured), ...farms.filter((f) => !f.data.featured)];
 
   const derbies = events.filter((e) => e.data.derby);
   const classes = events.filter((e) => !e.data.derby);
@@ -83,7 +85,7 @@ export default async function Home() {
 
         <section className="flex flex-col gap-3">
           <SectionHead title="Featured Gamefarms" href="/farms" />
-          <Row>{farms.slice(0, 4).map((f) => <FarmCard key={f.id} f={f} compact />)}</Row>
+          <Row>{featured.slice(0, 4).map((f) => <FarmCard key={f.id} f={f} compact />)}</Row>
         </section>
 
         <section className="flex flex-col gap-3">

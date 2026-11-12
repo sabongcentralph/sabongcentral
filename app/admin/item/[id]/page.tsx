@@ -157,6 +157,8 @@ export default async function ReviewItem({ params, searchParams }: { params: Pro
             <div className="flex flex-wrap gap-2">
               {l.status !== "approved" && act("approve", "Approve", btnPrimary)}
               {l.status !== "approved" && canBadge && act("approve_verified", "Approve + Business Verified", btnPrimary)}
+              {l.status === "approved" && l.kind === "farm" && (data.featured ? act("unfeature", "Remove from Featured", btnGhost) : act("feature", "Feature on home page", btnGhost))}
+              {l.status === "approved" && l.kind === "farm" && (data.spotlight ? act("unspotlight", "Remove Farm Spotlight", btnGhost) : act("spotlight", "Make Farm Spotlight", btnGhost))}
               {l.status === "approved" && canBadge && (badgeOn ? act("unverify", "Remove badge", btnGhost) : act("verify", "Give Business Verified", btnGhost))}
               {qs === "New" && act("in_review", "Mark In Review", btnGhost)}
               {l.status === "pending" && act("request_changes", "Request changes", btnGhost)}

@@ -13,6 +13,7 @@ export type FarmData = {
   facebook: string; messenger?: string; bloodlines: Bloodline[]; verified: boolean; est: string;
   visit?: string; address?: string; // address is private: never shown publicly
   profile?: string; cover?: string; gallery?: string[]; // /media/p/... photo paths
+  featured?: boolean; spotlight?: boolean; // set by admin: home page "Featured Gamefarms" and "Farm Spotlight"
 };
 export type EventData = {
   title: string; cat: string; sub: string; group: string; derby: boolean; date: string; days: string; longDate: string;
@@ -547,12 +548,25 @@ export async function decideEdit(id: number, approve: boolean, admin: string, re
   if (!l || !e) return;
   const d = db();
   // Admin-controlled fields always come from the live listing.
-  const keep = Object.fromEntries(["verified", "sellerVerified"].filter((k) => k in (l.data as object)).map((k) => [k, (l.data as Record<string, unknown>)[k]]));
+  const keep = Object.fromEntries(["verified", "sellerVerified", "featured", "spotlight"].filter((k) => k in (l.data as object)).map((k) => [k, (l.data as Record<string, unknown>)[k]]));
   await d.batch([
     ...(approve ? [d.prepare(`update listings set data = ?, reason = null, updated_at = datetime('now') where id = ?`).bind(JSON.stringify({ ...e.data, ...keep }), id)] : []),
     ...(!approve && reason ? [d.prepare(`update listings set reason = ? where id = ?`).bind(reason, id)] : []),
     d.prepare(`delete from listing_edits where listing_id = ?`).bind(id),
     d.prepare(`insert into audit_log (admin, action, target, reason) values (?, ?, ?, ?)`).bind(admin, approve ? "edit approved" : "edit rejected", `${l.kind}: ${titleOf(l)}`, reason || null),
+  ]);
+}
+
+// Home page picks (farms): "featured" can be many; only one farm is the Spotlight.
+export async function setHomePick(id: number, what: "featured" | "spotlight", on: boolean, admin: string) {
+  const l = await byId(id);
+  if (!l || l.kind !== "farm") return;
+  const d = db();
+  const data = { ...(l.data as object), [what]: on };
+  await d.batch([
+    ...(what === "spotlight" && on ? [d.prepare(`update listings set data = json_remove(data, '$.spotlight') where kind = 'farm' and id != ? and json_extract(data, '$.spotlight') = 1`).bind(id)] : []),
+    d.prepare(`update listings set data = ?, updated_at = datetime('now') where id = ?`).bind(JSON.stringify(data), id),
+    d.prepare(`insert into audit_log (admin, action, target) values (?, ?, ?)`).bind(admin, `${on ? "" : "removed "}${what === "spotlight" ? "farm spotlight" : "featured"}`, `${l.kind}: ${titleOf(l)}`),
   ]);
 }
 
