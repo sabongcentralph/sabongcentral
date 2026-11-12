@@ -8,7 +8,7 @@
 import { createRequire } from "node:module";
 import { DatabaseSync } from "node:sqlite";
 import { spawn } from "node:child_process";
-import { mkdirSync, readdirSync, existsSync } from "node:fs";
+import { mkdirSync, readdirSync, existsSync, readFileSync } from "node:fs";
 import { webcrypto as crypto } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -66,6 +66,19 @@ async function place(p) {
   await p.locator("select[name=city]").selectOption("Cebu City");
 }
 const hydrate = (p) => p.waitForTimeout(2500); // photo pickers need the page to be interactive
+// Drops a photo onto an upload box the way a mouse drag would.
+async function dropPhoto(p, inputName) {
+  const b64 = readFileSync(PHOTO).toString("base64");
+  await p.evaluate(({ b64, inputName }) => {
+    const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+    const dt = new DataTransfer();
+    dt.items.add(new File([bytes], "dropped.jpg", { type: "image/jpeg" }));
+    const zone = document.querySelector(`input[name=${inputName}]`).closest("[data-dropzone]");
+    zone.dispatchEvent(new DragEvent("dragover", { dataTransfer: dt, bubbles: true, cancelable: true }));
+    zone.dispatchEvent(new DragEvent("drop", { dataTransfer: dt, bubbles: true, cancelable: true }));
+  }, { b64, inputName });
+  await p.waitForFunction((n) => document.querySelector(`input[name=${n}]`).files.length > 0 && !document.body.innerText.includes("Shrinking photo"), inputName);
+}
 
 // ---------- dev server + local admin password ----------
 async function up() {
@@ -393,6 +406,38 @@ await step("admin edits its own listing and it changes at once", async () => {
   await see(phone, "Family farm in Cebu.");
 });
 
+await step("admin saves a draft (poster dragged in), publishes it, then deletes it", async () => {
+  const t = `E2E Draft Seminar ${RUN}`;
+  await go(admin, "/admin/add?tab=event");
+  await hydrate(admin);
+  await admin.fill("input[name=title]", t);
+  await admin.selectOption("select[name=sub]", "Biosecurity");
+  await admin.fill("input[name=date]", "2026-12-20");
+  await place(admin);
+  await admin.fill("input[name=vfb]", "facebook.com/e2eorganizers");
+  await dropPhoto(admin, "poster");
+  await see(admin, "KB");
+  await admin.click("button:has-text('Save as draft')");
+  await admin.waitForURL(/done=draft_saved/);
+  await see(admin, "This is a draft");
+  await go(phone, "/education"); await notSee(phone, t);
+  await go(admin, "/admin/queue?q=Draft"); await see(admin, t);
+  await admin.click(`a:has-text("${t}")`);
+  await admin.waitForURL(/admin\/item/);
+  await admin.click("button:has-text('Publish now')");
+  await admin.waitForURL(/done=approve/);
+  await go(phone, "/education"); await see(phone, t);
+  await go(admin, "/admin/queue?q=Approved");
+  await admin.click(`a:has-text("${t}")`);
+  await admin.waitForURL(/admin\/item/);
+  if (!(await admin.locator("img[src^='/media/p/']").count())) fail("dropped poster was not saved");
+  admin.once("dialog", (d) => d.accept());
+  await admin.click("button:has-text('Delete')");
+  await admin.waitForURL(/deleted=/);
+  await see(admin, `Deleted “${t}”`);
+  await go(phone, "/education"); await notSee(phone, t);
+});
+
 section("4. Member accounts (created by admin)");
 const memEmail = `e2e.${RUN}@example.com`, memName = `E2E Farm ${RUN}`;
 let temp = "", memberUrl = "";
@@ -588,6 +633,33 @@ await step("member unpublishes the farm, then asks to publish it again", async (
   await openInQueue(farm);
   await act("approve");
   await go(phone, "/farms"); await see(phone, farm);
+});
+await step("member saves a draft, submits it for review, and deletes a listing", async () => {
+  const t = `E2E Draft Item ${RUN}`;
+  await go(member, "/portal?tab=good");
+  await hydrate(member);
+  await member.fill("input[name=name]", t);
+  await member.locator("select[name=sub]").selectOption({ index: 1 });
+  await place(member);
+  await dropPhoto(member, "photos");
+  await member.check("input[name=confirm]");
+  await member.click("button:has-text('Save as draft')");
+  await member.waitForURL(/done=draft/);
+  await see(member, "Draft saved");
+  const row = member.locator(`li:has-text("${t}")`);
+  if (!(await row.innerText()).includes("Draft")) fail("not shown as a draft");
+  await go(admin, "/admin/queue"); await notSee(admin, t); // drafts aren't in New
+  await go(member, "/portal");
+  await member.locator(`li:has-text("${t}") button:has-text("Submit for review")`).click();
+  await member.waitForURL(/done=submit_draft/);
+  await go(admin, "/admin/queue"); await see(admin, t);
+  await go(member, "/portal");
+  member.once("dialog", (d) => d.accept());
+  await member.locator(`li:has-text("${t}") button:has-text("Delete")`).click();
+  await member.waitForURL(/done=delete/);
+  await see(member, "Listing deleted.");
+  await notSee(member, t);
+  await go(admin, "/admin/queue?q=All"); await notSee(admin, t);
 });
 await step("a member can't change someone else's listing", async () => {
   const r = await member.request.post(B + "/api/member/listing", { form: { id: "1", action: "unpublish" }, headers: { Origin: B }, maxRedirects: 0 });

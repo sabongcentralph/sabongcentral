@@ -1,8 +1,8 @@
 import { ARTICLE_TOPICS, BLOODLINES, EVENT_CATS, GOODS_CATS, NOTICE_KINDS, REEL_TOPICS, SUPPLIER_KINDS } from "@/lib/sample";
 import { LocationFields } from "@/components/LocationFields";
 import { PhotoPicker } from "@/components/PhotoPicker";
-import { btnPrimary, input, labelCls } from "@/components/ui";
-import type { Listing } from "@/lib/db";
+import { btnGhost, btnPrimary, input, labelCls } from "@/components/ui";
+import { DRAFT, type Listing } from "@/lib/db";
 
 type Who = { name: string; phone: string; facebook: string };
 const Honeypot = () => <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px]" />;
@@ -28,6 +28,9 @@ export function ListingForm({ tab, up, who, l, admin = false }: { tab: "farm" | 
   const d = (l?.data ?? {}) as unknown as Record<string, unknown>;
   const v = (k: string, dflt = "") => (l ? String(d[k] ?? "") : dflt);
   const lines = l ? ((d.bloodlines as { name: string }[] | undefined) ?? []).map((b) => b.name) : [];
+  const isDraft = l?.reason === DRAFT;
+  // New listings and drafts can be saved as a draft; live ones (and admin edits of them) can't.
+  const canDraft = !l || isDraft || (!admin && l.status !== "approved");
   const price = v("price").replace(/^₱\s?/, "").replace(/^quote$/, "");
   return (
   <form action="/api/submit" method="post" encType="multipart/form-data" className={box}>
@@ -164,7 +167,15 @@ export function ListingForm({ tab, up, who, l, admin = false }: { tab: "farm" | 
       I confirm the information is accurate, and I agree to the <a href="/legal/rules" className="font-semibold text-wine">Portal Rules</a>{tab === "good" ? <> and <a href="/legal/market" className="font-semibold text-wine">Market Notice</a></> : null}.
     </label>
     )}
-    <button type="submit" className={`${btnPrimary} ${full}`}>{admin ? (l ? "Save changes (live now)" : "Publish now") : l ? (l.status === "approved" ? "Send changes for review" : "Save and resubmit") : "Submit for review"}</button>
+    {canDraft ? (
+      <div className={`${full} flex flex-wrap gap-2`}>
+        <button type="submit" name="go" value="draft" className={`${btnGhost} flex-1`}>{isDraft ? "Save draft" : "Save as draft"}</button>
+        <button type="submit" name="go" value="publish" className={`${btnPrimary} flex-1`}>{admin ? "Publish now" : "Submit for review"}</button>
+        <p className="m-0 w-full text-[12.5px] text-muted">A draft is private: only you{admin ? "" : " and admins"} can see it. {admin ? "Publish it when it’s ready." : "Submit it when it’s ready and an admin reviews it."}</p>
+      </div>
+    ) : (
+      <button type="submit" name="go" value="publish" className={`${btnPrimary} ${full}`}>{admin ? "Save changes (live now)" : l?.status === "approved" ? "Send changes for review" : "Save and resubmit"}</button>
+    )}
   </form>
   );
 }

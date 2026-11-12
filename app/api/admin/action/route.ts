@@ -1,5 +1,5 @@
 import { adminFromRequest, sameOrigin } from "@/lib/auth";
-import { addNote, byId, decideEdit, review, setState, setVerified, transferListing } from "@/lib/db";
+import { addNote, byId, deleteListing, titleOf, decideEdit, review, setState, setVerified, transferListing } from "@/lib/db";
 import { memberByEmail } from "@/lib/members";
 import { back, field } from "@/lib/forms";
 
@@ -14,6 +14,11 @@ export async function POST(req: Request) {
   const needsReason = action === "reject" || action === "request_changes" || action === "edit_reject";
   if (needsReason && !reason) return back(req, `/admin/item/${id}?error=reason`);
 
+  if (action === "delete") {
+    const l = await byId(id);
+    if (l) await deleteListing(l, admin);
+    return back(req, `/admin/queue?q=All&deleted=${encodeURIComponent(l ? titleOf(l) : "")}`);
+  }
   if (action === "approve" || action === "restore") await review(id, "Approved", admin, reason);
   else if (action === "approve_verified") { await setVerified(id, true, admin); await review(id, "Approved", admin, reason); }
   else if (action === "verify") await setVerified(id, true, admin);

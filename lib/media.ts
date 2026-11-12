@@ -36,3 +36,10 @@ export async function savePhotos(files: File[]): Promise<string[]> {
   }
   return out;
 }
+
+// Removes stored photos given their public paths (/media/p/<id>.webp). Missing ones are ignored.
+export async function deletePhotos(paths: string[]) {
+  const store = await photoStore();
+  const keys = paths.map((p) => p.replace(/^\/media\//, "")).filter((k) => KEY_RE.test(k) && k.startsWith("p/"));
+  if (store && keys.length) await store.delete(keys).catch(() => {});
+}
