@@ -13,9 +13,10 @@ export default defineConfig({
     },
     env: {
       ASSETS: bindings.assets(),
-      // Database for farms, organizers, derbies, users, reports.
-      // Created automatically in the Cloudflare account on first deploy.
-      DB: bindings.d1({ name: "sabongcentral-db" }),
+      // Database for farms, organizers, derbies, users, reports: the D1 database
+      // "sabongcentral-db". Bound by its id so deploys match the dashboard
+      // settings (a name-only binding makes `cf deploy` stop with a conflict).
+      DB: bindings.d1({ id: "3a9f50a6-70e3-436c-968c-8a28edfa0e1f" }),
       // Photos (R2 bucket "sabongcentral-photos", binding PHOTOS) are added in
       // Phase 2 with photo upload. R2 must be enabled in the dashboard first.
       // Derby listings: ON (Em, 2026-11-11). Each derby still needs verified permits.
