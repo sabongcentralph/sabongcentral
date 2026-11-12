@@ -337,6 +337,9 @@ await step("admin publishes a derby straight away", async () => {
   await phone.click(`a:has-text("${aDerby}")`);
   await phone.waitForLoadState();
   await see(phone, "21+ only · Gamble responsibly");
+  await see(phone, "Permit not yet verified by Sabong Central");
+  await notSee(phone, "verified by admin");
+  await notSee(phone, "An admin reviewed");
 });
 await step("admin adds a farm without a phone number, and a reel", async () => {
   await go(admin, "/admin/add?tab=farm");
