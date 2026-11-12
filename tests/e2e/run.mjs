@@ -61,6 +61,10 @@ async function go(p, url) {
   if (!r || r.status() >= 400) fail(`${url} returned ${r?.status()}`);
   return r;
 }
+async function place(p) {
+  await p.locator("select[name=province]").selectOption("Cebu");
+  await p.locator("select[name=city]").selectOption("Cebu City");
+}
 const hydrate = (p) => p.waitForTimeout(2500); // photo pickers need the page to be interactive
 
 // ---------- dev server + local admin password ----------
@@ -277,6 +281,65 @@ await step("contact message arrives in Messages", async () => {
   await see(admin, `Please make me an account ${RUN}`);
 });
 
+section("3b. Admin adds listings directly (Listed by Sabong Central)");
+const aDerby = `E2E Derby ${RUN}`, aFarm = `E2E Listed Farm ${RUN}`, aReel = `E2E Listed Reel ${RUN}`;
+await step("admin publishes a derby straight away", async () => {
+  await go(admin, "/admin/add?tab=event");
+  await hydrate(admin);
+  await admin.fill("input[name=title]", aDerby);
+  const derbySub = await admin.$$eval("select[name=sub] optgroup", (gs) => gs.flatMap((g) => [...g.querySelectorAll("option")].map((o) => o.value)).find((v) => /derby/i.test(v)));
+  await admin.selectOption("select[name=sub]", derbySub ?? { index: 1 });
+  await admin.fill("input[name=org]", "E2E Organizers");
+  await admin.fill("input[name=date]", "2026-12-12");
+  await place(admin);
+  await admin.fill("input[name=permits]", "LGU permit 123, cockpit license 456");
+  await admin.fill("input[name=vfb]", "facebook.com/e2eorganizers/posts/1");
+  await admin.click("button:has-text('Publish now')");
+  await admin.waitForURL(/done=published/);
+  await go(phone, "/events");
+  await see(phone, aDerby);
+});
+await step("admin adds a farm without a phone number, and a reel", async () => {
+  await go(admin, "/admin/add?tab=farm");
+  await hydrate(admin);
+  await admin.fill("input[name=name]", aFarm);
+  await place(admin);
+  await admin.fill("input[name=facebook]", "facebook.com/e2elistedfarm");
+  await admin.click("button:has-text('Publish now')");
+  await admin.waitForURL(/done=published/);
+  await go(admin, "/admin/add?tab=reel");
+  await admin.fill("input[name=url]", "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+  await admin.fill("input[name=title]", aReel);
+  await admin.fill("input[name=vfb]", "facebook.com/e2elistedfarm");
+  await admin.click("button:has-text('Publish now')");
+  await admin.waitForURL(/done=published/);
+  await go(phone, "/reels");
+  await see(phone, aReel);
+});
+await step("the farm page says Listed by Sabong Central, and Claim opens Contact Us filled in", async () => {
+  await go(phone, "/farms");
+  await phone.click(`a:has-text("${aFarm}")`);
+  await phone.waitForLoadState();
+  await see(phone, "Listed by Sabong Central");
+  await phone.click("a:has-text('Claim or correct it')");
+  await phone.waitForURL(/contact/);
+  if ((await phone.inputValue("select[name=topic]")) !== "Claim or correct a listing") fail("topic not preselected");
+  if (!(await phone.inputValue("textarea[name=body]")).includes(aFarm)) fail("listing name not filled in");
+});
+await step("admin edits its own listing and it changes at once", async () => {
+  await openInQueue(aFarm, "?q=Approved");
+  await admin.click("a:has-text('Edit listing')");
+  await admin.waitForURL(/add\?edit=/);
+  await hydrate(admin);
+  await admin.fill("textarea[name=about]", "Family farm in Cebu.");
+  await admin.click("button:has-text('Save changes (live now)')");
+  await admin.waitForURL(/done=edited/);
+  await go(phone, "/farms");
+  await phone.click(`a:has-text("${aFarm}")`);
+  await phone.waitForLoadState();
+  await see(phone, "Family farm in Cebu.");
+});
+
 section("4. Member accounts (created by admin)");
 const memEmail = `e2e.${RUN}@example.com`, memName = `E2E Farm ${RUN}`;
 let temp = "", memberUrl = "";
@@ -334,12 +397,21 @@ await step("the old temporary password no longer works", async () => {
   await see(member, "My listings");
 });
 
+await step("admin moves the Listed farm to the member's account", async () => {
+  await openInQueue(aFarm, "?q=Approved");
+  await admin.fill("input[name=member]", memEmail);
+  await admin.click("button[value=transfer]");
+  await admin.waitForURL(/done=transfer/);
+  await go(member, "/portal");
+  await see(member, aFarm);
+  await go(phone, "/farms");
+  await phone.click(`a:has-text("${aFarm}")`);
+  await phone.waitForLoadState();
+  await notSee(phone, "Listed by Sabong Central");
+});
+
 section("5. Member listings with photos");
 const farm = `E2E Gamefarm ${RUN}`, ev = `E2E Seminar ${RUN}`, item = `E2E Feeder ${RUN}`;
-async function place(p) {
-  await p.locator("select[name=province]").selectOption("Cebu");
-  await p.locator("select[name=city]").selectOption("Cebu City");
-}
 await step("submits a farm with a profile photo and gallery (photos shrink first)", async () => {
   await go(member, "/portal?tab=farm");
   await hydrate(member);

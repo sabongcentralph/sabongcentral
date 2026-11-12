@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { ListedBy } from "@/components/ListedBy";
 import { approvedOne } from "@/lib/db";
 import { derbyEnabled } from "@/lib/health";
 import { BizBadge, Chip, Note, Page, Photo, SampleTag } from "@/components/ui";
@@ -59,6 +60,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
             <span className="text-[12px] text-muted">An admin reviewed this organizer's business registration or proof of legitimacy. This is not a guarantee of the event or any transaction.</span>
           </div>
           <Note tone={d.derby ? "red" : "gold"}>Information only. Sabong Central does not organize events, accept bets, livestream fights, or receive event payments. Any fee is paid directly to the organizer.</Note>
+          <ListedBy data={d} title={d.title} />
           <a href={`/report?target=${encodeURIComponent("Event: " + d.title)}`} className="flex min-h-11 items-center gap-1.5 text-[14px] font-semibold text-wine no-underline"><Flag size={15} /> Report this event</a>
         </aside>
       </div>

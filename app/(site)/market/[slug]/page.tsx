@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { ListedBy } from "@/components/ListedBy";
 import { approved, approvedOne } from "@/lib/db";
 import { telHref } from "@/lib/links";
 import { AvailBadge, GoodCard } from "@/components/cards";
@@ -58,6 +59,7 @@ export default async function GoodPage({ params }: { params: Promise<{ slug: str
             <div className="flex justify-between border-t border-line pt-2.5 text-[14px]"><span className="text-muted">Contact number</span><a href={telHref(d.phone)} className="font-semibold text-ink no-underline">{d.phone}</a></div>
             <div className="flex justify-between border-t border-line pt-2.5 text-[14px]"><span className="text-muted">Location</span><span className="font-semibold">{d.city}, {d.province}</span></div>
             {d.sellerVerified && <p className="m-0 text-[11.5px] leading-relaxed text-muted">{BIZ_NOTE}</p>}
+            <ListedBy data={d} title={d.name} />
             <a href={`/report?target=${encodeURIComponent("Seller: " + d.seller + " · " + d.name)}`} className="flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-wine bg-blush text-[14px] font-semibold text-wine no-underline">
               <Flag size={15} /> Report Seller
             </a>

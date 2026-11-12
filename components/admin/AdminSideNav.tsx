@@ -8,6 +8,7 @@ type Item = { href: string; label: string; icon: (p: { size?: number }) => React
 
 const ITEMS: Item[] = [
   { href: "/admin", label: "Dashboard", icon: HomeIcon },
+  { href: "/admin/add", label: "+ Add listing", icon: ShieldIcon },
   { href: "/admin/queue", label: "Review queue", icon: ShieldIcon, badge: "waiting", subs: [
     ["/admin/queue", "Waiting for review"],
     ["/admin/queue?q=Needs+Changes", "Needs changes"],

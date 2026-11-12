@@ -6,7 +6,7 @@ import { Note, Page, PageHead, btnPrimary, input, labelCls } from "@/components/
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Contact Us" };
 
-const TOPICS = ["General question", "Request a Portal account", "Forgot my Portal password", "Listing help", "Report a problem", "Privacy / data request", "Partnership"];
+const TOPICS = ["General question", "Request a Portal account", "Forgot my Portal password", "Claim or correct a listing", "Listing help", "Report a problem", "Privacy / data request", "Partnership"];
 
 export default async function ContactPage({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams;
@@ -22,8 +22,8 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
             {error && <Note tone="red">Please enter your name, a valid email and a message.</Note>}
             <label className={labelCls}>Name *<input name="name" required className={input} /></label>
             <label className={labelCls}>Email *<input name="email" type="email" required className={input} /></label>
-            <label className={labelCls}>Topic<select name="topic" className={input}>{TOPICS.map((t) => <option key={t}>{t}</option>)}</select></label>
-            <label className={labelCls}>Message *<textarea name="body" rows={6} required className={`${input} py-2.5`} /></label>
+            <label className={labelCls}>Topic<select name="topic" defaultValue={TOPICS.includes(one(sp.topic)) ? one(sp.topic) : undefined} className={input}>{TOPICS.map((t) => <option key={t}>{t}</option>)}</select></label>
+            <label className={labelCls}>Message *<textarea name="body" rows={6} required defaultValue={one(sp.about) ? `About: ${one(sp.about).slice(0, 160)}\n\n` : undefined} className={`${input} py-2.5`} /></label>
             <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px]" />
             <button type="submit" className={btnPrimary}>Send</button>
           </form>

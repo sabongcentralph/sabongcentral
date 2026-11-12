@@ -535,6 +535,27 @@ export async function decideEdit(id: number, approve: boolean, admin: string, re
   ]);
 }
 
+// Admin edits apply at once (the admin is the reviewer).
+export async function adminEdit(l: Listing, data: object, admin: string) {
+  const d = db();
+  await d.batch([
+    d.prepare(`update listings set data = ?, updated_at = datetime('now') where id = ?`).bind(JSON.stringify(data), l.id),
+    d.prepare(`insert into audit_log (admin, action, target) values (?, 'edited', ?)`).bind(admin, `${l.kind}: ${titleOf(l)}`),
+  ]);
+}
+
+// Hands a listing Sabong Central added over to the member who owns it.
+export async function transferListing(l: Listing, memberId: number, memberName: string, admin: string) {
+  const d = db();
+  const data = { ...(l.data as object) } as Record<string, unknown>;
+  delete data.listedBy;
+  await d.batch([
+    d.prepare(`update listings set data = ?, updated_at = datetime('now') where id = ?`).bind(JSON.stringify(data), l.id),
+    d.prepare(`insert or replace into member_listings (listing_id, member_id) values (?, ?)`).bind(l.id, memberId),
+    d.prepare(`insert into audit_log (admin, action, target, reason) values (?, 'moved to member', ?, ?)`).bind(admin, `${l.kind}: ${titleOf(l)}`, `${memberName} (member #${memberId})`),
+  ]);
+}
+
 export const UNPUBLISHED_BY_OWNER = "Unpublished by the owner";
 
 // Quick changes a member can make without review.

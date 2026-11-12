@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { ListedBy } from "@/components/ListedBy";
 import { approved, approvedOne } from "@/lib/db";
 import { messengerHref, telHref } from "@/lib/links";
 import { FarmCard, ReelCard } from "@/components/cards";
@@ -117,6 +118,7 @@ export default async function FarmPage({ params, searchParams }: { params: Promi
         </section>
       )}
 
+      <ListedBy data={d} title={d.name} />
       <a href={`/report?target=${encodeURIComponent("Farm: " + d.name)}`} className="flex min-h-11 items-center gap-1.5 self-start text-[14px] font-semibold text-wine no-underline">
         <Flag size={15} /> Report this farm
       </a>
