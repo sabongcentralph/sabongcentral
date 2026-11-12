@@ -1,9 +1,9 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { AlertIcon, BookIcon, CalendarIcon, FarmIcon, GearIcon, HomeIcon, MailIcon, ShieldIcon } from "../icons";
+import { UserIcon, AlertIcon, BookIcon, CalendarIcon, FarmIcon, GearIcon, HomeIcon, MailIcon, ShieldIcon } from "../icons";
 
-type Counts = { waiting: number; reports: number; messages: number; permits: number };
+type Counts = { waiting: number; reports: number; messages: number; permits: number; members: number };
 type Item = { href: string; label: string; icon: (p: { size?: number }) => React.ReactNode; badge?: keyof Counts; subs?: [string, string][] };
 
 const ITEMS: Item[] = [
@@ -28,6 +28,7 @@ const ITEMS: Item[] = [
     ["/admin/queue?type=Article&q=All", "Articles & Guides"],
     ["/admin/queue?type=Announcement&q=All", "Announcements"],
   ] },
+  { href: "/admin/members", label: "Members", icon: UserIcon, badge: "members" },
   { href: "/admin/reports", label: "Reports", icon: AlertIcon, badge: "reports" },
   { href: "/admin/messages", label: "Messages", icon: MailIcon, badge: "messages" },
   { href: "/admin/account", label: "Account", icon: GearIcon },

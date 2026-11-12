@@ -1,3 +1,4 @@
+import { pendingMembers } from "./members";
 import { audit, byStatus, counts, flagsOf, openReportTargets, queueStatus, stages, type Flag, type Listing, type QueueStatus } from "./db";
 
 // Queue types: events are split into derbies and seminars/training.
@@ -18,7 +19,7 @@ export async function queueRows(): Promise<Row[]> {
 
 // Everything the admin header bell and the dashboard need, in one pass.
 export async function adminSummary() {
-  const [rows, c, log] = await Promise.all([queueRows(), counts(), audit(6)]);
+  const [rows, c, log, applications] = await Promise.all([queueRows(), counts(), audit(6), pendingMembers()]);
   const by = (s: QueueStatus) => rows.filter((r) => r.qs === s);
   const waiting = rows.filter((r) => r.qs === "New" || r.qs === "In Review");
   const permits = rows.filter((r) => r.l.status === "pending" && r.flags.includes("Permit needed"));
@@ -26,7 +27,7 @@ export async function adminSummary() {
   const live = by("Approved");
   const places = live.map((r) => r.l.data as { province?: string; city?: string }).filter((d) => d.province && d.province !== "Online");
   return {
-    rows, log,
+    rows, log, applications,
     newCount: by("New").length,
     waiting, permits, risky, live,
     needsChanges: by("Needs Changes").length,
@@ -43,6 +44,7 @@ export type Summary = Awaited<ReturnType<typeof adminSummary>>;
 export function alertsOf(s: Summary): { label: string; n: number; href: string; tone: "red" | "gold" }[] {
   return [
     { label: "new submissions to review", n: s.newCount, href: "/admin/queue", tone: "red" as const },
+    { label: "member applications", n: s.applications, href: "/admin/members", tone: "red" as const },
     { label: "derby permits to check", n: s.permits.length, href: "/admin/queue?q=All&risk=Permit+needed", tone: "red" as const },
     { label: "possible prohibited content", n: s.risky.length, href: "/admin/queue?q=All&risk=Possible+prohibited+content", tone: "red" as const },
     { label: "open reports", n: s.reports, href: "/admin/reports", tone: "red" as const },

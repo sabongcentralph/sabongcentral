@@ -1,133 +1,259 @@
-import { VerifyFields } from "@/components/VerifyFields";
 import type { Metadata } from "next";
 import { one, type Search } from "@/lib/content";
 import { BLOODLINES, EVENT_CATS, GOODS_CATS } from "@/lib/sample";
 import { LocationFields } from "@/components/LocationFields";
 import { PhotoPicker } from "@/components/PhotoPicker";
 import { uploadsOn } from "@/lib/media";
-import { Note, Page, PageHead, btnPrimary, input, labelCls } from "@/components/ui";
+import { Chip, Note, Page, PageHead, btnGhost, btnPrimary, input, labelCls } from "@/components/ui";
+import { ROLES, STATUS_LABEL, canSubmit, currentMember, listingsOf, testMode, type Member } from "@/lib/members";
+import { titleOf, type QueueStatus } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Portal" };
 
-const TABS = [["farm", "Farm"], ["event", "Event or seminar"], ["good", "Market item"]] as const;
+const TABS = [["home", "My listings"], ["farm", "+ Farm"], ["event", "+ Event or seminar"], ["good", "+ Market item"], ["account", "Account"]] as const;
+type Tab = (typeof TABS)[number][0];
 
 const Honeypot = () => <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px]" />;
 
+
+const box = "flex flex-col gap-4 rounded-2xl border border-line bg-cream p-4 md:grid md:grid-cols-2";
+const full = "md:col-span-2";
+const tone = (q: QueueStatus) => (q === "Approved" ? "green" : q === "Rejected" || q === "Hidden" ? "red" : q === "Needs Changes" || q === "In Review" ? "gold" : "plain") as "green" | "red" | "gold" | "plain";
+const PATH = { farm: "farms", event: "events", good: "market", reel: "reels", article: "learn", notice: "notices", supplier: "suppliers" } as const;
+
+function SubmitForm({ tab, up, m }: { tab: "farm" | "event" | "good"; up: boolean; m: Member }) {
+  return (
+  <form action="/api/submit" method="post" encType="multipart/form-data" className={box}>
+    <input type="hidden" name="kind" value={tab} />
+    <Honeypot />
+    {tab === "farm" && (
+      <>
+        <label className={`${labelCls} ${full}`}>Farm name *<input name="name" required className={input} placeholder="e.g. Bukid Malaya Gamefarm" /></label>
+        <LocationFields required idPrefix="pf" />
+        <label className={labelCls}>Owner name<input name="ownerName" className={input} /></label>
+        <label className={labelCls}>Contact number *<input name="phone" required inputMode="tel" placeholder="09XX XXX XXXX" className={input} /></label>
+        <label className={labelCls}>Year established<input name="est" inputMode="numeric" maxLength={4} className={input} /></label>
+        <label className={labelCls}>Farm Facebook page *<input name="facebook" required maxLength={300} defaultValue={m.facebook} placeholder="https://www.facebook.com/yourfarm" className={input} /></label>
+        <label className={`${labelCls} ${full}`}>About the farm<textarea name="about" rows={4} className={`${input} py-2.5`} /></label>
+        {up && <PhotoPicker name="profile" label="Profile photo (logo or farm sign)" />}
+        {up && <PhotoPicker name="cover" label="Cover photo" />}
+        {up && <div className={full}><PhotoPicker name="gallery" label="Farm photos" max={6} /></div>}
+        <label className={labelCls}>Visit policy<input name="visit" placeholder="e.g. By appointment only" className={input} /></label>
+        <label className={labelCls}>Exact address (private, admin only)<input name="address" className={input} /></label>
+        <fieldset className={`m-0 border-0 p-0 ${full}`}>
+          <legend className="mb-1.5 text-[13px] font-semibold text-ink-soft">Bloodlines</legend>
+          <div className="grid grid-cols-2 gap-x-3 sm:grid-cols-3">
+            {BLOODLINES.map((b) => <label key={b} className="flex min-h-9 items-center gap-2 text-[14px]"><input type="checkbox" name="line" value={b} className="size-[17px] accent-crimson" /> {b}</label>)}
+          </div>
+        </fieldset>
+        <div className={`${full} flex flex-col gap-2 rounded-xl border border-dashed border-gold p-3`}>
+          <span className="text-[14px] font-bold">Business registration (for the Business Verified badge)</span>
+          <span className="text-[12.5px] text-muted">DTI, SEC or Mayor’s permit. Private, seen by admins only. Upload comes with accounts.</span>
+          <label className="flex min-h-9 items-center gap-2 text-[14px]"><input type="checkbox" name="docs" value="yes" className="size-[17px] accent-crimson" /> I have business registration I can submit</label>
+        </div>
+      </>
+    )}
+    {tab === "event" && (
+      <>
+        <label className={`${labelCls} ${full}`}>Event title *<input name="title" required className={input} /></label>
+        <label className={labelCls}>Event type *
+          <select name="sub" required className={input} defaultValue="">
+            <option value="">Select</option>
+            {EVENT_CATS.map(([cat, , , subs]) => <optgroup key={cat} label={cat}>{subs.map((s) => <option key={s}>{s}</option>)}</optgroup>)}
+          </select>
+        </label>
+        <label className={labelCls}>Organizer name<input name="org" defaultValue={m.name} className={input} /></label>
+        <label className={labelCls}>Start date *<input name="date" type="date" required className={input} /></label>
+        <label className={labelCls}>End date (if multi-day)<input name="endDate" type="date" className={input} /></label>
+        <label className={labelCls}>Start time<input name="start" type="time" className={input} /></label>
+        <label className={labelCls}>End time<input name="end" type="time" className={input} /></label>
+        <label className={`${full} flex min-h-9 items-center gap-2 text-[14px] font-semibold text-ink-soft`}><input type="checkbox" name="online" value="1" className="size-[17px] accent-crimson" /> Online event (webinar)</label>
+        <label className={`${labelCls} ${full}`}>Online link (webinars only)<input name="link" type="url" placeholder="Zoom, Facebook Live or Google Meet link" className={input} /></label>
+        <LocationFields idPrefix="pe" />
+        <label className={`${labelCls} ${full}`}>Venue<input name="venue" placeholder="Hall, farm, cockpit or arena" className={input} /></label>
+        <label className={`${labelCls} ${full}`}>Description<textarea name="desc" rows={4} className={`${input} py-2.5`} /></label>
+        <label className={labelCls}>Topics<input name="topics" className={input} /></label>
+        <label className={labelCls}>Speakers<input name="speakers" className={input} /></label>
+        <label className={labelCls}>Fee<input name="fee" placeholder="Free or ₱500" className={input} /></label>
+        <label className={labelCls}>Registration / contact<input name="reg" className={input} /></label>
+        {up && <div className={full}><PhotoPicker name="poster" label="Event poster" hint="One poster image. No betting odds or fight photos." /></div>}
+        <label className={`${labelCls} ${full}`}>Permits<input name="permits" placeholder="e.g. LGU event permit no., cockpit license (required for derbies)" className={input} /></label>
+        <p className={`m-0 text-[12.5px] text-muted ${full}`}>Derby listings need a verified cockpit license and LGU permit before they are published. Poster upload comes with accounts.</p>
+      </>
+    )}
+    {tab === "good" && (
+      <>
+        <label className={`${labelCls} ${full}`}>Product name *<input name="name" required className={input} /></label>
+        <label className={labelCls}>Subcategory *
+          <select name="sub" required className={input} defaultValue="">
+            <option value="">Select</option>
+            {Object.entries(GOODS_CATS).map(([cat, subs]) => <optgroup key={cat} label={cat}>{subs.map((s) => <option key={s}>{s}</option>)}</optgroup>)}
+          </select>
+        </label>
+        <label className={labelCls}>Price (₱)<input name="price" inputMode="decimal" placeholder="850 (blank = ask for quote)" className={input} /></label>
+        <label className={labelCls}>Availability<select name="avail" className={input}>{["Available", "Reserved", "Sold"].map((a) => <option key={a}>{a}</option>)}</select></label>
+        <label className={labelCls}>Condition<select name="condition" className={input}>{["New", "Used", "Not applicable (service)"].map((a) => <option key={a}>{a}</option>)}</select></label>
+        <label className={`${labelCls} ${full}`}>Pickup or delivery info<input name="pickup" placeholder="e.g. Pickup in Lipa City, or seller arranges delivery" className={input} /></label>
+        <label className={labelCls}>Seller name *<input name="seller" required defaultValue={m.name} className={input} /></label>
+        <label className={labelCls}>Contact number *<input name="phone" required inputMode="tel" defaultValue={m.phone} className={input} /></label>
+        <LocationFields required idPrefix="pg" />
+        {up && <div className={full}><PhotoPicker name="photos" label="Product photos" max={3} /></div>}
+        <label className={`${labelCls} ${full}`}>Description<textarea name="desc" rows={4} className={`${input} py-2.5`} /></label>
+        <p className={`m-0 text-[12.5px] text-muted ${full}`}>Not allowed: live birds, fighting weapons, regulated veterinary medicines, and anything gambling-related. No payments, checkout or delivery booking through Sabong Central.</p>
+      </>
+    )}
+    <label className={`${full} flex items-start gap-2 text-[13.5px] text-ink-soft`}>
+      <input type="checkbox" name="confirm" value="1" required className="mt-0.5 size-[17px] flex-none accent-crimson" />
+      I confirm the information is accurate, and I agree to the <a href="/legal/rules" className="font-semibold text-wine">Portal Rules</a>{tab === "good" ? <> and <a href="/legal/market" className="font-semibold text-wine">Market Notice</a></> : null}.
+    </label>
+    <button type="submit" className={`${btnPrimary} ${full}`}>Submit for review</button>
+  </form>
+  );
+}
+
+// Step 1 and 2: email, then the 6-digit code.
+async function SignIn({ sp }: { sp: Search }) {
+  const step = one(sp.step), email = one(sp.email), test = one(sp.test), error = one(sp.error);
+  const test_ = await testMode();
+  return (
+    <Page>
+      <div className="mx-auto flex w-full max-w-[460px] flex-col gap-5">
+        <PageHead kicker="Member Portal" title={step === "code" ? "Enter your code" : "Sign in or create an account"} sub="For farm owners, event and seminar organizers, venues, Market sellers and suppliers. No password: we email you a 6-digit code." />
+        {error && <Note tone="red">{error}</Note>}
+        {step === "code" && email ? (
+          <form action="/api/member/verify" method="post" className="flex flex-col gap-4 rounded-2xl border border-line bg-cream p-5">
+            <input type="hidden" name="email" value={email} />
+            <p className="m-0 text-[14px] text-ink-soft">We sent a 6-digit code to <strong>{email}</strong>. It expires in 10 minutes.</p>
+            {test && <Note><strong>Test site:</strong> email sending isn’t set up yet, so here is your code: <strong className="text-[17px] tracking-[0.2em]">{test}</strong></Note>}
+            <label className={labelCls}>6-digit code<input name="code" required inputMode="numeric" autoComplete="one-time-code" pattern="[0-9 ]{6,7}" maxLength={7} autoFocus className={`${input} text-center text-[22px] tracking-[0.35em]`} /></label>
+            <button type="submit" className={btnPrimary}>Continue</button>
+            <a href="/portal" className="text-center text-[13.5px] font-semibold text-wine">Use a different email or get a new code</a>
+          </form>
+        ) : (
+          <form action="/api/member/code" method="post" className="flex flex-col gap-4 rounded-2xl border border-line bg-cream p-5">
+            <Honeypot />
+            <label className={labelCls}>Email<input name="email" type="email" required autoComplete="email" defaultValue={email} className={input} /></label>
+            <button type="submit" className={btnPrimary}>Send me a code</button>
+            {test_ && <p className="m-0 text-[12px] text-muted">Test site: the code is shown on screen instead of emailed.</p>}
+          </form>
+        )}
+        <p className="m-0 text-[13.5px] text-ink-soft">Just sharing an article, an educational reel or a community announcement? Use the <a href="/submit" className="font-semibold text-wine">public submission form</a>; no account needed.</p>
+      </div>
+    </Page>
+  );
+}
+
+function ProfileForm({ m, first }: { m: Member; first: boolean }) {
+  return (
+    <form action="/api/member/profile" method="post" className={box}>
+      <label className={`${labelCls} ${full}`}>Your name or business name *<input name="name" required maxLength={120} defaultValue={m.name} className={input} /></label>
+      <label className={labelCls}>Mobile number *<input name="phone" required inputMode="tel" placeholder="09XX XXX XXXX" defaultValue={m.phone} className={input} /></label>
+      <label className={labelCls}>Email<input value={m.email} disabled className={`${input} opacity-70`} /></label>
+      <fieldset className={`${full} m-0 flex flex-col gap-1 border-0 p-0`}>
+        <legend className="mb-1.5 text-[13px] font-semibold text-ink-soft">I am a… * (pick all that apply)</legend>
+        <div className="grid gap-x-3 sm:grid-cols-2">
+          {ROLES.map(([k, label]) => <label key={k} className="flex min-h-10 items-center gap-2 text-[14px]"><input type="checkbox" name="role" value={k} defaultChecked={m.roles.includes(k)} className="size-[17px] accent-crimson" /> {label}</label>)}
+        </div>
+      </fieldset>
+      <label className={`${labelCls} ${full}`}>Facebook page or profile link * (for verification)<input name="facebook" required maxLength={300} defaultValue={m.facebook} placeholder="https://www.facebook.com/yourpage" className={input} /></label>
+      <label className={`${labelCls} ${full}`}>Organization, farm or business link (optional)<input name="org_link" maxLength={300} defaultValue={m.org_link} placeholder="https://…" className={input} /></label>
+      {first && (
+        <>
+          <label className={`${full} flex items-start gap-2 text-[13.5px] text-ink-soft`}><input type="checkbox" name="adult" value="1" required className="mt-0.5 size-[17px] flex-none accent-crimson" /> I am 18 years old or older.</label>
+          <label className={`${full} flex items-start gap-2 text-[13.5px] text-ink-soft`}><input type="checkbox" name="terms" value="1" required className="mt-0.5 size-[17px] flex-none accent-crimson" /> <span>I agree to the <a href="/legal/rules" className="font-semibold text-wine">Portal Rules</a>, <a href="/legal/terms" className="font-semibold text-wine">Terms of Use</a> and <a href="/legal/privacy" className="font-semibold text-wine">Privacy Notice</a>. Sabong Central never asks for government IDs.</span></label>
+        </>
+      )}
+      <button type="submit" className={`${btnPrimary} ${full}`}>{first ? "Create my account" : "Save changes"}</button>
+    </form>
+  );
+}
+
 export default async function PortalPage({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams;
-  const tab = TABS.find(([k]) => k === one(sp.tab))?.[0] ?? "farm";
-  const sent = one(sp.sent) === "1", error = one(sp.error);
-  const box = "flex flex-col gap-4 rounded-2xl border border-line bg-cream p-4 md:grid md:grid-cols-2";
-  const full = "md:col-span-2";
+  const m = await currentMember();
+  if (!m) return <SignIn sp={sp} />;
+  const error = one(sp.error);
+  if (m.status === "incomplete") {
+    return (
+      <Page>
+        <div className="mx-auto flex w-full max-w-[720px] flex-col gap-5">
+          <PageHead kicker="Member Portal" title="Finish your account" sub="An admin checks every account. Your Facebook link helps us confirm you are real." />
+          {error && <Note tone="red">{error}</Note>}
+          <ProfileForm m={m} first />
+        </div>
+      </Page>
+    );
+  }
+  const tab: Tab = TABS.find(([k]) => k === one(sp.tab))?.[0] ?? "home";
+  const sent = one(sp.sent) === "1";
   const up = await uploadsOn();
+  const mine = await listingsOf(m.id);
+  const count = (f: (q: QueueStatus) => boolean) => mine.filter((x) => f(x.qs)).length;
+  const blocked = !canSubmit(m);
 
   return (
     <Page>
-      <div className="mx-auto flex w-full max-w-[820px] flex-col gap-5">
-        <PageHead kicker="Member Portal" title="Submit a listing" sub="For farm owners, event and seminar organizers, venues, Market sellers and suppliers. Every listing is reviewed by an admin before it goes public." />
-        <Note>
-          <strong>Test version.</strong> On the real site you will first create a Portal account: verify your email with a 6-digit code, add your mobile number, pick your role, and send your business registration or proof of legitimacy. Accounts are coming in the next step; for now you can try submit → admin approve → live.
-        </Note>
-        <p className="m-0 text-[13.5px] text-ink-soft">Sharing an article, an educational reel or a community announcement? Use the <a href="/submit" className="font-semibold text-wine">public submission form</a> instead; no account needed.</p>
-        <nav aria-label="Listing type" className="-mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0">
-          {TABS.map(([k, label]) => (
+      <div className="mx-auto flex w-full max-w-[860px] flex-col gap-5">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex-1">
+            <PageHead kicker="Member Portal" title={`Hi, ${m.name.split(" ")[0] || "there"}`} sub={m.roles.map((r) => ROLES.find(([k]) => k === r)?.[1]).join(" · ")} />
+          </div>
+          <Chip tone={m.status === "active" ? "green" : m.status === "pending" ? "gold" : "red"}>{STATUS_LABEL[m.status]}</Chip>
+        </div>
+        {one(sp.welcome) === "1" && <Note tone="green"><strong>Welcome!</strong> Your account is waiting for admin approval. You can already submit listings; they go live after review.</Note>}
+        {m.status === "pending" && one(sp.welcome) !== "1" && <Note>Your account is waiting for admin approval. Listings you submit are reviewed before they go public.</Note>}
+        {blocked && <Note tone="red">Your account is {STATUS_LABEL[m.status].toLowerCase()}, so you can’t submit listings. Please <a href="/contact" className="font-semibold">contact us</a>.</Note>}
+        {sent && <Note tone="green"><strong>Received!</strong> Your listing is pending review. You can follow it under My listings.</Note>}
+        {error && <Note tone="red">{error}</Note>}
+
+        <nav aria-label="Portal" className="-mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0">
+          {TABS.filter(([k]) => !blocked || k === "home" || k === "account").map(([k, label]) => (
             <a key={k} href={`/portal?tab=${k}`} aria-current={k === tab ? "page" : undefined}
               className={`flex min-h-10 flex-none items-center rounded-full px-4 text-[13.5px] font-semibold no-underline ${k === tab ? "bg-crimson text-white" : "border border-line bg-cream text-ink-soft"}`}>
               {label}
             </a>
           ))}
         </nav>
-        {sent && <Note tone="green"><strong>Received!</strong> Your submission is pending review. It will appear on the site once an admin approves it.</Note>}
-        {error && <Note tone="red">{error}</Note>}
 
-        <form action="/api/submit" method="post" encType="multipart/form-data" className={box}>
-          <input type="hidden" name="kind" value={tab} />
-          <Honeypot />
-          {tab === "farm" && (
-            <>
-              <label className={`${labelCls} ${full}`}>Farm name *<input name="name" required className={input} placeholder="e.g. Bukid Malaya Gamefarm" /></label>
-              <LocationFields required idPrefix="pf" />
-              <label className={labelCls}>Owner name<input name="ownerName" className={input} /></label>
-              <label className={labelCls}>Contact number *<input name="phone" required inputMode="tel" placeholder="09XX XXX XXXX" className={input} /></label>
-              <label className={labelCls}>Year established<input name="est" inputMode="numeric" maxLength={4} className={input} /></label>
-              <label className={labelCls}>Farm Facebook page *<input name="facebook" required maxLength={300} placeholder="https://www.facebook.com/yourfarm" className={input} /></label>
-              <label className={`${labelCls} ${full}`}>About the farm<textarea name="about" rows={4} className={`${input} py-2.5`} /></label>
-              {up && <PhotoPicker name="profile" label="Profile photo (logo or farm sign)" />}
-              {up && <PhotoPicker name="cover" label="Cover photo" />}
-              {up && <div className={full}><PhotoPicker name="gallery" label="Farm photos" max={6} /></div>}
-              <label className={labelCls}>Visit policy<input name="visit" placeholder="e.g. By appointment only" className={input} /></label>
-              <label className={labelCls}>Exact address (private, admin only)<input name="address" className={input} /></label>
-              <fieldset className={`m-0 border-0 p-0 ${full}`}>
-                <legend className="mb-1.5 text-[13px] font-semibold text-ink-soft">Bloodlines</legend>
-                <div className="grid grid-cols-2 gap-x-3 sm:grid-cols-3">
-                  {BLOODLINES.map((b) => <label key={b} className="flex min-h-9 items-center gap-2 text-[14px]"><input type="checkbox" name="line" value={b} className="size-[17px] accent-crimson" /> {b}</label>)}
-                </div>
-              </fieldset>
-              <div className={`${full} flex flex-col gap-2 rounded-xl border border-dashed border-gold p-3`}>
-                <span className="text-[14px] font-bold">Business registration (for the Business Verified badge)</span>
-                <span className="text-[12.5px] text-muted">DTI, SEC or Mayor’s permit. Private, seen by admins only. Upload comes with accounts.</span>
-                <label className="flex min-h-9 items-center gap-2 text-[14px]"><input type="checkbox" name="docs" value="yes" className="size-[17px] accent-crimson" /> I have business registration I can submit</label>
+        {tab === "home" && (
+          <>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {([["Pending", count((q) => q === "New" || q === "In Review")], ["Needs changes", count((q) => q === "Needs Changes")], ["Live", count((q) => q === "Approved")], ["Not published", count((q) => q === "Rejected" || q === "Hidden" || q === "Archived")]] as const).map(([l, n]) => (
+                <div key={l} className="rounded-2xl border border-line bg-cream p-3"><div className="font-serif text-[26px] font-semibold text-crimson">{n}</div><div className="text-[13px] text-muted">{l}</div></div>
+              ))}
+            </div>
+            {mine.length === 0 ? (
+              <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-sand p-6">
+                <p className="m-0 text-[15px] font-semibold">No listings yet.</p>
+                {!blocked && <div className="flex flex-wrap gap-2"><a href="/portal?tab=farm" className={btnGhost}>+ Farm</a><a href="/portal?tab=event" className={btnGhost}>+ Event or seminar</a><a href="/portal?tab=good" className={btnGhost}>+ Market item</a></div>}
               </div>
-            </>
-          )}
-          {tab === "event" && (
-            <>
-              <label className={`${labelCls} ${full}`}>Event title *<input name="title" required className={input} /></label>
-              <label className={labelCls}>Event type *
-                <select name="sub" required className={input} defaultValue="">
-                  <option value="">Select</option>
-                  {EVENT_CATS.map(([cat, , , subs]) => <optgroup key={cat} label={cat}>{subs.map((s) => <option key={s}>{s}</option>)}</optgroup>)}
-                </select>
-              </label>
-              <label className={labelCls}>Organizer name<input name="org" className={input} /></label>
-              <label className={labelCls}>Start date *<input name="date" type="date" required className={input} /></label>
-              <label className={labelCls}>End date (if multi-day)<input name="endDate" type="date" className={input} /></label>
-              <label className={labelCls}>Start time<input name="start" type="time" className={input} /></label>
-              <label className={labelCls}>End time<input name="end" type="time" className={input} /></label>
-              <label className={`${full} flex min-h-9 items-center gap-2 text-[14px] font-semibold text-ink-soft`}><input type="checkbox" name="online" value="1" className="size-[17px] accent-crimson" /> Online event (webinar)</label>
-              <label className={`${labelCls} ${full}`}>Online link (webinars only)<input name="link" type="url" placeholder="Zoom, Facebook Live or Google Meet link" className={input} /></label>
-              <LocationFields idPrefix="pe" />
-              <label className={`${labelCls} ${full}`}>Venue<input name="venue" placeholder="Hall, farm, cockpit or arena" className={input} /></label>
-              <label className={`${labelCls} ${full}`}>Description<textarea name="desc" rows={4} className={`${input} py-2.5`} /></label>
-              <label className={labelCls}>Topics<input name="topics" className={input} /></label>
-              <label className={labelCls}>Speakers<input name="speakers" className={input} /></label>
-              <label className={labelCls}>Fee<input name="fee" placeholder="Free or ₱500" className={input} /></label>
-              <label className={labelCls}>Registration / contact<input name="reg" className={input} /></label>
-              {up && <div className={full}><PhotoPicker name="poster" label="Event poster" hint="One poster image. No betting odds or fight photos." /></div>}
-              <label className={`${labelCls} ${full}`}>Permits<input name="permits" placeholder="e.g. LGU event permit no., cockpit license (required for derbies)" className={input} /></label>
-              <p className={`m-0 text-[12.5px] text-muted ${full}`}>Derby listings need a verified cockpit license and LGU permit before they are published. Poster upload comes with accounts.</p>
-            </>
-          )}
-          {tab === "good" && (
-            <>
-              <label className={`${labelCls} ${full}`}>Product name *<input name="name" required className={input} /></label>
-              <label className={labelCls}>Subcategory *
-                <select name="sub" required className={input} defaultValue="">
-                  <option value="">Select</option>
-                  {Object.entries(GOODS_CATS).map(([cat, subs]) => <optgroup key={cat} label={cat}>{subs.map((s) => <option key={s}>{s}</option>)}</optgroup>)}
-                </select>
-              </label>
-              <label className={labelCls}>Price (₱)<input name="price" inputMode="decimal" placeholder="850 (blank = ask for quote)" className={input} /></label>
-              <label className={labelCls}>Availability<select name="avail" className={input}>{["Available", "Reserved", "Sold"].map((a) => <option key={a}>{a}</option>)}</select></label>
-              <label className={labelCls}>Condition<select name="condition" className={input}>{["New", "Used", "Not applicable (service)"].map((a) => <option key={a}>{a}</option>)}</select></label>
-              <label className={`${labelCls} ${full}`}>Pickup or delivery info<input name="pickup" placeholder="e.g. Pickup in Lipa City, or seller arranges delivery" className={input} /></label>
-              <label className={labelCls}>Seller name *<input name="seller" required className={input} /></label>
-              <label className={labelCls}>Contact number *<input name="phone" required inputMode="tel" className={input} /></label>
-              <LocationFields required idPrefix="pg" />
-              {up && <div className={full}><PhotoPicker name="photos" label="Product photos" max={3} /></div>}
-              <label className={`${labelCls} ${full}`}>Description<textarea name="desc" rows={4} className={`${input} py-2.5`} /></label>
-              <p className={`m-0 text-[12.5px] text-muted ${full}`}>Not allowed: live birds, fighting weapons, regulated veterinary medicines, and anything gambling-related. No payments, checkout or delivery booking through Sabong Central.</p>
-            </>
-          )}
-          <VerifyFields farm={tab === "farm"} />
-          <label className={`${labelCls} ${full}`}>Your name (for the admin)<input name="contactName" className={input} /></label>
-          <label className={`${full} flex items-start gap-2 text-[13.5px] text-ink-soft`}>
-            <input type="checkbox" name="confirm" value="1" required className="mt-0.5 size-[17px] flex-none accent-crimson" />
-            I confirm the information is accurate, and I agree to the <a href="/legal/rules" className="font-semibold text-wine">Portal Rules</a>{tab === "good" ? <> and <a href="/legal/market" className="font-semibold text-wine">Market Notice</a></> : null}.
-          </label>
-          <button type="submit" className={`${btnPrimary} ${full}`}>Submit for review</button>
-        </form>
+            ) : (
+              <ul className="m-0 flex list-none flex-col divide-y divide-line rounded-2xl border border-line bg-cream p-0">
+                {mine.map(({ l, qs }) => (
+                  <li key={l.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3">
+                    <span className="min-w-0 flex-1 text-[14.5px] font-semibold">{titleOf(l)}</span>
+                    <Chip tone="plain">{l.kind === "good" ? "Market" : l.kind === "event" ? "Event" : "Farm"}</Chip>
+                    <Chip tone={tone(qs)}>{qs === "New" ? "Pending review" : qs === "Approved" ? "Live" : qs}</Chip>
+                    {qs === "Approved" && <a href={`/${l.kind === "event" && !(l.data as { derby?: boolean }).derby ? "education" : PATH[l.kind]}/${l.slug}`} className="text-[13px] font-semibold text-wine">View ↗</a>}
+                    {l.reason && (qs === "Needs Changes" || qs === "Rejected") && <p className="m-0 w-full text-[13px] text-wine">Admin note: “{l.reason}”</p>}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p className="m-0 text-[12.5px] text-muted">Editing, renewing and unpublishing your listings is coming next. To change a live listing now, use Contact Us.</p>
+          </>
+        )}
+
+        {(tab === "farm" || tab === "event" || tab === "good") && !blocked && <SubmitForm tab={tab} up={up} m={m} />}
+
+        {tab === "account" && (
+          <>
+            {one(sp.saved) === "1" && <Note tone="green">Saved.</Note>}
+            <ProfileForm m={m} first={false} />
+            <form action="/api/member/logout" method="post"><button type="submit" className={btnGhost}>Sign out</button></form>
+          </>
+        )}
       </div>
     </Page>
   );
