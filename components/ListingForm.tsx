@@ -94,7 +94,7 @@ export function ListingForm({ tab, up, who, l, admin = false, venues = [] }: { t
         <label className={labelCls}>Speakers<input name="speakers" defaultValue={v("speakers")} className={input} /></label>
         <label className={labelCls}>Fee<input name="fee" defaultValue={v("fee")} placeholder="Free or ₱500" className={input} /></label>
         <label className={labelCls}>Registration / contact<input name="reg" defaultValue={v("reg")} className={input} /></label>
-        {up && <div className={full}><PhotoPicker name="poster" label="Event poster" hint="One poster image, as the organizer posted it. No fight photos. Derby posters show a note that Sabong Central does not accept bets." /></div>}
+        {up && <div className={full}><PhotoPicker name="poster" label="Event poster" hint="One poster image, as the organizer posted it. No fight photos. Derby posters show a note that Sabong Sentral does not accept bets." /></div>}
         <label className={`${labelCls} ${full}`}>Permits<input name="permits" defaultValue={v("permits")} placeholder="e.g. LGU event permit no., cockpit license (required for derbies)" className={input} /></label>
         <p className={`m-0 text-[12.5px] text-muted ${full}`}>Derby listings need a verified cockpit license and LGU permit before they are published.</p>
       </>
