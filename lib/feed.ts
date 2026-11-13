@@ -4,7 +4,7 @@ import { todayPH } from "./content";
 
 // Home feed (Em, 2026-11-12): one Facebook-style feed instead of category rows.
 // Derbies, seminars, farms, market items, reels, articles and notices are mixed,
-// newest first. Admin placements ("Sponsored" first, then "Featured") lead the feed
+// in a new random order on each visit (shuffleMix). Admin placements ("Sponsored" first, then "Featured") lead the feed
 // with at most two posts, then one appears after every PROMO_EVERY regular posts.
 export const PROMO_EVERY = 6;
 const PROMO_AT_TOP = 2;
@@ -19,23 +19,35 @@ type Sources = {
 };
 
 const kindKey = (l: Listing) => (l.kind === "event" ? ((l as Listing<"event">).data.derby ? "derby" : "class") : l.kind);
-const time = (l: Listing) => Date.parse(l.createdAt.includes("T") ? l.createdAt : l.createdAt.replace(" ", "T") + "Z") || 0;
 
-// Newest day first (real listings before samples). Within one day, kinds take turns
-// (derby, farm, market item, article...), so a batch added at once doesn't fill the top.
-function mix(list: Listing[]): Listing[] {
-  const sorted = [...list].sort((a, b) => Number(a.isSample) - Number(b.isSample) || time(b) - time(a) || b.id - a.id);
-  const days = new Map<string, Listing[]>();
-  for (const l of sorted) {
-    const day = `${l.isSample ? 1 : 0}:${new Date(time(l) + 8 * 3600_000).toISOString().slice(0, 10)}`;
-    days.set(day, [...(days.get(day) ?? []), l]);
-  }
+// Reels and the Home feed come in a different order on every visit (Em, 2026-11-13:
+// "like Facebook"), so the same post isn't always first.
+export function shuffled<T>(list: T[]): T[] {
+  const a = [...list];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+
+// The whole Home feed comes in a new order on every visit (Em, 2026-11-13), still
+// mixed by kind: each next post is drawn from a kind picked at random, weighted by
+// how many of that kind are left, and never the same kind twice in a row when
+// another kind is left. Real listings come before samples.
+function shuffleMix(list: Listing[]): Listing[] {
   const out: Listing[] = [];
-  for (const items of days.values()) {
+  for (const group of [list.filter((l) => !l.isSample), list.filter((l) => l.isSample)]) {
     const byKind = new Map<string, Listing[]>();
-    for (const l of items) byKind.set(kindKey(l), [...(byKind.get(kindKey(l)) ?? []), l]);
-    const queues = [...byKind.values()];
-    while (queues.some((q) => q.length)) for (const q of queues) if (q.length) out.push(q.shift()!);
+    for (const l of shuffled(group)) byKind.set(kindKey(l), [...(byKind.get(kindKey(l)) ?? []), l]);
+    let last = "";
+    while (byKind.size) {
+      const kinds = [...byKind.keys()].filter((k) => k !== last);
+      const pool = kinds.length ? kinds : [...byKind.keys()];
+      let r = Math.random() * pool.reduce((n, k) => n + byKind.get(k)!.length, 0);
+      const k = pool.find((k) => (r -= byKind.get(k)!.length) < 0) ?? pool[pool.length - 1];
+      const q = byKind.get(k)!;
+      out.push(q.shift()!);
+      if (!q.length) byKind.delete(k);
+      last = k;
+    }
   }
   return out;
 }
@@ -53,7 +65,7 @@ export function buildFeed(s: Sources, today = todayPH()): FeedItem[] {
       ((a.l.data as { featuredRank?: number }).featuredRank ?? 999) - ((b.l.data as { featuredRank?: number }).featuredRank ?? 999));
   const promoIds = new Set(promos.map((p) => p.l.id));
 
-  const rest = mix([...s.events, ...s.farms, ...goods, ...s.reels, ...s.articles, ...s.notices].filter((l) => !promoIds.has(l.id)));
+  const rest = shuffleMix([...s.events, ...s.farms, ...goods, ...s.reels, ...s.articles, ...s.notices].filter((l) => !promoIds.has(l.id)));
 
   const out: FeedItem[] = promos.splice(0, PROMO_AT_TOP);
   rest.forEach((l, i) => {

@@ -1,6 +1,7 @@
 import { REEL_TOPICS } from "@/lib/sample";
 import type { Metadata } from "next";
 import { approved } from "@/lib/db";
+import { shuffled } from "@/lib/feed";
 import { one, type Search } from "@/lib/content";
 import { ReelCard } from "@/components/cards";
 import { Empty, Note, Page, PageHead } from "@/components/ui";
@@ -12,7 +13,7 @@ export default async function ReelsPage({ searchParams }: { searchParams: Promis
   const topic = one((await searchParams).topic);
   const all = await approved("reel");
   const topics = REEL_TOPICS;
-  const shown = all.filter((r) => !topic || r.data.topic === topic);
+  const shown = shuffled(all.filter((r) => !topic || r.data.topic === topic)); // new order every visit
   return (
     <Page>
       <PageHead kicker="Educational Reels" title="Reels" sub="Short videos on feeding, health, housing and farm management, from farms' Facebook, YouTube and TikTok." />
