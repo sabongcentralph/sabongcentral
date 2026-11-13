@@ -7,7 +7,7 @@ import { uploadsOn } from "@/lib/media";
 import { Chip, Note, Page, PageHead, btnGhost, btnPrimary, input, labelCls } from "@/components/ui";
 import { DOC_TYPES, MAX_DOC_PAGES, docLabel, docsOf, daysToExpiry, isValid, type Doc } from "@/lib/docs";
 import { ROLES, STATUS_LABEL, canSubmit, currentMember, listingsOf, passwordState, testMode, type Member } from "@/lib/members";
-import { AVAILABILITY, EVENT_STATUSES, MARKET_DAYS, UNPUBLISHED_BY_OWNER, approved, availOf, byId, daysLeft, editIds, titleOf, type GoodData, type Listing, type QueueStatus } from "@/lib/db";
+import { AVAILABILITY, EVENT_DAYS, EVENT_STATUSES, eventExpired, type EventData, MARKET_DAYS, UNPUBLISHED_BY_OWNER, approved, availOf, byId, daysLeft, editIds, titleOf, type GoodData, type Listing, type QueueStatus } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Portal" };
@@ -129,7 +129,7 @@ function ListingRow({ l, qs, editing, blocked }: { l: Listing; qs: QueueStatus; 
   const mine = l.reason === UNPUBLISHED_BY_OWNER;
   const d = l.data as unknown as Record<string, unknown>;
   const left = l.kind === "good" ? daysLeft(l) : null;
-  const expired = live && left !== null && left <= 0;
+  const expired = live && ((left !== null && left <= 0) || (l.kind === "event" && eventExpired(l.data as EventData)));
   const label = expired ? "Expired" : mine ? "Unpublished" : qs === "New" ? "Pending review" : live ? "Live" : qs;
   const draft = qs === "Draft";
   const hidden = { id: <input type="hidden" name="id" value={l.id} /> };
@@ -144,7 +144,8 @@ function ListingRow({ l, qs, editing, blocked }: { l: Listing; qs: QueueStatus; 
         {editing && <Chip tone="gold">Edit waiting for review</Chip>}
       </div>
       {l.reason && !mine && (qs === "Needs Changes" || qs === "Rejected" || qs === "Hidden" || qs === "Approved") && <p className="m-0 text-[13px] text-wine">Admin note: “{l.reason}”</p>}
-      {live && left !== null && <p className={`m-0 text-[12.5px] ${left <= 7 ? "font-semibold text-wine" : "text-muted"}`}>{expired ? "Expired: no longer shown in the Market. Renew to list it again." : `Listed for ${left} more day${left === 1 ? "" : "s"}.`}</p>}
+      {live && l.kind === "event" && expired && <p className="m-0 text-[12.5px] text-muted">Ended more than {EVENT_DAYS} days ago. It will be deleted automatically.</p>}
+      {live && left !== null && <p className={`m-0 text-[12.5px] ${left <= 3 ? "font-semibold text-wine" : "text-muted"}`}>{expired ? "Expired. It will be deleted automatically." : `Listed for ${left} more day${left === 1 ? "" : "s"}.`}</p>}
       <div className="flex flex-wrap items-center gap-2">
         {live && !expired && <a href={`/${l.kind === "event" && !d.derby ? "education" : PATH[l.kind]}/${l.slug}`} className={small}>View ↗</a>}
         {!blocked && !mine && qs !== "Hidden" && <a href={`/portal?tab=edit&id=${l.id}`} className={small}>Edit</a>}
@@ -308,7 +309,7 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
                 {mine.map(({ l, qs }) => <ListingRow key={l.id} l={l} qs={qs} editing={edits.has(l.id)} blocked={blocked} />)}
               </ul>
             )}
-            <p className="m-0 text-[12.5px] text-muted">Edits to a live listing are checked by an admin; the current version stays up until then. Status changes, renewing and unpublishing happen right away. Market items stay up for {MARKET_DAYS} days; renew to keep them listed.</p>
+            <p className="m-0 text-[12.5px] text-muted">Edits to a live listing are checked by an admin; the current version stays up until then. Status changes, renewing and unpublishing happen right away. Market items stay up for {MARKET_DAYS} days, then are deleted; renew before then to keep them listed. Events are deleted {EVENT_DAYS} days after they end.</p>
           </>
         )}
 

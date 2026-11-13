@@ -233,9 +233,23 @@ function toListing<K extends Kind>(r: Row): Listing<K> {
   };
 }
 
+// Expired Market items and events are deleted for good, photos included (Em, 2026-11-13: "we will not archive").
+// Runs at most once an hour per server instance, on the next public page view.
+let lastPurge = 0;
+export async function purgeExpired(): Promise<number> {
+  if (Date.now() - lastPurge < 3600_000) return 0;
+  lastPurge = Date.now();
+  const { results } = await db().prepare(`select * from listings where kind in ('event','good') and status = 'approved' and is_sample = 0`).all<Row>();
+  const gone = results.map((r) => toListing(r)).filter((l) =>
+    l.kind === "event" ? eventExpired(l.data as EventData) : daysLeft(l) <= 0);
+  for (const l of gone) await deleteListing(l, "auto-expiry").catch(() => {});
+  return gone.length;
+}
+
 // Public pages: approved listings only.
 export async function approved<K extends Kind>(kind: K): Promise<Listing<K>[]> {
   await ensureDb();
+  if (kind === "event" || kind === "good") await purgeExpired().catch(() => {});
   const { results } = await db()
     .prepare(`select * from listings where kind = ? and status = 'approved' order by is_sample asc, case when is_sample = 1 then id end asc, created_at desc, id desc limit 1000`)
     .bind(kind)
@@ -244,13 +258,29 @@ export async function approved<K extends Kind>(kind: K): Promise<Listing<K>[]> {
 }
 
 // A seller can mark an item "Removed": it stays approved but leaves the public site.
+// Derbies and seminars leave the site EVENT_DAYS after their last day (Em, 2026-11-13).
 function isPublic(l: Listing): boolean {
+  if (l.kind === "event") return l.isSample || !eventExpired(l.data as EventData);
   if (l.kind !== "good") return true;
   return (l.data as GoodData).avail !== "Removed" && !(!l.isSample && daysLeft(l) <= 0);
 }
 
-// Market items stay up for MARKET_DAYS after they are listed or renewed by the seller.
-export const MARKET_DAYS = 60;
+export const EVENT_DAYS = 10;
+// Last day of an event as YYYY-MM-DD: the end date if given, else "Dec 12–13" style ranges, else the start date.
+export function eventEnd(e: Pick<EventData, "date" | "days" | "endDate">): string {
+  if (e.endDate && /^\d{4}-\d\d-\d\d$/.test(e.endDate) && e.endDate > (e.date ?? "")) return e.endDate;
+  const m = (e.days ?? "").match(/[–-]\s*(\d{1,2})$/);
+  return m && e.date ? e.date.slice(0, 8) + m[1].padStart(2, "0") : e.date ?? "";
+}
+export function eventExpired(e: Pick<EventData, "date" | "days" | "endDate">): boolean {
+  const end = eventEnd(e);
+  if (!/^\d{4}-\d\d-\d\d$/.test(end)) return false;
+  const cutoff = new Date(Date.now() + 8 * 3600_000 - EVENT_DAYS * 86_400_000).toISOString().slice(0, 10); // PH time
+  return end < cutoff;
+}
+
+// Market items stay up for MARKET_DAYS after they are listed or renewed by the seller (Em, 2026-11-13: 10 days), then are deleted.
+export const MARKET_DAYS = 10;
 export function daysLeft(l: Pick<Listing, "data" | "createdAt">): number {
   const from = (l.data as { renewed?: string }).renewed ?? l.createdAt;
   const t = Date.parse(from.includes("T") ? from : from.replace(" ", "T") + "Z");
