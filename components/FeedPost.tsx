@@ -2,6 +2,8 @@ import type { ArticleData, EventData, FarmData, GoodData, Listing, NoticeData, R
 import type { FeedItem } from "@/lib/feed";
 import { AvailBadge } from "./cards";
 import { BizBadge, Chip, Photo, SampleTag } from "./ui";
+import { ReelPreview } from "./ReelPreview";
+import { autoplaySrc, toEmbed } from "@/lib/embed";
 import { BagIcon, BookIcon, CalendarIcon, FarmIcon, GradIcon, MegaphoneIcon, Pin, Play, ReelIcon } from "./icons";
 
 // One post in the Home feed, laid out like a social post: who/what and when,
@@ -73,6 +75,7 @@ function shape(l: Listing): Shape {
     }
     case "reel": {
       const d = l.data as ReelData;
+      const embed = toEmbed(d.url);
       return {
         href: `/reels/${l.slug}`, type: "Reel", who: d.farm || "Educational reel", Icon: ReelIcon,
         tone: "bg-noir text-white", cta: "Watch reel",
@@ -82,7 +85,8 @@ function shape(l: Listing): Shape {
         </>,
         media: (
           <div className="relative flex aspect-[16/9] items-center justify-center bg-noir">
-            <span className="flex size-14 items-center justify-center rounded-full bg-crimson text-white"><Play size={26} /></span>
+            {embed ? <ReelPreview src={autoplaySrc(embed, true)} thumb={embed.thumb} label={d.title} />
+              : <span className="flex size-14 items-center justify-center rounded-full bg-crimson text-white"><Play size={26} /></span>}
             <span className="absolute left-3 top-3 rounded-md bg-black/55 px-2 py-0.5 text-[11px] font-bold text-white">{d.platform}{d.dur ? ` · ${d.dur}` : ""}</span>
           </div>
         ),
