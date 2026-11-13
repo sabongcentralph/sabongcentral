@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { kickYouTube } from "@/lib/embed";
+import { Play } from "./icons";
 
 // Reel card preview (Em, 2026-11-13): when a card is mostly on screen, its video
 // plays silently in place, like a Facebook or TikTok feed. Only one card plays at
@@ -41,8 +43,10 @@ export function ReelPreview({ src, thumb, label }: { src: string | null; thumb?:
       {thumb ? <img src={thumb} alt={label} loading="lazy" className="absolute inset-0 size-full object-cover" /> : <div role="img" aria-label={label} className="ph absolute inset-0" />}
       {playing && src && (
         <iframe src={src} title={label} tabIndex={-1} aria-hidden="true" allow="autoplay; encrypted-media; picture-in-picture"
+          onLoad={(e) => kickYouTube(e.currentTarget)}
           className="pointer-events-none absolute left-1/2 top-0 h-full aspect-video -translate-x-1/2 border-0" />
       )}
+      {!playing && <span className="absolute inset-0 flex items-center justify-center"><span className="flex size-11 items-center justify-center rounded-full bg-black/45 text-white"><Play size={20} /></span></span>}
     </div>
   );
 }
