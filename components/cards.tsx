@@ -115,6 +115,7 @@ export function NoticeCard({ n }: { n: Listing<"notice"> }) {
       <h3 className="m-0 text-[15px] font-bold leading-snug">{d.title}</h3>
       <span className="text-[12px] text-muted">{d.meta}</span>
       <p className="m-0 text-[14px] leading-relaxed text-ink-soft">{d.text}</p>
+      {d.photo && <Photo className="aspect-square w-full max-w-[420px] rounded-xl" label={d.title} src={d.photo} contain />}
       {(d.issuer || d.scope || d.expires) && (
         <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-[12.5px]">
           {d.issuer && <><dt className="text-muted">Issued by</dt><dd className="m-0 font-semibold">{d.issuer}</dd></>}
@@ -122,7 +123,7 @@ export function NoticeCard({ n }: { n: Listing<"notice"> }) {
           {d.expires && <><dt className="text-muted">Valid until</dt><dd className="m-0 font-semibold">{d.expires}</dd></>}
         </dl>
       )}
-      {d.url ? <a href={d.url} target="_blank" rel="noopener noreferrer" className="text-[12px] font-semibold text-wine">Official source ↗</a> : d.source && <span className="text-[12px] font-semibold text-wine">{d.source}</span>}
+      {d.url ? <a href={d.url} target="_blank" rel="noopener noreferrer" className="text-[12px] font-semibold text-wine">{d.kind === "Official Advisories" ? "Official source" : "Original post"} ↗</a> : d.source && <span className="text-[12px] font-semibold text-wine">{d.source}</span>}
       <a href={`/report?target=${encodeURIComponent("Notice: " + d.title)}`} className="self-start text-[12px] font-semibold text-muted">Report</a>
     </article>
   );
