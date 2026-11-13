@@ -6,6 +6,7 @@ import { BottomTabs } from "@/components/BottomTabs";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SideNav } from "@/components/SideNav";
 import { Reveal } from "@/components/Reveal";
+import { InstallPrompt } from "@/components/InstallApp";
 
 // Public site chrome: header, side menu, footer, bottom tabs. The admin panel has its own.
 export default async function SiteLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -27,6 +28,7 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
       <SiteFooter lang={lang} />
       <BottomTabs lang={lang} />
       <Reveal />
+      {age === "1" && <InstallPrompt />}
     </div>
   );
 }
