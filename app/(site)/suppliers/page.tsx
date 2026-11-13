@@ -23,7 +23,7 @@ export default async function SuppliersPage({ searchParams }: { searchParams: Pr
           </a>
         ))}
       </nav>
-      <Note>{BIZ_NOTE} Deal with suppliers directly; no payments go through Sabong Central.</Note>
+      <Note>{BIZ_NOTE} Deal with suppliers directly; no payments go through Sabong Sentral.</Note>
       {shown.length === 0 ? <Empty>No suppliers.</Empty> : (kind ? [kind] : KINDS).map((k) => {
         const list = shown.filter((s) => s.data.kind === k);
         return list.length === 0 ? null : (

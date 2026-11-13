@@ -27,7 +27,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
   const unchecked = (d as { listedBy?: string }).listedBy === "admin" || /^not yet verified/i.test(d.permits ?? "");
   const verifiedProfile = !!(orgP?.data.verified || venueP?.data.verified);
   const showBadge = verifiedProfile || !unchecked;
-  const permit = unchecked && !verifiedProfile ? "Permit not yet verified by Sabong Central" : d.derby ? "Cockpit license and LGU event permit verified by admin" : d.permits ? "Permits reviewed by admin" : "Organizer's proof of legitimacy reviewed by admin";
+  const permit = unchecked && !verifiedProfile ? "Permit not yet verified by Sabong Sentral" : d.derby ? "Cockpit license and LGU event permit verified by admin" : d.permits ? "Permits reviewed by admin" : "Organizer's proof of legitimacy reviewed by admin";
   const facts: [string, string][] = [
     ["Status", status], ["Date", d.longDate], ["Time", d.time], ["Venue", d.venue], ["Location", d.online ? "Online" : `${d.city}, ${d.province}`],
     ["Organizer", d.org], ["Fee", d.fee ? `${d.fee}${/\d/.test(d.fee) ? " (paid directly to the organizer)" : ""}` : ""], ["Registration", d.reg],
@@ -67,11 +67,11 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
             {showBadge ? <>
               <BizBadge small />
               <span className="text-[12px] text-muted">An admin reviewed {verifiedProfile && unchecked ? `${orgP?.data.verified ? "this organizer" : "this venue"}'s` : "this organizer's"} business registration or proof of legitimacy. This is not a guarantee of the event or any transaction.</span>
-            </> : <span className="w-fit rounded-full border border-sand px-3 py-1 text-[12.5px] font-semibold text-muted">Permit not yet verified by Sabong Central</span>}
+            </> : <span className="w-fit rounded-full border border-sand px-3 py-1 text-[12.5px] font-semibold text-muted">Permit not yet verified by Sabong Sentral</span>}
           </div>
-          <Note tone={d.derby ? "red" : "gold"}>Information only. Sabong Central does not organize events, accept bets, livestream fights, or receive event payments. Any fee is paid directly to the organizer.</Note>
+          <Note tone={d.derby ? "red" : "gold"}>Information only. Sabong Sentral does not organize events, accept bets, livestream fights, or receive event payments. Any fee is paid directly to the organizer.</Note>
           <ListedBy data={d} title={d.title} />
-          {d.derby && <p className="m-0 rounded-xl bg-blush px-3 py-2 text-[13px] font-semibold text-wine">21+ only · Gamble responsibly. Sabong Central does not take bets or sell tickets. Need help? National Problem Gambling Helpline (02) 8248-9568. <a href="/legal/responsible-gaming" className="text-wine">Learn more</a></p>}
+          {d.derby && <p className="m-0 rounded-xl bg-blush px-3 py-2 text-[13px] font-semibold text-wine">21+ only · Gamble responsibly. Sabong Sentral does not take bets or sell tickets. Need help? National Problem Gambling Helpline (02) 8248-9568. <a href="/legal/responsible-gaming" className="text-wine">Learn more</a></p>}
           <a href={`/report?target=${encodeURIComponent("Event: " + d.title)}`} className="flex min-h-11 items-center gap-1.5 text-[14px] font-semibold text-wine no-underline"><Flag size={15} /> Report this event</a>
         </aside>
       </div>

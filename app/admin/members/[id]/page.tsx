@@ -33,7 +33,7 @@ export default async function AdminMember({ params, searchParams }: { params: Pr
       {temp ? (
         <div className="flex flex-col gap-2 rounded-2xl border-2 border-gold bg-cream p-4">
           <strong className="text-[15px]">{done === "created" ? "Account created." : "New temporary password."} Send this to {m.name || "them"}:</strong>
-          <pre className="m-0 whitespace-pre-wrap rounded-xl bg-ivory p-3 font-sans text-[14px] select-all">{`Hi ${m.name.split(" ")[0] || ""}! Your Sabong Central Portal account is ready.
+          <pre className="m-0 whitespace-pre-wrap rounded-xl bg-ivory p-3 font-sans text-[14px] select-all">{`Hi ${m.name.split(" ")[0] || ""}! Your Sabong Sentral Portal account is ready.
 Sign in at https://${host}/portal
 Email: ${m.email}
 Temporary password: ${decodeURIComponent(temp)}

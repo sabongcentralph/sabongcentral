@@ -10,7 +10,7 @@ function Logo() {
     <a href="/admin" className="flex items-center gap-2.5 text-ink no-underline">
       <Emblem size={34} className="flex-none text-gold" />
       <span className="flex flex-col leading-tight">
-        <span className="font-serif text-[18px] font-semibold tracking-tight">Sabong Central</span>
+        <span className="font-serif text-[18px] font-semibold tracking-tight">Sabong Sentral</span>
         <span className="mt-0.5 w-fit rounded-md bg-crimson px-1.5 py-px text-[10.5px] font-bold uppercase tracking-wider text-white">Admin Panel</span>
       </span>
     </a>

@@ -87,7 +87,7 @@ export async function EventDirectory({ sp, mode }: { sp: Search; mode: DirMode }
       </FilterPanel>
       {mode === "derby" && !derby && <Note tone="gold">Derby listings are switched off for now.</Note>}
       {mode === "derby" && derby && (
-        <Note tone="red">Derby listings are information only (date, venue, organizer). Each needs a verified cockpit license and LGU permit before it is published. No betting, odds or live streaming on Sabong Central.</Note>
+        <Note tone="red">Derby listings are information only (date, venue, organizer). Each needs a verified cockpit license and LGU permit before it is published. No betting, odds or live streaming on Sabong Sentral.</Note>
       )}
       {shown.length === 0 ? <Empty>{mode === "derby" ? "No derbies match your filters." : past ? "No past seminars or events yet." : "No seminars or events match your filters. Try another month or province."}</Empty> : [...byMonth].map(([m, list]) => (
         <section key={m} className="flex flex-col gap-3">

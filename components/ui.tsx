@@ -37,7 +37,7 @@ export function BizBadge({ small = false }: { small?: boolean }) {
 }
 
 export const BIZ_NOTE =
-  "Business Verified: Sabong Central has reviewed this account’s business registration documents. Verification does not guarantee the authenticity of products, bloodlines, transactions, or other claims.";
+  "Business Verified: Sabong Sentral has reviewed this account’s business registration documents. Verification does not guarantee the authenticity of products, bloodlines, transactions, or other claims.";
 
 export function SampleTag() {
   return <span className="flex-none rounded-full border border-sand bg-cream px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted">Sample</span>;

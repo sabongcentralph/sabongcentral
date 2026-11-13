@@ -611,7 +611,7 @@ export async function adminEdit(l: Listing, data: object, admin: string) {
   ]);
 }
 
-// Hands a listing Sabong Central added over to the member who owns it.
+// Hands a listing Sabong Sentral added over to the member who owns it.
 export async function transferListing(l: Listing, memberId: number, memberName: string, admin: string) {
   const d = db();
   const data = { ...(l.data as object) } as Record<string, unknown>;

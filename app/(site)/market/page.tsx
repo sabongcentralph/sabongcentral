@@ -58,7 +58,7 @@ export default async function GoodsPage({ searchParams }: { searchParams: Promis
         <label className={labelCls}>Max price (₱)<input name="max" type="number" min="0" inputMode="numeric" defaultValue={max || ""} className={input} /></label>
       </FilterPanel>
       <div className="grid gap-3 md:grid-cols-2">
-        <Note tone="red"><strong>Beware of scams.</strong> Verify the seller and the item before paying. Sabong Central is not the seller: no checkout, payments, escrow or delivery booking happen here. <a href="/legal/market" className="font-semibold text-wine">Read more</a></Note>
+        <Note tone="red"><strong>Beware of scams.</strong> Verify the seller and the item before paying. Sabong Sentral is not the seller: no checkout, payments, escrow or delivery booking happen here. <a href="/legal/market" className="font-semibold text-wine">Read more</a></Note>
         <Note><strong>Not allowed in the Market:</strong> live birds, fighting weapons, regulated veterinary medicines, and any gambling-related goods or services. <a href="/report?target=Market+listing" className="font-semibold text-wine">Report a listing</a></Note>
       </div>
       <p className="m-0 text-[14px] text-ink-soft"><strong>{shown.length}</strong> listings</p>

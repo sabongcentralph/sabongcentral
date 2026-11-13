@@ -46,7 +46,7 @@ export default async function VenuesPage({ searchParams }: { searchParams: Promi
         <label className={labelCls}>Name or city<input name="q" type="search" defaultValue={q} className={input} /></label>
         <button type="submit" className={btnGhost}>Filter</button>
       </form>
-      <Note>Information only. Sabong Central does not run arenas, take bets or sell tickets. “Permit not yet verified” means we haven’t checked the venue’s current permit; always confirm with the venue and the LGU. 21+ only.</Note>
+      <Note>Information only. Sabong Sentral does not run arenas, take bets or sell tickets. “Permit not yet verified” means we haven’t checked the venue’s current permit; always confirm with the venue and the LGU. 21+ only.</Note>
       {shown.length === 0 ? <Empty>No venues or organizers {province ? `in ${province} ` : ""}yet.</Empty> : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{shown.map((v) => <VenueCard key={v.id} v={v} />)}</div>
       )}

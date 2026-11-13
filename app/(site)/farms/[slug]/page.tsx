@@ -79,7 +79,7 @@ export default async function FarmPage({ params, searchParams }: { params: Promi
               ))}
             </dl>
             <p className="m-0 text-[11.5px] leading-relaxed text-muted">{d.verified ? BIZ_NOTE : "Not Business Verified yet: an admin has not reviewed this farm's business registration."}</p>
-            <Note>Sabong Central is a directory only. Talk to the farm directly. No payments go through us.</Note>
+            <Note>Sabong Sentral is a directory only. Talk to the farm directly. No payments go through us.</Note>
           </aside>
         </div>
       )}

@@ -23,7 +23,7 @@ const full = "md:col-span-2";
 const tone = (q: QueueStatus) => (q === "Approved" ? "green" : q === "Rejected" || q === "Hidden" ? "red" : q === "Needs Changes" || q === "In Review" ? "gold" : "plain") as "green" | "red" | "gold" | "plain";
 const PATH = { farm: "farms", event: "events", good: "market", reel: "reels", article: "learn", notice: "notices", supplier: "suppliers", venue: "venues" } as const;
 
-// Sign in with email and password. Accounts are created by Sabong Central for now;
+// Sign in with email and password. Accounts are created by Sabong Sentral for now;
 // email codes come back once email sending is set up (EMAIL_ENABLED).
 async function SignIn({ sp }: { sp: Search }) {
   const step = one(sp.step), email = one(sp.email), error = one(sp.error);
@@ -61,7 +61,7 @@ async function SignIn({ sp }: { sp: Search }) {
         {!codes && (
           <div className="flex flex-col gap-1.5 rounded-2xl border border-dashed border-sand p-4 text-[13.5px] text-ink-soft">
             <strong className="text-ink">No account yet?</strong>
-            <span>Portal accounts are created by Sabong Central after a quick check. Send us your name, mobile number, Facebook page and what you do (farm, organizer, seller…) through <a href="/contact" className="font-semibold text-wine">Contact Us</a>, and we’ll send you a temporary password.</span>
+            <span>Portal accounts are created by Sabong Sentral after a quick check. Send us your name, mobile number, Facebook page and what you do (farm, organizer, seller…) through <a href="/contact" className="font-semibold text-wine">Contact Us</a>, and we’ll send you a temporary password.</span>
           </div>
         )}
         <p className="m-0 text-[13.5px] text-ink-soft">Just sharing an article, an educational reel or a community announcement? Use the <a href="/submit" className="font-semibold text-wine">public submission form</a>; no account needed.</p>
@@ -105,7 +105,7 @@ function ProfileForm({ m, first }: { m: Member; first: boolean }) {
       {first && (
         <>
           <label className={`${full} flex items-start gap-2 text-[13.5px] text-ink-soft`}><input type="checkbox" name="adult" value="1" required className="mt-0.5 size-[17px] flex-none accent-crimson" /> I am 21 years old or older.</label>
-          <label className={`${full} flex items-start gap-2 text-[13.5px] text-ink-soft`}><input type="checkbox" name="terms" value="1" required className="mt-0.5 size-[17px] flex-none accent-crimson" /> <span>I agree to the <a href="/legal/rules" className="font-semibold text-wine">Portal Rules</a>, <a href="/legal/terms" className="font-semibold text-wine">Terms of Use</a> and <a href="/legal/privacy" className="font-semibold text-wine">Privacy Notice</a>. Sabong Central never asks for government IDs.</span></label>
+          <label className={`${full} flex items-start gap-2 text-[13.5px] text-ink-soft`}><input type="checkbox" name="terms" value="1" required className="mt-0.5 size-[17px] flex-none accent-crimson" /> <span>I agree to the <a href="/legal/rules" className="font-semibold text-wine">Portal Rules</a>, <a href="/legal/terms" className="font-semibold text-wine">Terms of Use</a> and <a href="/legal/privacy" className="font-semibold text-wine">Privacy Notice</a>. Sabong Sentral never asks for government IDs.</span></label>
         </>
       )}
       <button type="submit" className={`${btnPrimary} ${full}`}>{first ? "Create my account" : "Save changes"}</button>
@@ -186,7 +186,7 @@ function Docs({ docs, up, blocked }: { docs: Doc[]; up: boolean; blocked: boolea
       <div className="flex flex-col gap-1">
         <h2 className="m-0 font-serif text-[22px] font-semibold">Business documents</h2>
         <p className="m-0 text-[14px] text-ink-soft">Upload a clear photo of your DTI, SEC, Mayor’s permit or other business paper. Once an admin approves it, your farm and Market listings get the <strong>Business Verified</strong> badge. Optional for sellers.</p>
-        <p className="m-0 text-[12.5px] text-muted">Private: only Sabong Central admins can see these, and every view is logged. Photos only (no PDF). Never upload government IDs.</p>
+        <p className="m-0 text-[12.5px] text-muted">Private: only Sabong Sentral admins can see these, and every view is logged. Photos only (no PDF). Never upload government IDs.</p>
       </div>
       {verified && <Note tone="green"><strong>Business Verified.</strong> You have an approved document on file.</Note>}
       {docs.length > 0 && (

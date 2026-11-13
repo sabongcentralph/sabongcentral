@@ -139,7 +139,7 @@ export function SupplierCard({ s }: { s: Listing<"supplier"> }) {
         <span className="text-[12.5px] text-muted">{d.place}</span>
         <span className="text-[13px] text-ink-soft">{d.about}</span>
         {d.phone && <span className="text-[13px] font-semibold">📞 {d.phone}</span>}
-        {(d as { listedBy?: string }).listedBy === "admin" && <a href={`/contact?topic=${encodeURIComponent("Claim or correct a listing")}&about=${encodeURIComponent(d.name)}`} className="self-start text-[12px] font-semibold text-wine">Listed by Sabong Central · Is this yours?</a>}
+        {(d as { listedBy?: string }).listedBy === "admin" && <a href={`/contact?topic=${encodeURIComponent("Claim or correct a listing")}&about=${encodeURIComponent(d.name)}`} className="self-start text-[12px] font-semibold text-wine">Listed by Sabong Sentral · Is this yours?</a>}
         <a href={`/report?target=${encodeURIComponent("Supplier: " + d.name)}`} className="self-start text-[12px] font-semibold text-muted">Report</a>
       </div>
     </article>

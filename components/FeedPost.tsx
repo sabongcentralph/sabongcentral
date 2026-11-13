@@ -103,7 +103,7 @@ function shape(l: Listing): Shape {
     default: {
       const d = l.data as NoticeData;
       return {
-        href: "/notices", type: d.kind?.replace(/s$/, "") || "Notice", who: d.issuer || "Sabong Central", Icon: MegaphoneIcon,
+        href: "/notices", type: d.kind?.replace(/s$/, "") || "Notice", who: d.issuer || "Sabong Sentral", Icon: MegaphoneIcon,
         tone: d.kind === "Official Advisories" ? "bg-crimson text-white" : "bg-gold text-noir", cta: "See notices",
         body: <>
           <h3 className="m-0 text-[17px] font-bold leading-snug">{d.title}</h3>
@@ -141,7 +141,7 @@ export function FeedPost({ item, later = false }: { item: FeedItem; later?: bool
         {s.media && <div className="overflow-hidden border-y border-line">{s.media}</div>}
         <span className="flex items-center justify-between px-4 py-3 text-[14px] font-semibold text-crimson">{s.cta} <span aria-hidden="true">→</span></span>
       </a>
-      {promo === "Sponsored" && <p className="m-0 border-t border-line px-4 py-2 text-[11.5px] text-muted">Sponsored placement. Sabong Central does not endorse any farm, seller or sale.</p>}
+      {promo === "Sponsored" && <p className="m-0 border-t border-line px-4 py-2 text-[11.5px] text-muted">Sponsored placement. Sabong Sentral does not endorse any farm, seller or sale.</p>}
     </article>
   );
 }
