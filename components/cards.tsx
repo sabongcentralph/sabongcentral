@@ -2,6 +2,8 @@ import type { ArticleData, EventData, FarmData, GoodData, Listing, NoticeData, R
 import { availOf } from "@/lib/db";
 import { BizBadge, Chip, Photo, SampleTag } from "./ui";
 import { Pin, Play } from "./icons";
+import { ReelPreview } from "./ReelPreview";
+import { autoplaySrc, toEmbed } from "@/lib/embed";
 
 const cardCls = "card flex flex-col overflow-hidden rounded-2xl border border-line bg-cream text-ink no-underline";
 
@@ -77,10 +79,11 @@ export function GoodCard({ g, compact = false, tag }: { g: Listing<"good">; comp
 
 export function ReelCard({ r, compact = false }: { r: Listing<"reel">; compact?: boolean }) {
   const d: ReelData = r.data;
+  const embed = toEmbed(d.url);
   return (
     <a href={`/reels/${r.slug}`} className={`${cardCls} ${compact ? "w-[150px] flex-none snap-start md:w-auto" : ""}`}>
-      <div className="relative overflow-hidden">
-        <Photo className="aspect-[9/14]" label="Reel thumbnail" />
+      <div className="relative aspect-[9/14] overflow-hidden">
+        {embed ? <ReelPreview src={autoplaySrc(embed, true)} thumb={embed.thumb} label={d.title} /> : <Photo className="aspect-[9/14]" label="Reel thumbnail" />}
         <span className="absolute inset-0 flex items-center justify-center"><span className="flex size-11 items-center justify-center rounded-full bg-black/45 text-white"><Play size={20} /></span></span>
         <span className="absolute left-2 top-2 rounded-md bg-black/55 px-1.5 py-0.5 text-[10.5px] font-bold text-white">{d.platform}</span>
       </div>

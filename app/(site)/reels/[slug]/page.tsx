@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ListedBy } from "@/components/ListedBy";
 import { approved, approvedOne } from "@/lib/db";
-import { toEmbed } from "@/lib/embed";
+import { autoplaySrc, toEmbed } from "@/lib/embed";
+import { ReelPlayer } from "@/components/ReelPlayer";
 import { ReelCard } from "@/components/cards";
 import { Chip, Note, Page, Photo, SampleTag } from "@/components/ui";
 import { Flag } from "@/components/icons";
@@ -26,9 +27,7 @@ export default async function ReelPage({ params }: { params: Promise<{ slug: str
         <div className="mx-auto w-full max-w-[420px]">
           {embed ? (
             <div className={`overflow-hidden rounded-2xl bg-black ${embed.vertical ? "aspect-[9/16]" : "aspect-video"}`}>
-              <iframe src={embed.src} title={d.title} className="size-full border-0" loading="lazy"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen
-                referrerPolicy="strict-origin-when-cross-origin" />
+              <ReelPlayer src={embed.src} autoSrc={autoplaySrc(embed)} title={d.title} />
             </div>
           ) : (
             <div className="relative overflow-hidden rounded-2xl">
@@ -45,7 +44,7 @@ export default async function ReelPage({ params }: { params: Promise<{ slug: str
           {d.farmSlug ? <a href={`/farms/${d.farmSlug}`} className="text-[15px] font-semibold text-wine">{d.farm}</a> : <span className="text-[15px] font-semibold">{d.farm}</span>}
           {d.desc && <p className="m-0 text-[15px] leading-relaxed text-ink-soft">{d.desc}</p>}
           {d.url && <a href={d.url} target="_blank" rel="noopener noreferrer" className="text-[13px] font-semibold text-wine">Watch on {embed?.platform ?? d.platform} ↗</a>}
-          <Note>External content: this video is embedded from {embed?.platform ?? d.platform} and is not hosted by Sabong Sentral. Educational content only: no fight footage, betting, animal cruelty or prohibited products.</Note>
+          <Note>External content: this video is embedded from {embed?.platform ?? d.platform} and is not hosted by Sabong Sentral. The video starts muted; tap it for sound. Educational content only: no fight footage, betting, animal cruelty or prohibited products.</Note>
           <ListedBy data={d} title={d.title} />
           <a href={`/report?target=${encodeURIComponent("Reel: " + d.title)}`} className="flex min-h-11 items-center gap-1.5 text-[14px] font-semibold text-wine no-underline"><Flag size={15} /> Report this reel</a>
         </div>
