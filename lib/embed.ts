@@ -1,6 +1,6 @@
 // Turns a Facebook, YouTube or TikTok link into a safe embed address.
 // Only these three platforms are accepted; anything else returns null.
-export type Embed = { platform: "YouTube" | "TikTok" | "Facebook"; src: string; vertical: boolean };
+export type Embed = { platform: "YouTube" | "TikTok" | "Facebook"; src: string; vertical: boolean; thumb?: string };
 
 export function toEmbed(raw: string | undefined): Embed | null {
   if (!raw) return null;
@@ -18,7 +18,7 @@ export function toEmbed(raw: string | undefined): Embed | null {
     const parts = u.pathname.split("/").filter(Boolean);
     const v = host === "youtu.be" ? parts[0] : parts[0] === "shorts" || parts[0] === "embed" || parts[0] === "live" ? parts[1] : u.searchParams.get("v");
     const ok = id(v);
-    return ok ? { platform: "YouTube", src: `https://www.youtube-nocookie.com/embed/${ok}`, vertical: parts[0] === "shorts" } : null;
+    return ok ? { platform: "YouTube", src: `https://www.youtube-nocookie.com/embed/${ok}`, vertical: parts[0] === "shorts", thumb: `https://i.ytimg.com/vi/${ok}/hqdefault.jpg` } : null;
   }
   if (host === "tiktok.com") {
     const m = u.pathname.match(/\/video\/(\d{8,25})/);
@@ -30,5 +30,20 @@ export function toEmbed(raw: string | undefined): Embed | null {
     const vertical = /\/reel\//.test(u.pathname);
     return { platform: "Facebook", src: `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(href)}&show_text=false`, vertical };
   }
+  return null;
+}
+
+// Muted autoplay address (Em, 2026-11-13: reels should play by themselves like
+// Facebook/TikTok). Browsers only allow autoplay when the sound is off, so the
+// video starts muted and the viewer taps the player's own button for sound.
+// "preview" is the silent loop on a reel card: no controls, loops forever.
+// TikTok's player has no reliable muted autoplay, so it stays tap-to-play.
+export function autoplaySrc(e: Embed, preview = false): string | null {
+  if (e.platform === "YouTube") {
+    const id = e.src.split("/").pop();
+    const extra = preview ? `&controls=0&loop=1&playlist=${id}&disablekb=1&modestbranding=1&rel=0` : "&rel=0";
+    return `${e.src}?autoplay=1&mute=1&playsinline=1${extra}`;
+  }
+  if (e.platform === "Facebook") return `${e.src}&autoplay=true&mute=true`;
   return null;
 }
