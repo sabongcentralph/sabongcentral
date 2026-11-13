@@ -6,10 +6,10 @@ export const metadata: Metadata = { title: "Get the app" };
 
 const IOS = [
   "Open this site in Safari (the compass icon). Other browsers on iPhone may not show this option.",
-  "Tap the Share button: the square with an arrow pointing up, at the bottom of the screen (on iPad, at the top).",
-  "Scroll down and tap “Add to Home Screen”. If you don't see it, tap “Edit Actions” and add it.",
-  "Tap “Add” at the top right. The Sabong Sentral icon appears on your Home Screen.",
-];
+  "Find Share. On newer iPhones (iOS 26), tap the ··· (three dots) button next to the address bar, then tap Share. On older iPhones, tap the Share button (a square with an arrow pointing up) at the bottom of the screen.",
+  "Scroll down and tap “Add to Home Screen”. If you don't see it, tap “View More” or “Edit Actions” first.",
+  "Tap “Add”. The Sabong Sentral icon appears on your Home Screen.",
+]
 const ANDROID = [
   "Open the site in Chrome.",
   "Tap the ⋮ menu (three dots) at the top right.",

@@ -67,7 +67,7 @@ export function InstallPrompt() {
       <div className="flex min-w-0 flex-1 flex-col">
         <strong className="text-[14px] leading-tight">Get the Sabong Sentral app</strong>
         <span className="text-[12.5px] leading-snug text-white/75">
-          {os === "ios" ? <>Tap Share <span aria-hidden="true">⬆︎</span> then “Add to Home Screen”.</> : "Add it to your Home Screen. It's free."}
+          {os === "ios" ? <>Tap ··· or Share <span aria-hidden="true">⬆︎</span>, then “Add to Home Screen”.</> : "Add it to your Home Screen. It's free."}
         </span>
       </div>
       {os === "android" && d
