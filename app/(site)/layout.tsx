@@ -14,7 +14,7 @@ export default async function SiteLayout({ children }: Readonly<{ children: Reac
   return (
     <div className="flex min-h-screen flex-col">
       {age !== "1" && <AgeGate under={age === "no"} />}
-      <div className="bg-crimson px-4 py-1.5 text-center text-[12px] font-semibold text-white">
+      <div className="bg-noir-soft px-4 py-1.5 text-center text-[12px] font-semibold text-gold-light">
         BETA · Sabong Sentral is new. Listings are being added every day.
       </div>
       <AppHeader lang={lang} />

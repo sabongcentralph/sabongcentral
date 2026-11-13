@@ -7,7 +7,7 @@ import { SideNav } from "./SideNav";
 
 export function AppHeader({ lang }: { lang: Lang }) {
   return (
-    <header className="sticky top-0 z-30 border-b-[3px] border-crimson bg-noir text-white">
+    <header className="sticky top-0 z-30 border-b-2 border-gold/70 bg-noir text-white">
       <div className="mx-auto flex max-w-[1400px] items-center gap-1.5 px-2.5 py-2.5 md:gap-6 md:px-6">
         <MenuDrawer><SideNav /></MenuDrawer>
         <a href="/" className="flex min-w-0 lg:flex-none items-center gap-2 text-white no-underline">

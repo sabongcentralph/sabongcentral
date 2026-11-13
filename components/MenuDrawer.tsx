@@ -15,7 +15,7 @@ export function MenuDrawer({ children }: { children: React.ReactNode }) {
       <dialog ref={ref} aria-label="Menu" className="drawer m-0 h-dvh max-h-none w-[300px] max-w-[85vw] border-0 bg-ivory p-0 text-ink"
         onClick={(e) => { if (e.target === ref.current) ref.current?.close(); }}>
         <div className="flex h-full flex-col overflow-y-auto">
-          <div className="flex items-center justify-between border-b-[3px] border-crimson bg-noir px-4 py-3 text-white">
+          <div className="flex items-center justify-between border-b-2 border-gold/70 bg-noir px-4 py-3 text-white">
             <span className="font-serif text-[19px] font-semibold">Menu</span>
             <button type="button" aria-label="Close menu" onClick={() => ref.current?.close()}
               className="flex size-10 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-gold-light hover:bg-white/10">

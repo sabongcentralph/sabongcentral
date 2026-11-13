@@ -32,7 +32,7 @@ export default async function Home() {
       <section className="relative overflow-hidden bg-noir px-5 pb-8 pt-7 text-white md:px-6 md:pb-12 md:pt-12 lg:mx-6 lg:mt-6 lg:rounded-3xl">
         <div aria-hidden="true" className="hero-slash pointer-events-none absolute -right-20 -top-10 h-[150%] w-24 rotate-[24deg] bg-crimson md:-right-24 md:w-56" />
         <div aria-hidden="true" className="hero-slash hero-slash-2 pointer-events-none absolute -right-1 -top-10 h-[150%] w-2 rotate-[24deg] bg-gold md:right-36 md:w-4" />
-        <div aria-hidden="true" className="hero-slash pointer-events-none absolute -bottom-14 -left-24 h-24 w-52 rotate-[24deg] bg-crimson md:-bottom-16 md:-left-16 md:h-40 md:w-72" />
+        <div aria-hidden="true" className="hero-slash pointer-events-none absolute -bottom-14 -left-24 h-24 w-52 rotate-[24deg] bg-gold/90 md:-bottom-16 md:-left-16 md:h-40 md:w-72" />
         <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-[3px] overflow-hidden bg-crimson/40"><div className="hero-streak h-full w-1/2 bg-gradient-to-r from-transparent via-gold to-transparent" /></div>
         <div className="relative mx-auto flex max-w-[900px] flex-col items-center gap-3 text-center">
           <p className="rise m-0 text-[12px] font-bold tracking-[2px] text-gold-light">{tx.kicker}</p>
