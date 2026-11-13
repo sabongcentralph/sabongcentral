@@ -317,7 +317,7 @@ await step("contact message arrives in Messages", async () => {
   await see(admin, `Please make me an account ${RUN}`);
 });
 
-section("3b. Admin adds listings directly (Listed by Sabong Central)");
+section("3b. Admin adds listings directly (Listed by Sabong Sentral)");
 const aDerby = `E2E Derby ${RUN}`, aFarm = `E2E Listed Farm ${RUN}`, aReel = `E2E Listed Reel ${RUN}`;
 await step("admin publishes a derby straight away", async () => {
   await go(admin, "/admin/add?tab=event");
@@ -337,7 +337,7 @@ await step("admin publishes a derby straight away", async () => {
   await phone.click(`a:has-text("${aDerby}")`);
   await phone.waitForLoadState();
   await see(phone, "21+ only · Gamble responsibly");
-  await see(phone, "Permit not yet verified by Sabong Central");
+  await see(phone, "Permit not yet verified by Sabong Sentral");
   await notSee(phone, "verified by admin");
   await notSee(phone, "An admin reviewed");
 });
@@ -383,13 +383,13 @@ await step("admin publishes an article, an official advisory and a supplier", as
   await admin.waitForURL(/done=published/);
   await go(phone, "/learn"); await see(phone, `E2E Admin Article ${RUN}`);
   await go(phone, "/notices"); await see(phone, `E2E Advisory ${RUN}`); await see(phone, "Bureau of Animal Industry");
-  await go(phone, "/suppliers"); await see(phone, `E2E Supplier ${RUN}`); await see(phone, "Listed by Sabong Central");
+  await go(phone, "/suppliers"); await see(phone, `E2E Supplier ${RUN}`); await see(phone, "Listed by Sabong Sentral");
 });
-await step("the farm page says Listed by Sabong Central, and Claim opens Contact Us filled in", async () => {
+await step("the farm page says Listed by Sabong Sentral, and Claim opens Contact Us filled in", async () => {
   await go(phone, "/farms");
   await phone.click(`a:has-text("${aFarm}")`);
   await phone.waitForLoadState();
-  await see(phone, "Listed by Sabong Central");
+  await see(phone, "Listed by Sabong Sentral");
   await phone.click("a:has-text('Claim or correct it')");
   await phone.waitForURL(/contact/);
   if ((await phone.inputValue("select[name=topic]")) !== "Claim or correct a listing") fail("topic not preselected");
@@ -479,7 +479,7 @@ await step("admin adds a venue that also organizes, and a derby there links to i
   await phone.waitForURL(/\/venues\//);
   await see(phone, "Permit not yet verified");
   await see(phone, dTitle);
-  await see(phone, "Listed by Sabong Central");
+  await see(phone, "Listed by Sabong Sentral");
   await notSee(phone, "Private Operator Name");
   await phone.click(`a:has-text("${dTitle}")`);
   await phone.waitForURL(/\/events\//);
@@ -586,7 +586,7 @@ await step("admin moves the Listed farm to the member's account", async () => {
   await go(phone, "/farms");
   await phone.click(`a:has-text("${aFarm}")`);
   await phone.waitForLoadState();
-  await notSee(phone, "Listed by Sabong Central");
+  await notSee(phone, "Listed by Sabong Sentral");
 });
 
 section("5. Member listings with photos");

@@ -3,12 +3,12 @@ export type LegalDoc = { tab: string; title: string; meta: string; s: [string, s
 export const LEGAL: Record<string, LegalDoc> = {
   "About": {
     "tab": "About",
-    "title": "About Sabong Central",
+    "title": "About Sabong Sentral",
     "meta": "The Philippine Gamefowl Community",
     "s": [
       [
         "Who we are",
-        "Sabong Central is a free, independent, community-based information platform created to connect Filipino gamefowl enthusiasts, breeders, farm owners, event organizers, and poultry supply providers."
+        "Sabong Sentral is a free, independent, community-based information platform created to connect Filipino gamefowl enthusiasts, breeders, farm owners, event organizers, and poultry supply providers."
       ],
       [
         "Our purpose",
@@ -32,15 +32,15 @@ export const LEGAL: Record<string, LegalDoc> = {
       ],
       [
         "We are not a gambling platform",
-        "Sabong Central is not a gambling platform or an e-sabong operator. We do not organize or operate cockfights, accept or facilitate wagers, provide betting odds, collect betting money, livestream cockfights, or offer online gambling services."
+        "Sabong Sentral is not a gambling platform or an e-sabong operator. We do not organize or operate cockfights, accept or facilitate wagers, provide betting odds, collect betting money, livestream cockfights, or offer online gambling services."
       ],
       [
         "No sales through the platform",
-        "Sabong Central does not process purchases, collect payments, arrange deliveries, or act as a seller in transactions between community members."
+        "Sabong Sentral does not process purchases, collect payments, arrange deliveries, or act as a seller in transactions between community members."
       ],
       [
         "Review and 21+",
-        "All listings are submitted by independent contributors and are subject to platform review. Approval or publication does not constitute an endorsement, certification, or guarantee. Sabong Central is intended exclusively for adults aged 21 and above."
+        "All listings are submitted by independent contributors and are subject to platform review. Approval or publication does not constitute an endorsement, certification, or guarantee. Sabong Sentral is intended exclusively for adults aged 21 and above."
       ],
       [
         "Mission",
@@ -55,7 +55,7 @@ export const LEGAL: Record<string, LegalDoc> = {
     "s": [
       [
         "1. Acceptance of Terms",
-        "By using Sabong Central, you agree to these Terms, our Privacy Notice, Philippine law, and our community rules."
+        "By using Sabong Sentral, you agree to these Terms, our Privacy Notice, Philippine law, and our community rules."
       ],
       [
         "2. Nature of the Platform",
@@ -83,7 +83,7 @@ export const LEGAL: Record<string, LegalDoc> = {
       ],
       [
         "9–11. Community Market and Sellers",
-        "Sabong Central is not the seller and has no checkout. Buyers contact sellers directly. Sellers keep listings truthful and mark items sold. No live animals while that feature is off."
+        "Sabong Sentral is not the seller and has no checkout. Buyers contact sellers directly. Sellers keep listings truthful and mark items sold. No live animals while that feature is off."
       ],
       [
         "12–13. Content and Moderation",
@@ -102,7 +102,7 @@ export const LEGAL: Record<string, LegalDoc> = {
     "s": [
       [
         "Who we are",
-        "Sabong Central, operated by [registered business name, to follow], is the personal information controller. Contact and privacy requests: sabongcentralph@gmail.com."
+        "Sabong Sentral, operated by [registered business name, to follow], is the personal information controller. Contact and privacy requests: sabongcentralph@gmail.com."
       ],
       [
         "What we collect",
@@ -168,15 +168,15 @@ export const LEGAL: Record<string, LegalDoc> = {
   "Market": {
     "tab": "Market Notice",
     "title": "Marketplace Notice & Buyer Safety",
-    "meta": "Sabong Central Market · community classified listings",
+    "meta": "Sabong Sentral Market · community classified listings",
     "s": [
       [
         "What the Market is",
-        "Sabong Central Market is a free community classified-listing directory for permitted poultry-related products, equipment, and services."
+        "Sabong Sentral Market is a free community classified-listing directory for permitted poultry-related products, equipment, and services."
       ],
       [
         "We are not the seller",
-        "Sabong Central does not own, sell, purchase, broker, or deliver listed products. We do not negotiate transactions, collect payments, receive commissions, or handle buyer funds."
+        "Sabong Sentral does not own, sell, purchase, broker, or deliver listed products. We do not negotiate transactions, collect payments, receive commissions, or handle buyer funds."
       ],
       [
         "Independent sellers",
@@ -188,7 +188,7 @@ export const LEGAL: Record<string, LegalDoc> = {
       ],
       [
         "We are not a party to transactions",
-        "Sabong Central is not a party to transactions between buyers and sellers. Nothing in this notice excludes responsibilities that may apply to Sabong Central under Philippine law."
+        "Sabong Sentral is not a party to transactions between buyers and sellers. Nothing in this notice excludes responsibilities that may apply to Sabong Sentral under Philippine law."
       ],
       [
         "Report Listing",
@@ -199,7 +199,7 @@ export const LEGAL: Record<string, LegalDoc> = {
   "Contact": {
     "tab": "Contact Us",
     "title": "Contact Us",
-    "meta": "Official contact channels of Sabong Central",
+    "meta": "Official contact channels of Sabong Sentral",
     "s": [
       [
         "Other ways to reach us",
@@ -273,7 +273,7 @@ export const LEGAL: Record<string, LegalDoc> = {
       ],
       [
         "No Gambling or E-Sabong",
-        "Sabong Central does not offer, accept, or facilitate betting, publish odds, collect wagers, process gambling payments, or livestream cockfights."
+        "Sabong Sentral does not offer, accept, or facilitate betting, publish odds, collect wagers, process gambling payments, or livestream cockfights."
       ],
       [
         "Event Information",
@@ -285,7 +285,7 @@ export const LEGAL: Record<string, LegalDoc> = {
       ],
       [
         "Market Listings",
-        "Submitted by independent sellers. Sabong Central is not the seller and does no checkout, payments, or delivery."
+        "Submitted by independent sellers. Sabong Sentral is not the seller and does no checkout, payments, or delivery."
       ],
       [
         "Educational Content",
@@ -308,11 +308,11 @@ export const LEGAL: Record<string, LegalDoc> = {
     "s": [
       [
         "21 and over only",
-        "Sabong Central is for adults 21 years old and above. Everyone confirms their age when they first visit. If you are under 21, please leave the site."
+        "Sabong Sentral is for adults 21 years old and above. Everyone confirms their age when they first visit. If you are under 21, please leave the site."
       ],
       [
         "We never take bets",
-        "Sabong Central is an information directory. We do not accept bets, wagers or payments, we do not run or stream fights, and we do not link to e-sabong, online sabong or betting apps. Listings that promote betting are removed."
+        "Sabong Sentral is an information directory. We do not accept bets, wagers or payments, we do not run or stream fights, and we do not link to e-sabong, online sabong or betting apps. Listings that promote betting are removed."
       ],
       [
         "Gamble responsibly",

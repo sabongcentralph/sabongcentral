@@ -83,8 +83,8 @@ const dict = {
   call: { tl: "Call", en: "Call" },
   messageFb: { tl: "Message sa Facebook", en: "Message on Facebook" },
   directoryOnly: {
-    tl: "Directory lang ang Sabong Central. Direct kayong mag-usap ng farm.",
-    en: "Sabong Central is a directory only. Talk to the farm directly.",
+    tl: "Directory lang ang Sabong Sentral. Direct kayong mag-usap ng farm.",
+    en: "Sabong Sentral is a directory only. Talk to the farm directly.",
   },
   locationMap: { tl: "Location map", en: "Location map" },
   memberSince: { tl: "Member since", en: "Member since" },

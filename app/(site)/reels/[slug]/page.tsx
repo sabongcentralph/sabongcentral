@@ -45,7 +45,7 @@ export default async function ReelPage({ params }: { params: Promise<{ slug: str
           {d.farmSlug ? <a href={`/farms/${d.farmSlug}`} className="text-[15px] font-semibold text-wine">{d.farm}</a> : <span className="text-[15px] font-semibold">{d.farm}</span>}
           {d.desc && <p className="m-0 text-[15px] leading-relaxed text-ink-soft">{d.desc}</p>}
           {d.url && <a href={d.url} target="_blank" rel="noopener noreferrer" className="text-[13px] font-semibold text-wine">Watch on {embed?.platform ?? d.platform} ↗</a>}
-          <Note>External content: this video is embedded from {embed?.platform ?? d.platform} and is not hosted by Sabong Central. Educational content only: no fight footage, betting, animal cruelty or prohibited products.</Note>
+          <Note>External content: this video is embedded from {embed?.platform ?? d.platform} and is not hosted by Sabong Sentral. Educational content only: no fight footage, betting, animal cruelty or prohibited products.</Note>
           <ListedBy data={d} title={d.title} />
           <a href={`/report?target=${encodeURIComponent("Reel: " + d.title)}`} className="flex min-h-11 items-center gap-1.5 text-[14px] font-semibold text-wine no-underline"><Flag size={15} /> Report this reel</a>
         </div>

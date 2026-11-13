@@ -34,7 +34,7 @@ export default async function VenuePage({ params }: { params: Promise<{ slug: st
         <div className="flex flex-wrap gap-1.5">{d.roles.map((r) => <Chip key={r} tone={r === "Venue" ? "red" : "gold"}>{r === "Venue" ? "Venue (cockpit arena)" : "Organizer"}</Chip>)}</div>
         <h1 className="m-0 font-serif text-[28px] font-semibold leading-tight md:text-[38px]">{d.name}</h1>
         <p className="m-0 flex items-center gap-1.5 text-[14px] text-muted"><Pin size={15} />{where}</p>
-        {d.verified ? <BizBadge /> : <span className="w-fit rounded-full border border-sand px-3 py-1 text-[12.5px] font-semibold text-muted">Permit not yet verified by Sabong Central</span>}
+        {d.verified ? <BizBadge /> : <span className="w-fit rounded-full border border-sand px-3 py-1 text-[12.5px] font-semibold text-muted">Permit not yet verified by Sabong Sentral</span>}
         <div className="flex flex-wrap gap-2 pt-1">
           {msg && <a href={msg} target="_blank" rel="noopener noreferrer" className={`${btnPrimary} gap-2`}><Chat size={17} /> Message</a>}
           {d.phone && <a href={telHref(d.phone)} className={`${btnGhost} gap-2`}><Phone size={16} /> {d.phone}</a>}
@@ -49,7 +49,7 @@ export default async function VenuePage({ params }: { params: Promise<{ slug: st
           {events.length === 0 ? <Empty>No upcoming events listed yet.</Empty> : <div className="grid gap-3 sm:grid-cols-2">{events.map((e) => <EventCard key={e.id} e={e} />)}</div>}
         </section>
         <aside className="flex flex-col gap-3">
-          <Note tone="red">Information only. Sabong Central does not run arenas, take bets, sell tickets or livestream fights. Always confirm a venue’s current permit with the venue and the LGU.</Note>
+          <Note tone="red">Information only. Sabong Sentral does not run arenas, take bets, sell tickets or livestream fights. Always confirm a venue’s current permit with the venue and the LGU.</Note>
           <p className="m-0 rounded-xl bg-blush px-3 py-2 text-[13px] font-semibold text-wine">21+ only · Gamble responsibly. Need help? National Problem Gambling Helpline (02) 8248-9568. <a href="/legal/responsible-gaming" className="text-wine">Learn more</a></p>
           <ListedBy data={d} title={d.name} />
           <a href={`/report?target=${encodeURIComponent("Venue: " + d.name)}`} className="flex min-h-11 items-center gap-1.5 text-[14px] font-semibold text-wine no-underline"><Flag size={15} /> Report this listing</a>

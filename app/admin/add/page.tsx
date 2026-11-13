@@ -26,7 +26,7 @@ export default async function AdminAdd({ searchParams }: { searchParams: Promise
       <div className="flex flex-col gap-1">
         <h1 className="m-0 font-serif text-[26px] font-semibold">{editing ? `Edit: ${titleOf(editing)}` : "Add a listing"}</h1>
         <p className="m-0 text-[13.5px] text-muted">
-          {editing ? "Changes go live right away." : "Your listings skip the review queue and go live right away, marked “Listed by Sabong Central” with a “Claim or correct it” link. When the owner gets a Portal account, move it to them from the listing page."}
+          {editing ? "Changes go live right away." : "Your listings skip the review queue and go live right away, marked “Listed by Sabong Sentral” with a “Claim or correct it” link. When the owner gets a Portal account, move it to them from the listing page."}
         </p>
         <p className="m-0 text-[12.5px] text-muted">Use only information they have posted publicly (their page, public contact number). Don’t post a personal mobile number without asking. For derbies, check the cockpit license and LGU permit first.</p>
       </div>

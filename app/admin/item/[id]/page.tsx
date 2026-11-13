@@ -119,7 +119,7 @@ export default async function ReviewItem({ params, searchParams }: { params: Pro
               <input type="hidden" name="id" value={l.id} />
               <label className={`${labelCls} min-w-[220px] flex-1`}>Move to the owner’s Portal account (their email)<input name="member" type="email" required className={input} /></label>
               {act("transfer", "Move to member", btnGhost)}
-              <span className="w-full text-[12px] text-muted">Listed by Sabong Central. Create their account in Members first; after moving, they can edit it themselves.</span>
+              <span className="w-full text-[12px] text-muted">Listed by Sabong Sentral. Create their account in Members first; after moving, they can edit it themselves.</span>
             </form>
           )}
         </div>

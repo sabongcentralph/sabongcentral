@@ -65,7 +65,7 @@ export default async function GoodPage({ params }: { params: Promise<{ slug: str
             </a>
           </section>
           <Note tone="red"><strong>Beware of scams.</strong> Even a Business Verified seller is not a guarantee of the item or delivery. Don't pay before you confirm the item.</Note>
-          <Note><strong>Contact the seller directly.</strong> Sabong Central is not the seller and receives no payment. Pickup or delivery is arranged between you and the seller.</Note>
+          <Note><strong>Contact the seller directly.</strong> Sabong Sentral is not the seller and receives no payment. Pickup or delivery is arranged between you and the seller.</Note>
         </div>
       </div>
       {more.length > 0 && (

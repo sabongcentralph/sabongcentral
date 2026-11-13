@@ -1,4 +1,4 @@
-# Sabong Central
+# Sabong Sentral
 
 A trusted directory of gamefarms and derby schedules in the Philippines.
 Information only: the site never takes bets or handles payments.

@@ -18,7 +18,7 @@ export default async function AdminLogin({ searchParams }: { searchParams: Promi
           <input type="hidden" name="action" value="verify" />
           <h1 className="m-0 font-serif text-[26px] font-semibold">Enter your code</h1>
           {err === "code" && <Note tone="red">That code is not right. Use the newest code in your authenticator app.</Note>}
-          <p className="m-0 text-[14px] text-ink-soft">Open your authenticator app and type the 6-digit code for Sabong Central. Lost your phone? Type one of your backup codes instead.</p>
+          <p className="m-0 text-[14px] text-ink-soft">Open your authenticator app and type the 6-digit code for Sabong Sentral. Lost your phone? Type one of your backup codes instead.</p>
           <label className={labelCls}>Code<input name="code" required autoFocus autoComplete="one-time-code" inputMode="text" maxLength={12} className={`${input} text-center text-[22px] tracking-[0.3em]`} /></label>
           <button type="submit" className={btnPrimary}>Continue</button>
           <a href="/admin/login" className="text-center text-[13px] font-semibold text-wine">Start over</a>

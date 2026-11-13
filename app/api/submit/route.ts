@@ -66,7 +66,7 @@ export async function POST(req: Request) {
   const old = editId ? await byId(editId) : null;
   if (editId && !admin && (!member || !old || old.kind !== kind || !(await ownsListing(member.id, editId)))) return fail("You can only edit your own listings.");
   if (editId && admin && (!old || old.kind !== kind)) return fail("Listing not found.");
-  const by = admin ? "Sabong Central (added by admin)" : isPublic ? `${name} <${email}> (public form)` : `${member!.name || member!.email} <${member!.email}> (member #${member!.id})`;
+  const by = admin ? "Sabong Sentral (added by admin)" : isPublic ? `${name} <${email}> (public form)` : `${member!.name || member!.email} <${member!.email}> (member #${member!.id})`;
   const province = field(f, "province", 80), city = field(f, "city", 80);
   let data: object;
 
@@ -132,7 +132,7 @@ export async function POST(req: Request) {
     const paras = body.split(/\n\s*\n/).map((p) => p.replace(/\s+/g, " ").trim()).filter(Boolean).slice(0, 80);
     const words = body.split(/\s+/).length;
     data = {
-      title, topic, body: paras, summary: field(f, "summary", 300), org: field(f, "org", 120), by: admin ? field(f, "by", 120) || "Sabong Central" : name,
+      title, topic, body: paras, summary: field(f, "summary", 300), org: field(f, "org", 120), by: admin ? field(f, "by", 120) || "Sabong Sentral" : name,
       refs: field(f, "refs", 2000).split("\n").map((r) => r.trim()).filter(Boolean).slice(0, 15),
       date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Manila" }),
       read: `${Math.max(1, Math.round(words / 200))} min read`,
@@ -143,7 +143,7 @@ export async function POST(req: Request) {
     if (!title || !text || !NOTICE_KINDS.includes(nkind)) return fail("Type, title and details are required.");
     if (nkind === "Official Advisories" && (!issuer || !url)) return fail("Official advisories need who issued it and the official source link.");
     const today = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Manila" });
-    data = { kind: nkind, title, text, meta: `${issuer || "Sabong Central"} · ${today}`, source: "", issuer, scope: field(f, "scope", 160), url, expires: /^\d{4}-\d\d-\d\d$/.test(expires) ? expires : "" };
+    data = { kind: nkind, title, text, meta: `${issuer || "Sabong Sentral"} · ${today}`, source: "", issuer, scope: field(f, "scope", 160), url, expires: /^\d{4}-\d\d-\d\d$/.test(expires) ? expires : "" };
   } else if (kind === "supplier" && admin) {
     const name = field(f, "name", 120), skind = field(f, "skind", 60), place = field(f, "place", 120);
     if (!name || !SUPPLIER_KINDS.includes(skind) || !place) return fail("Name, type and location are required.");
@@ -173,7 +173,7 @@ export async function POST(req: Request) {
     if (admin) {
       await adminEdit(old, { ...data, ...kept, ...pics, verifyFacebook: vfb, verifyLink: vlink }, admin);
       const wasDraft = old.reason === DRAFT;
-      if (wasDraft && !asDraft) await review(old.id, "Approved", admin, "Published by Sabong Central");
+      if (wasDraft && !asDraft) await review(old.id, "Approved", admin, "Published by Sabong Sentral");
       return back(req, `/admin/item/${old.id}?done=${wasDraft ? (asDraft ? "draft_saved" : "published") : "edited"}`);
     }
     const out = await memberEdit(old, { ...data, ...kept, ...pics, verifyFacebook: vfb, verifyLink: vlink }, by, asDraft);
@@ -189,7 +189,7 @@ export async function POST(req: Request) {
     return back(req, `/admin/item/${id}?done=draft_saved`);
   }
   if (admin && id) {
-    await review(id, "Approved", admin, "Added by Sabong Central");
+    await review(id, "Approved", admin, "Added by Sabong Sentral");
     return back(req, `/admin/item/${id}?done=published`);
   }
   if (member && id) await linkListing(id, member.id);

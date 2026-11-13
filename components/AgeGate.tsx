@@ -3,7 +3,7 @@ export function AgeGate({ under }: { under: boolean }) {
   return (
     <div role="dialog" aria-modal="true" aria-labelledby="age-title" className="fixed inset-0 z-[100] flex items-center justify-center bg-noir/95 p-4 backdrop-blur">
       <div className="flex w-full max-w-[420px] flex-col gap-4 rounded-2xl border-2 border-gold bg-cream p-6 text-center">
-        <span className="font-serif text-[22px] font-semibold text-crimson">Sabong Central</span>
+        <span className="font-serif text-[22px] font-semibold text-crimson">Sabong Sentral</span>
         {under ? (
           <>
             <h2 id="age-title" className="m-0 text-[18px] font-bold">Sorry, this site is for adults 21 and over.</h2>

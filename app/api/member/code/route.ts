@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   const email = field(f, "email", 200).toLowerCase();
   if (isBot(f)) return back(req, "/portal");
   // Until email sending is set up, accounts are created by an admin with a temporary password.
-  if (await testMode()) return back(req, `/portal?error=${encodeURIComponent("Sign-in codes by email aren’t available yet. Please sign in with the password Sabong Central sent you.")}`);
+  if (await testMode()) return back(req, `/portal?error=${encodeURIComponent("Sign-in codes by email aren’t available yet. Please sign in with the password Sabong Sentral sent you.")}`);
   if (!validEmail(email)) return back(req, `/portal?error=${encodeURIComponent("Please enter a valid email address.")}`);
   const code = await newCode(email);
   if (code === "limit") return back(req, `/portal?error=${encodeURIComponent("Too many codes requested. Please wait an hour and try again.")}`);

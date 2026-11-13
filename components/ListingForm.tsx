@@ -94,7 +94,7 @@ export function ListingForm({ tab, up, who, l, admin = false, venues = [] }: { t
         <label className={labelCls}>Speakers<input name="speakers" defaultValue={v("speakers")} className={input} /></label>
         <label className={labelCls}>Fee<input name="fee" defaultValue={v("fee")} placeholder="Free or ₱500" className={input} /></label>
         <label className={labelCls}>Registration / contact<input name="reg" defaultValue={v("reg")} className={input} /></label>
-        {up && <div className={full}><PhotoPicker name="poster" label="Event poster" hint="One poster image, as the organizer posted it. No fight photos. Derby posters show a note that Sabong Central does not accept bets." /></div>}
+        {up && <div className={full}><PhotoPicker name="poster" label="Event poster" hint="One poster image, as the organizer posted it. No fight photos. Derby posters show a note that Sabong Sentral does not accept bets." /></div>}
         <label className={`${labelCls} ${full}`}>Permits<input name="permits" defaultValue={v("permits")} placeholder="e.g. LGU event permit no., cockpit license (required for derbies)" className={input} /></label>
         <p className={`m-0 text-[12.5px] text-muted ${full}`}>Derby listings need a verified cockpit license and LGU permit before they are published.</p>
       </>
@@ -134,7 +134,7 @@ export function ListingForm({ tab, up, who, l, admin = false, venues = [] }: { t
       <>
         <label className={`${labelCls} ${full}`}>Title *<input name="title" required maxLength={160} defaultValue={v("title")} className={input} /></label>
         <label className={labelCls}>Topic *<select name="topic" required defaultValue={v("topic")} className={input}>{ARTICLE_TOPICS.map((t) => <option key={t}>{t}</option>)}</select></label>
-        <label className={labelCls}>Author or source *<input name="by" required maxLength={120} defaultValue={v("by", "Sabong Central")} className={input} /></label>
+        <label className={labelCls}>Author or source *<input name="by" required maxLength={120} defaultValue={v("by", "Sabong Sentral")} className={input} /></label>
         <label className={`${labelCls} ${full}`}>Organization (optional)<input name="org" maxLength={120} defaultValue={v("org")} className={input} /></label>
         <label className={`${labelCls} ${full}`}>Short summary<input name="summary" maxLength={300} defaultValue={v("summary")} className={input} /></label>
         <label className={`${labelCls} ${full}`}>Article * (blank line between paragraphs)<textarea name="body" required rows={12} defaultValue={l ? ((d.body as string[] | undefined) ?? []).join("\n\n") : ""} className={`${input} py-2.5`} /></label>
@@ -181,7 +181,7 @@ export function ListingForm({ tab, up, who, l, admin = false, venues = [] }: { t
         <LocationFields required idPrefix="pg" province={v("province")} city={v("city")} />
         {up && <div className={full}><PhotoPicker name="photos" label="Product photos" max={3} /></div>}
         <label className={`${labelCls} ${full}`}>Description<textarea name="desc" rows={4} defaultValue={v("desc")} className={`${input} py-2.5`} /></label>
-        <p className={`m-0 text-[12.5px] text-muted ${full}`}>Not allowed: live birds, fighting weapons, regulated veterinary medicines, and anything gambling-related. No payments, checkout or delivery booking through Sabong Central.</p>
+        <p className={`m-0 text-[12.5px] text-muted ${full}`}>Not allowed: live birds, fighting weapons, regulated veterinary medicines, and anything gambling-related. No payments, checkout or delivery booking through Sabong Sentral.</p>
       </>
     )}
     {admin && (

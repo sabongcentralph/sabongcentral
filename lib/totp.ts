@@ -43,7 +43,7 @@ export async function checkCode(secret: string, code: string, lastUsed = -1): Pr
 }
 
 export function qrSvg(email: string, secret: string): string {
-  const uri = `otpauth://totp/${encodeURIComponent(`Sabong Central:${email}`)}?secret=${secret}&issuer=${encodeURIComponent("Sabong Central")}`;
+  const uri = `otpauth://totp/${encodeURIComponent(`Sabong Sentral:${email}`)}?secret=${secret}&issuer=${encodeURIComponent("Sabong Sentral")}`;
   const q = qrcode(0, "M");
   q.addData(uri);
   q.make();

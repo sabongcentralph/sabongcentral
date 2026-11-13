@@ -515,7 +515,7 @@ export const ARTICLES = [
     "topic": "Breeding",
     "date": "Nov 9, 2026",
     "read": "5 min read",
-    "by": "Sabong Central Editors",
+    "by": "Sabong Sentral Editors",
     "body": [
       "A good hatch rate starts with healthy breeders. Choose hens and cocks of the right age and weight, free of disease.",
       "Give breeders breeder feed, clean water and enough light. Avoid stress in the pens, especially in the first two weeks together.",
@@ -541,7 +541,7 @@ export const ARTICLES = [
     "topic": "Biosecurity",
     "date": "Oct 30, 2026",
     "read": "6 min read",
-    "by": "Sabong Central Editors",
+    "by": "Sabong Sentral Editors",
     "body": [
       "Quarantine new birds for at least 2 weeks before adding them to the flock.",
       "Put a footbath at the entrance and limit visitors. Clean and disinfect feeders and drinkers daily.",
