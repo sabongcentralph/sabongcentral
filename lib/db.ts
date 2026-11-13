@@ -244,13 +244,29 @@ export async function approved<K extends Kind>(kind: K): Promise<Listing<K>[]> {
 }
 
 // A seller can mark an item "Removed": it stays approved but leaves the public site.
+// Derbies and seminars leave the site EVENT_DAYS after their last day (Em, 2026-11-13).
 function isPublic(l: Listing): boolean {
+  if (l.kind === "event") return l.isSample || !eventExpired(l.data as EventData);
   if (l.kind !== "good") return true;
   return (l.data as GoodData).avail !== "Removed" && !(!l.isSample && daysLeft(l) <= 0);
 }
 
-// Market items stay up for MARKET_DAYS after they are listed or renewed by the seller.
-export const MARKET_DAYS = 60;
+export const EVENT_DAYS = 10;
+// Last day of an event as YYYY-MM-DD: the end date if given, else "Dec 12–13" style ranges, else the start date.
+export function eventEnd(e: Pick<EventData, "date" | "days" | "endDate">): string {
+  if (e.endDate && /^\d{4}-\d\d-\d\d$/.test(e.endDate) && e.endDate > (e.date ?? "")) return e.endDate;
+  const m = (e.days ?? "").match(/[–-]\s*(\d{1,2})$/);
+  return m && e.date ? e.date.slice(0, 8) + m[1].padStart(2, "0") : e.date ?? "";
+}
+export function eventExpired(e: Pick<EventData, "date" | "days" | "endDate">): boolean {
+  const end = eventEnd(e);
+  if (!/^\d{4}-\d\d-\d\d$/.test(end)) return false;
+  const cutoff = new Date(Date.now() + 8 * 3600_000 - EVENT_DAYS * 86_400_000).toISOString().slice(0, 10); // PH time
+  return end < cutoff;
+}
+
+// Market items stay up for MARKET_DAYS after they are listed or renewed by the seller (Em, 2026-11-13: 10 days).
+export const MARKET_DAYS = 10;
 export function daysLeft(l: Pick<Listing, "data" | "createdAt">): number {
   const from = (l.data as { renewed?: string }).renewed ?? l.createdAt;
   const t = Date.parse(from.includes("T") ? from : from.replace(" ", "T") + "Z");
