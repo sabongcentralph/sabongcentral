@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { shuffled } from "@/lib/feed";
 import { approved, availOf } from "@/lib/db";
 import { matches, one, type Search } from "@/lib/content";
 import { GOODS_CATS } from "@/lib/sample";
@@ -17,7 +18,10 @@ export default async function GoodsPage({ searchParams }: { searchParams: Promis
   const sp = await searchParams;
   const q = one(sp.q), cat = one(sp.cat), sub = one(sp.sub), province = one(sp.province), city = one(sp.city);
   const min = Number(one(sp.min)) || 0, max = Number(one(sp.max)) || 0, avail = one(sp.avail) || "Available";
-  const all = withFeaturedFirst(await approved("good"));
+  const filtered = !!(q || cat || sub || province || city || min || max || avail !== "Available");
+  // Shuffled on every visit unless the viewer filters (Em, 2026-11-13); featured items stay first.
+  const raw = await approved("good");
+  const all = withFeaturedFirst(filtered ? raw : shuffled(raw));
   const shown = all.filter((g) => {
     const d = g.data, p = peso(d.price);
     return matches(`${d.name} ${d.seller} ${d.sub}`, q) && (!cat || d.cat === cat) && (!sub || d.sub === sub) &&

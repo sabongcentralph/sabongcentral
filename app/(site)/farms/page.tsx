@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { shuffled } from "@/lib/feed";
 import { approved } from "@/lib/db";
 import { placementLabel, withFeaturedFirst } from "@/lib/placements";
 import { many, matches, one, todayPH, type Search } from "@/lib/content";
@@ -14,7 +15,10 @@ export const metadata: Metadata = { title: "Farms" };
 export default async function FarmsPage({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams;
   const q = one(sp.q), province = one(sp.province), city = one(sp.city), lines = many(sp.line), ver = one(sp.verified) === "1";
-  const all = withFeaturedFirst(await approved("farm"));
+  const filtered = !!(q || province || city || ver || lines.length);
+  // Shuffled on every visit unless the viewer filters (Em, 2026-11-13); featured farms stay first.
+  const raw = await approved("farm");
+  const all = withFeaturedFirst(filtered ? raw : shuffled(raw));
   const farms = all.filter((f) => {
     const d = f.data;
     return (

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { shuffled } from "@/lib/feed";
 import { approved } from "@/lib/db";
 import { matches, one, type Search } from "@/lib/content";
 import { VenueCard } from "@/components/cards";
@@ -15,7 +16,8 @@ export default async function VenuesPage({ searchParams }: { searchParams: Promi
   const role = one(sp.role), province = one(sp.province), q = one(sp.q);
   const all = await approved("venue");
   const provinces = [...new Set(all.map((v) => v.data.province))].sort();
-  const shown = all
+  // Shuffled on every visit unless the viewer filters (Em, 2026-11-13); filtered lists stay A to Z.
+  const shown = !(role || province || q) ? shuffled(all) : all
     .filter((v) => (!role || v.data.roles.includes(role)) && (!province || v.data.province === province) && matches(`${v.data.name} ${v.data.city} ${v.data.province}`, q))
     .sort((a, b) => a.data.province.localeCompare(b.data.province) || a.data.name.localeCompare(b.data.name));
   const link = (r: string) => {
