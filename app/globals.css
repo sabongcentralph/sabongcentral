@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
-/* Sabong Sentral look: soft charcoal (not jet black), bright red for actions, gold accents, easy on the eyes. No maroon. */
+/* Sabong Sentral look: bold bright red, black and white, with a touch of gold. No maroon. */
 @theme {
-  --color-noir: #242526;
-  --color-noir-soft: #3a3b3c;
+  --color-noir: #121215;
+  --color-noir-soft: #1d1d22;
   --color-crimson: #e81e25;
   --color-crimson-dark: #c8161d;
   --color-wine: #d8161e;
-  --color-ivory: #f5f5f3;
+  --color-ivory: #f5f4f2;
   --color-cream: #ffffff;
   --color-sand: #d6d3ce;
   --color-line: #e6e3de;
@@ -16,9 +16,9 @@
   --color-gold: #c8a44d;
   --color-gold-light: #e6c76e;
   --color-gold-dark: #9a7728;
-  --color-ink: #1c1e21;
-  --color-ink-soft: #3e4042;
-  --color-muted: #65676b;
+  --color-ink: #16161a;
+  --color-ink-soft: #3c3c44;
+  --color-muted: #66666f;
   --color-ok-bg: #e6efe8;
   --color-ok: #2f5b3a;
   --color-ok-line: #9fbfa8;
@@ -63,17 +63,16 @@
   :root {
     color-scheme: dark;
     --color-wine: #ff4d52;
-    --color-noir: #242526;
-    --color-ivory: #18191a;
-    --color-cream: #242526;
-    --color-sand: #4a4b4d;
-    --color-line: #3a3b3c;
+    --color-ivory: #0b0b0d;
+    --color-cream: #17171b;
+    --color-sand: #34343b;
+    --color-line: #26262c;
     --color-blush: #3a1416;
     --color-rose: #3a1c1e;
     --color-gold-dark: #e0bf68;
-    --color-ink: #e4e6eb;
-    --color-ink-soft: #cfd2d6;
-    --color-muted: #b0b3b8;
+    --color-ink: #f4f4f5;
+    --color-ink-soft: #d4d4d8;
+    --color-muted: #9d9da6;
     --color-ok-bg: #163021;
     --color-ok: #6fd391;
     --color-ok-line: #2c5a3c;
@@ -84,8 +83,8 @@
     --color-info: #8ab4f0;
     --color-red-line: #5c2224;
   }
-  :root .ph { background-color: #2f3031; }
-  :root .field { background-color: #18191a; }
+  :root .ph { background-color: #1f1f24; }
+  :root .field { background-color: #121215; }
   ::placeholder { color: #75757d; }
   .card:hover { box-shadow: 0 16px 34px rgb(0 0 0 / 0.5); }
 }
@@ -139,7 +138,7 @@ a:hover .arrow { transform: translateX(4px); }
   background: linear-gradient(90deg, var(--color-crimson), var(--color-gold));
   transform: scaleX(0); transform-origin: left; transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
-.card:hover { box-shadow: 0 16px 34px rgb(28 30 33 / 0.14); transform: translateY(-4px); border-color: var(--color-crimson); }
+.card:hover { box-shadow: 0 16px 34px rgb(18 18 21 / 0.16); transform: translateY(-4px); border-color: var(--color-crimson); }
 .card:hover::before { transform: scaleX(1); }
 .card .ph { transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1); }
 .card:hover .ph { transform: scale(1.06); }
@@ -171,7 +170,7 @@ a:hover .arrow { transform: translateX(4px); }
 /* Side menu drawer (phones and tablets). */
 dialog.drawer { inset: 0 auto 0 0; }
 dialog.drawer[open] { animation: drawer-in 0.22s ease-out; }
-dialog.drawer::backdrop { background: rgb(28 30 33 / 0.55); }
+dialog.drawer::backdrop { background: rgb(18 18 21 / 0.55); }
 @keyframes drawer-in { from { transform: translateX(-100%); } to { transform: none; } }
 @media (prefers-reduced-motion: reduce) { dialog.drawer[open] { animation: none; } }
 
