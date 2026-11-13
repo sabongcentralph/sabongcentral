@@ -42,8 +42,16 @@ export function autoplaySrc(e: Embed, preview = false): string | null {
   if (e.platform === "YouTube") {
     const id = e.src.split("/").pop();
     const extra = preview ? `&controls=0&loop=1&playlist=${id}&disablekb=1&modestbranding=1&rel=0` : "&rel=0";
-    return `${e.src}?autoplay=1&mute=1&playsinline=1${extra}`;
+    return `${e.src}?autoplay=1&mute=1&playsinline=1&enablejsapi=1${extra}`;
   }
   if (e.platform === "Facebook") return `${e.src}&autoplay=true&mute=true`;
   return null;
+}
+
+// Some phones ignore autoplay=1 in the address. For YouTube, also tell the
+// player to mute and play once it has loaded (its documented postMessage API).
+export function kickYouTube(frame: HTMLIFrameElement | null) {
+  if (!frame || !frame.src.includes("enablejsapi=1")) return;
+  const send = (func: string) => frame.contentWindow?.postMessage(JSON.stringify({ event: "command", func, args: [] }), "*");
+  [0, 400, 1200, 2500].forEach((ms) => setTimeout(() => { send("mute"); send("playVideo"); }, ms));
 }

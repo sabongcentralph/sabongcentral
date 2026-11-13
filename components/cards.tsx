@@ -83,8 +83,10 @@ export function ReelCard({ r, compact = false }: { r: Listing<"reel">; compact?:
   return (
     <a href={`/reels/${r.slug}`} className={`${cardCls} ${compact ? "w-[150px] flex-none snap-start md:w-auto" : ""}`}>
       <div className="relative aspect-[9/14] overflow-hidden">
-        {embed ? <ReelPreview src={autoplaySrc(embed, true)} thumb={embed.thumb} label={d.title} /> : <Photo className="aspect-[9/14]" label="Reel thumbnail" />}
-        <span className="absolute inset-0 flex items-center justify-center"><span className="flex size-11 items-center justify-center rounded-full bg-black/45 text-white"><Play size={20} /></span></span>
+        {embed ? <ReelPreview src={autoplaySrc(embed, true)} thumb={embed.thumb} label={d.title} /> : <>
+          <Photo className="aspect-[9/14]" label="Reel thumbnail" />
+          <span className="absolute inset-0 flex items-center justify-center"><span className="flex size-11 items-center justify-center rounded-full bg-black/45 text-white"><Play size={20} /></span></span>
+        </>}
         <span className="absolute left-2 top-2 rounded-md bg-black/55 px-1.5 py-0.5 text-[10.5px] font-bold text-white">{d.platform}</span>
       </div>
       <div className="flex flex-col gap-0.5 p-2.5">
