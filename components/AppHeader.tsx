@@ -1,6 +1,6 @@
 import { SITE_NAME } from "@/lib/site";
 import { t, type Lang } from "@/lib/i18n";
-import { Emblem, SearchIcon, UserIcon } from "./icons";
+import { SearchIcon, UserIcon } from "./icons";
 import { TopNav } from "./TopNav";
 import { MenuDrawer } from "./MenuDrawer";
 import { SideNav } from "./SideNav";
@@ -11,7 +11,7 @@ export function AppHeader({ lang }: { lang: Lang }) {
       <div className="mx-auto flex max-w-[1400px] items-center gap-1.5 px-2.5 py-2.5 md:gap-6 md:px-6">
         <MenuDrawer><SideNav /></MenuDrawer>
         <a href="/" className="flex min-w-0 lg:flex-none items-center gap-2 text-white no-underline">
-          <Emblem className="flex-none text-gold" />
+          <img src="/icons/logo-mark.png" alt="" width={32} height={36} className="h-9 w-auto flex-none" />
           <span className="flex min-w-0 flex-col leading-tight">
             <span className="whitespace-nowrap font-serif text-[20px] font-semibold tracking-[0.2px]">{SITE_NAME}</span>
             <span className="truncate text-[10px] text-gold-light sm:text-[11px]">{t("tagline", lang)}</span>
