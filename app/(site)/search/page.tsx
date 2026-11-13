@@ -52,7 +52,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         </div>
       )}
       {total === 0 && (
-        <Empty>Nothing found. Try a shorter word (like “Kelso”, “feeds” or “seminar”), pick “Everything” as the content type, or clear the location. You can also browse <a href="/farms" className="text-wine">farms</a>, <a href="/market" className="text-wine">the Market</a> or <a href="/education" className="text-wine">Learn</a>.</Empty>
+        <Empty>Nothing found. Try a shorter word (like “Kelso”, “feeds” or “seminar”), pick “Everything” as the content type, or clear the location. You can also browse <a href="/farms" className="text-wine">farms</a>, <a href="/market" className="text-wine">the Market</a> or <a href="/education" className="text-wine">seminars &amp; expos</a>.</Empty>
       )}
       {f.length > 0 && <section className="flex flex-col gap-3"><SectionHead title={`Farms (${f.length})`} href="/farms" /><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{f.slice(0, 6).map((x) => <FarmCard key={x.id} f={x} />)}</div></section>}
       {e.length > 0 && <section className="flex flex-col gap-3"><SectionHead title={`Events (${e.length})`} href="/events" /><div className="grid gap-3 md:grid-cols-2">{e.slice(0, 6).map((x) => <EventCard key={x.id} e={x} />)}</div></section>}

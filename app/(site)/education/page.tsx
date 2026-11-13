@@ -3,7 +3,7 @@ import type { Search } from "@/lib/content";
 import { EventDirectory } from "@/components/EventDirectory";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Learn" };
+export const metadata: Metadata = { title: "Seminars & Expos" };
 
 export default async function EducationPage({ searchParams }: { searchParams: Promise<Search> }) {
   return <EventDirectory sp={await searchParams} mode="education" />;
