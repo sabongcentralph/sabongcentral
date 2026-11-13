@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   title: { default: SITE_NAME, template: `%s · ${SITE_NAME}` },
   description: "Philippine gamefowl community: gamefarms, derby schedules, supplies and education. Information only: no bets, no payments.",
   robots: { index: false, follow: false }, // test site: keep out of search engines until launch
+  // Home screen app on iPhone: opens full screen with the dark status bar.
+  appleWebApp: { capable: true, title: SITE_NAME, statusBarStyle: "black" },
 };
 
 export const viewport: Viewport = { themeColor: "#121215", width: "device-width", initialScale: 1 };
