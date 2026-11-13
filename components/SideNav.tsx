@@ -10,6 +10,7 @@ export const SIDE_SECTIONS: { title: string; items: Item[] }[] = [
   {
     title: "Quick Links",
     items: [
+      { href: "/app", label: "Get the app (Home Screen)", Icon: DownloadIcon },
       { href: "/learn", label: "Articles & Guides", Icon: BookIcon },
       { href: "/learn?topic=Downloads", label: "Breeder Resources", Icon: DownloadIcon },
       { href: "/venues", label: "Venues & Organizers", Icon: PinIcon },
