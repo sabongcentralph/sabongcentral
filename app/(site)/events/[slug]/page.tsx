@@ -35,7 +35,8 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
   ];
   return (
     <Page>
-      <div className="-mx-4 -mt-5 md:mx-0 md:mt-0"><Photo className={d.poster ? "max-h-[560px] md:rounded-2xl" : "h-[190px] md:h-[320px] md:rounded-2xl"} contain={!!d.poster} label="Event poster" src={d.poster} /></div>
+      <div className="-mx-4 -mt-5 md:mx-0 md:mt-0"><Photo className={d.poster ? "max-h-[560px] md:rounded-2xl" : "h-[190px] md:h-[320px] md:rounded-2xl"} contain={!!d.poster} label="Event poster" src={d.poster} />
+        {d.poster && d.derby && <p className="m-0 bg-blush px-4 py-2 text-[12.5px] font-semibold text-wine md:mt-2 md:rounded-xl">Organizer’s poster, shown as posted. Sabong Central only shares event information: we do not accept bets, entries or payments. Any amounts on the poster are between you and the organizer.</p>}</div>
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-1.5">
           <Chip tone={d.derby ? "red" : d.group === "Education & Training" ? "green" : "gold"}>{d.group}</Chip>

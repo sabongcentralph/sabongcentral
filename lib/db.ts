@@ -42,7 +42,7 @@ export type ArticleData = {
 };
 export type NoticeData = {
   kind: string; title: string; meta: string; text: string; source: string;
-  issuer?: string; scope?: string; url?: string; expires?: string;
+  issuer?: string; scope?: string; url?: string; expires?: string; photo?: string;
 };
 export type SupplierData = { kind: string; name: string; place: string; about: string; phone: string };
 // Venues & Organizers (Em, 2026-11-12): cockpit arenas and event organizers; one profile can be both.
@@ -589,7 +589,7 @@ export async function deleteListing(l: Listing, who: string) {
   const d = db();
   const edit = await pendingEdit(l.id);
   const photos = [l.data as unknown as Record<string, unknown>, edit?.data ?? {}].flatMap((x) =>
-    ["profile", "cover", "gallery", "poster", "photos"].flatMap((k) => (Array.isArray(x[k]) ? (x[k] as unknown[]) : x[k] ? [x[k]] : [])).map(String));
+    ["profile", "cover", "gallery", "poster", "photos", "photo"].flatMap((k) => (Array.isArray(x[k]) ? (x[k] as unknown[]) : x[k] ? [x[k]] : [])).map(String));
   await d.batch([
     d.prepare(`delete from listings where id = ?`).bind(l.id),
     d.prepare(`delete from review_stage where listing_id = ?`).bind(l.id),
