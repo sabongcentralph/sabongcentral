@@ -151,6 +151,7 @@ export function ListingForm({ tab, up, who, l, admin = false, venues = [] }: { t
         <label className={labelCls}>Official source link<input name="url" type="url" placeholder="https://…" defaultValue={v("url")} className={input} /></label>
         <label className={labelCls}>Valid until<input name="expires" type="date" defaultValue={v("expires")} className={input} /></label>
         <p className={`m-0 text-[12.5px] text-muted ${full}`}>Official advisories need the issuer and the official source link.</p>
+        {up && <div className={full}><PhotoPicker name="photo" label="Photo (optional)" hint="One image, such as the advisory itself or a farm announcement photo." /></div>}
       </>
     )}
     {tab === "supplier" && (

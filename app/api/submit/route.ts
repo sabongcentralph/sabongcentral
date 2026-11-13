@@ -158,7 +158,7 @@ export async function POST(req: Request) {
 
   // Photos (only Portal listings): checked before saving anything.
   const groups = kind === "venue" ? { profile: photoFiles(f, "profile", 1), cover: photoFiles(f, "cover", 1) } : kind === "farm" ? { profile: photoFiles(f, "profile", 1), cover: photoFiles(f, "cover", 1), gallery: photoFiles(f, "gallery", 6) }
-    : kind === "event" ? { poster: photoFiles(f, "poster", 1) } : kind === "good" ? { photos: photoFiles(f, "photos", 3) } : {};
+    : kind === "event" ? { poster: photoFiles(f, "poster", 1) } : kind === "notice" && admin ? { photo: photoFiles(f, "photo", 1) } : kind === "good" ? { photos: photoFiles(f, "photos", 3) } : {};
   const bad = badPhoto(Object.values(groups).flat());
   if (bad) return fail(bad);
   const pics: Record<string, string | string[]> = {};
@@ -169,7 +169,7 @@ export async function POST(req: Request) {
   if (old) {
     // Keep photos that weren't replaced, and fields only admins or quick actions change.
     const o = old.data as unknown as Record<string, unknown>;
-    const kept = Object.fromEntries(["profile", "cover", "gallery", "poster", "photos", "verified", "sellerVerified", "status", "renewed", "listedBy", "featured", "spotlight", "featuredRank", "sponsored", "promoUntil", ...(admin ? [] : ["operator"])].filter((k) => k in o && !(k in pics)).map((k) => [k, o[k]]));
+    const kept = Object.fromEntries(["profile", "cover", "gallery", "poster", "photos", "photo", "verified", "sellerVerified", "status", "renewed", "listedBy", "featured", "spotlight", "featuredRank", "sponsored", "promoUntil", ...(admin ? [] : ["operator"])].filter((k) => k in o && !(k in pics)).map((k) => [k, o[k]]));
     if (admin) {
       await adminEdit(old, { ...data, ...kept, ...pics, verifyFacebook: vfb, verifyLink: vlink }, admin);
       const wasDraft = old.reason === DRAFT;
