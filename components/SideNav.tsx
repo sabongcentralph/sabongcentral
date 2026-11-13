@@ -1,9 +1,12 @@
 import { Pin as PinIcon } from "./icons";
+import { TABS } from "./tabs";
 import { AlertIcon, BookIcon, DownloadIcon, GearIcon, InfoIcon, MegaphoneIcon, ShieldIcon, TruckIcon, UserIcon } from "./icons";
 
 type Item = { href: string; label: string; Icon?: (p: { size?: number; className?: string }) => React.ReactElement; warn?: boolean };
 
 export const SIDE_SECTIONS: { title: string; items: Item[] }[] = [
+  // Same six tabs as the bottom bar, so everything is reachable from the side menu too.
+  { title: "Main", items: TABS.map(({ href, label, Icon }) => ({ href, label: label.en, Icon })) },
   {
     title: "Quick Links",
     items: [
