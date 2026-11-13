@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { shuffled } from "@/lib/feed";
 import { approved } from "@/lib/db";
 import { one, type Search } from "@/lib/content";
 import { ARTICLE_TOPICS, RESOURCES } from "@/lib/sample";
@@ -14,7 +15,7 @@ export default async function LearnPage({ searchParams }: { searchParams: Promis
   const topic = one((await searchParams).topic);
   const all = await approved("article");
   const topics = ARTICLE_TOPICS;
-  const shown = all.filter((a) => !topic || a.data.topic === topic);
+  const shown = topic ? all.filter((a) => a.data.topic === topic) : shuffled(all); // shuffled unless filtered (Em, 2026-11-13)
   return (
     <Page>
       <PageHead kicker="Learn & Grow" title="Learn" sub="Seminars, workshops, training, webinars and expos, plus articles and guides from breeders and veterinarians." />

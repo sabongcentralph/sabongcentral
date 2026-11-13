@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { shuffled } from "@/lib/feed";
 import { approved } from "@/lib/db";
 import { one, type Search } from "@/lib/content";
 import { SupplierCard } from "@/components/cards";
@@ -11,7 +12,8 @@ const KINDS = ["Feed Manufacturers", "Equipment Providers", "Agricultural Supply
 
 export default async function SuppliersPage({ searchParams }: { searchParams: Promise<Search> }) {
   const kind = one((await searchParams).kind);
-  const shown = (await approved("supplier")).filter((s) => !kind || s.data.kind === kind);
+  const list = await approved("supplier");
+  const shown = kind ? list.filter((s) => s.data.kind === kind) : shuffled(list); // shuffled unless filtered (Em, 2026-11-13)
   return (
     <Page>
       <PageHead kicker="Directory" title="Verified Suppliers" sub="Feed manufacturers, equipment providers and agricultural supply stores." />

@@ -13,7 +13,7 @@ export default async function ReelsPage({ searchParams }: { searchParams: Promis
   const topic = one((await searchParams).topic);
   const all = await approved("reel");
   const topics = REEL_TOPICS;
-  const shown = shuffled(all.filter((r) => !topic || r.data.topic === topic)); // new order every visit
+  const shown = topic ? all.filter((r) => r.data.topic === topic) : shuffled(all); // shuffled unless filtered (Em, 2026-11-13)
   return (
     <Page>
       <PageHead kicker="Educational Reels" title="Reels" sub="Short videos on feeding, health, housing and farm management, from farms' Facebook, YouTube and TikTok." />
