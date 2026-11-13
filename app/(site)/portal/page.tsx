@@ -144,8 +144,8 @@ function ListingRow({ l, qs, editing, blocked }: { l: Listing; qs: QueueStatus; 
         {editing && <Chip tone="gold">Edit waiting for review</Chip>}
       </div>
       {l.reason && !mine && (qs === "Needs Changes" || qs === "Rejected" || qs === "Hidden" || qs === "Approved") && <p className="m-0 text-[13px] text-wine">Admin note: “{l.reason}”</p>}
-      {live && l.kind === "event" && expired && <p className="m-0 text-[12.5px] text-muted">Ended more than {EVENT_DAYS} days ago, so it is no longer shown on the site.</p>}
-      {live && left !== null && <p className={`m-0 text-[12.5px] ${left <= 3 ? "font-semibold text-wine" : "text-muted"}`}>{expired ? "Expired: no longer shown in the Market. Renew to list it again." : `Listed for ${left} more day${left === 1 ? "" : "s"}.`}</p>}
+      {live && l.kind === "event" && expired && <p className="m-0 text-[12.5px] text-muted">Ended more than {EVENT_DAYS} days ago. It will be deleted automatically.</p>}
+      {live && left !== null && <p className={`m-0 text-[12.5px] ${left <= 3 ? "font-semibold text-wine" : "text-muted"}`}>{expired ? "Expired. It will be deleted automatically." : `Listed for ${left} more day${left === 1 ? "" : "s"}.`}</p>}
       <div className="flex flex-wrap items-center gap-2">
         {live && !expired && <a href={`/${l.kind === "event" && !d.derby ? "education" : PATH[l.kind]}/${l.slug}`} className={small}>View ↗</a>}
         {!blocked && !mine && qs !== "Hidden" && <a href={`/portal?tab=edit&id=${l.id}`} className={small}>Edit</a>}
@@ -309,7 +309,7 @@ export default async function PortalPage({ searchParams }: { searchParams: Promi
                 {mine.map(({ l, qs }) => <ListingRow key={l.id} l={l} qs={qs} editing={edits.has(l.id)} blocked={blocked} />)}
               </ul>
             )}
-            <p className="m-0 text-[12.5px] text-muted">Edits to a live listing are checked by an admin; the current version stays up until then. Status changes, renewing and unpublishing happen right away. Market items stay up for {MARKET_DAYS} days; renew to keep them listed.</p>
+            <p className="m-0 text-[12.5px] text-muted">Edits to a live listing are checked by an admin; the current version stays up until then. Status changes, renewing and unpublishing happen right away. Market items stay up for {MARKET_DAYS} days, then are deleted; renew before then to keep them listed. Events are deleted {EVENT_DAYS} days after they end.</p>
           </>
         )}
 
