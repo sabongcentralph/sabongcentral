@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/adminGuard";
 import { twoFactorOf } from "@/lib/totp";
 import { adminSummary, type Row } from "@/lib/adminData";
+import { siteStats } from "@/lib/stats";
 import { titleOf, type QueueStatus } from "@/lib/db";
 import { AlertIcon, CalendarIcon, ChevronRight, UserIcon, MailIcon, Pin, ShieldIcon } from "@/components/icons";
 import { Chip, Page } from "@/components/ui";
@@ -61,7 +62,7 @@ function Card({ title, href, more, children }: { title: string; href?: string; m
 
 export default async function AdminDashboard() {
   const email = await requireAdmin();
-  const [s, tf] = await Promise.all([adminSummary(), twoFactorOf(email)]);
+  const [s, tf, st] = await Promise.all([adminSummary(), twoFactorOf(email), siteStats().catch(() => null)]);
   const review = s.waiting.slice(0, 6);
   return (
     <Page>
@@ -87,6 +88,25 @@ export default async function AdminDashboard() {
         </Card>
 
         <div className="flex flex-col gap-5">
+          {st && (
+            <Card title="Site visitors" href="/admin/stats" more="All stats">
+              <div className="grid grid-cols-2 divide-x divide-line pt-4 text-center">
+                {([[st.week.visitors, st.lastWeekSoFar.visitors, "Visitors this week"], [st.week.views, st.lastWeekSoFar.views, "Page views this week"]] as const).map(([n, b, l]) => (
+                  <div key={l} className="flex flex-col px-2">
+                    <span className="text-[26px] font-bold">{n.toLocaleString("en-US")}</span>
+                    <span className="text-[12px] text-muted">{l}</span>
+                    <span className={`text-[11.5px] font-semibold ${!b ? "text-muted" : n >= b ? "text-[#4ade80]" : "text-[#f87171]"}`}>{b ? `${n >= b ? "▲" : "▼"} ${Math.abs(Math.round(((n - b) / b) * 100))}% vs last week` : "—"}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="m-0 px-4 pb-1 pt-3 text-[12px] font-semibold text-ink-soft">Top listings (30 days)</p>
+              {st.listings.length === 0 ? <p className="m-0 px-4 pb-4 text-[13px] text-muted">No listing views yet.</p> : (
+                <ol className="m-0 flex list-decimal flex-col gap-1 pb-4 pl-9 pr-4 text-[13px]">
+                  {st.listings.slice(0, 3).map((l, i) => <li key={i}><span className="flex gap-2"><span className="min-w-0 flex-1 truncate">{l.label}</span><strong>{l.n}</strong></span></li>)}
+                </ol>
+              )}
+            </Card>
+          )}
           <Card title="Quick actions">
             <div className="grid grid-cols-2 gap-2.5 p-3">
               {([

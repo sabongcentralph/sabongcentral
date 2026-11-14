@@ -113,6 +113,7 @@ export const BagIcon = (p: P) => <Icon {...p} d="M5 8h14l-1 13H6zM9 8V6a3 3 0 01
 export const BookIcon = (p: P) => <Icon {...p} d="M4 5a2 2 0 012-2h13v16H6a2 2 0 00-2 2zM4 5v16M8 7h7" />;
 export const BellIcon = (p: P) => <Icon {...p} d="M6 16V11a6 6 0 0112 0v5l2 2H4zM10 20a2 2 0 004 0" />;
 export const UserIcon = (p: P) => <Icon {...p} d="M12 12a4 4 0 100-8 4 4 0 000 8zM4 21a8 8 0 0116 0" />;
+export const ChartIcon = (p: P) => <Icon {...p} d="M4 20V10M10 20V4M16 20v-7M22 20H2" />;
 export const FilterIcon = (p: P) => <Icon {...p} d="M4 5h16l-6 8v5l-4 2v-7z" />;
 export const ChevronRight = (p: P) => <Icon {...p} d="M9 6l6 6-6 6" />;
 export const MegaphoneIcon = (p: P) => <Icon {...p} d="M3 10v4h3l7 4V6L6 10zM16 9a4 4 0 010 6" />;
