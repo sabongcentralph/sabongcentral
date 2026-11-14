@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { SITE_NAME } from "@/lib/site";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { getLang } from "@/lib/i18n";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: { default: SITE_NAME, template: `%s · ${SITE_NAME}` },
   description: "Philippine gamefowl community: gamefarms, derby schedules, supplies and education. Information only: no bets, no payments.",
   robots: { index: false, follow: false }, // test site: keep out of search engines until launch

@@ -22,7 +22,7 @@ export default async function AdminMember({ params, searchParams }: { params: Pr
   const [mine, docs, pw] = await Promise.all([listingsOf(m.id), docsOf(m.id), passwordState(m.id)]);
   const done = one(sp.done);
   const temp = done === "created" || done === "reset" ? (await cookies()).get("sc_temp")?.value : undefined;
-  const host = (await headers()).get("host") ?? "sabongcentral.sabongcentralph.workers.dev";
+  const host = (await headers()).get("host") ?? "sabongsentral.ph";
   const open = Number(one(sp.open)) || 0;
   const act = (a: string, label: string, cls: string) => <button type="submit" name="action" value={a} className={cls}>{label}</button>;
   const fb = safe(m.facebook), org = safe(m.org_link);
