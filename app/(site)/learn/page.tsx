@@ -6,9 +6,10 @@ import { ARTICLE_TOPICS, RESOURCES } from "@/lib/sample";
 import { ArticleCard } from "@/components/cards";
 import { Empty, Page, PageHead } from "@/components/ui";
 import { DownloadIcon } from "@/components/icons";
+import { LearnSwitch } from "@/components/LearnSwitch";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Articles & Guides" };
+export const metadata: Metadata = { title: "Learn" };
 
 export default async function LearnPage({ searchParams }: { searchParams: Promise<Search> }) {
   const topic = one((await searchParams).topic);
@@ -17,7 +18,8 @@ export default async function LearnPage({ searchParams }: { searchParams: Promis
   const shown = topic ? all.filter((a) => a.data.topic === topic) : shuffled(all); // shuffled unless filtered (Em, 2026-11-13)
   return (
     <Page>
-      <PageHead kicker="Learn & Grow" title="Articles & Guides" sub="Articles and guides from breeders and veterinarians. Looking for seminars and expos? They are under Events." />
+      <PageHead kicker="Learn & Grow" title="Learn" sub="Seminars, workshops, training, webinars and expos, plus articles and guides from breeders and veterinarians." />
+      <LearnSwitch at="articles" />
       <nav aria-label="Topics" className="-mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0">
         {["", ...topics, "Downloads"].map((t) => (
           <a key={t || "all"} href={t ? `/learn?topic=${encodeURIComponent(t)}` : "/learn"} aria-current={t === topic ? "page" : undefined}
