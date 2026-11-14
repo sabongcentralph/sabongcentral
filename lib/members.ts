@@ -63,7 +63,7 @@ export function ensureMembers(): Promise<void> {
 
 const toMember = (r: MemberRow): Member => ({ ...r, roles: r.roles.split(",").filter(Boolean) as Role[] });
 
-// Until an email service is set up (needs the sabongcentral.com domain), the test
+// Until an email service is set up (needs the sabongsentral.ph domain), the test
 // site shows the code on screen. Set EMAIL_ENABLED to "true" once emails send.
 export async function testMode(): Promise<boolean> {
   const { env } = await import("cloudflare:workers");
