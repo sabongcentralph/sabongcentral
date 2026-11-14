@@ -6,6 +6,7 @@ import { FilterPanel } from "@/components/FilterPanel";
 import { LocationFields } from "@/components/LocationFields";
 import { Empty, Note, Page, PageHead, input, labelCls } from "@/components/ui";
 import { EventsSwitch } from "@/components/EventsSwitch";
+import { LearnSwitch } from "@/components/LearnSwitch";
 
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -13,9 +14,9 @@ const MONTHS = ["January", "February", "March", "April", "May", "June", "July", 
 export type DirMode = "derby" | "education";
 
 // One directory, two tabs: Events lists derbies only, Education lists seminars, training and expos.
-export async function EventDirectory({ sp, mode }: { sp: Search; mode: DirMode }) {
+export async function EventDirectory({ sp, mode, learn = false }: { sp: Search; mode: DirMode; learn?: boolean }) {
   const derby = derbyEnabled();
-  const base = mode === "derby" ? "/events" : "/education";
+  const base = mode === "derby" ? "/events" : learn ? "/learn/seminars" : "/education";
   const groups = mode === "derby" ? [] : ["All", "Education & Training", "Expos & Community"];
   const group = groups.includes(one(sp.group)) ? one(sp.group) : "All";
   const type = one(sp.type), month = one(sp.month), year = one(sp.year), province = one(sp.province), city = one(sp.city), venue = one(sp.venue);
@@ -50,8 +51,10 @@ export async function EventDirectory({ sp, mode }: { sp: Search; mode: DirMode }
     <Page>
       {mode === "derby"
         ? <PageHead kicker="Derby Schedule" title="Events" sub="Derby schedules with verified permits: date, venue and organizer." />
-        : <PageHead kicker="Seminars & Expos" title="Events" sub="Seminars, workshops, training, webinars and expos for breeders." />}
-      <EventsSwitch at={mode === "derby" ? "derbies" : "seminars"} />
+        : learn
+          ? <PageHead kicker="Learn & Grow" title="Learn" sub="Seminars, workshops, training, webinars and expos, plus articles and guides from breeders and veterinarians." />
+          : <PageHead kicker="Seminars & Expos" title="Events" sub="Seminars, workshops, training, webinars and expos for breeders." />}
+      {learn ? <LearnSwitch at="seminars" /> : <EventsSwitch at={mode === "derby" ? "derbies" : "seminars"} />}
       {groups.length > 0 && <nav aria-label="Event groups" className="-mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0">
         {groups.map((g) => (
           <a key={g} href={qs(g)} aria-current={g === group ? "page" : undefined}

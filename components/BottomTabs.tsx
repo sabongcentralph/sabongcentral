@@ -12,7 +12,7 @@ export function BottomTabs({ lang }: { lang: Lang }) {
       aria-label="Main"
       className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-cream/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_12px_rgb(0_0_0/0.06)] backdrop-blur lg:hidden"
     >
-      <ul className="m-0 grid list-none grid-cols-5 p-0">
+      <ul className="m-0 grid list-none grid-cols-6 p-0">
         {TABS.map(({ href, label, Icon }) => {
           const on = isActive(path, href);
           return (
